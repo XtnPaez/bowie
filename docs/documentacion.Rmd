@@ -1,0 +1,343 @@
+---
+title: "Documentación del Modelo SEIR"
+author: "Páez & Ruiz"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document: default
+---
+
+## Introducción
+
+El presente documento (en desarrollo) presenta la documentación referida a la app "[Prototipo Tablero Epidemiológico SEIR - Argentina](https://druiz.shinyapps.io/proto_epi/)".
+
+## 📦 Estructura de la app Shiny
+
+-   Modularización
+    -   global.R: contiene las librerías necesarias para la app, y las configuraciones iniciales del modelo (parámetros epidemiológicos, simulación de recursos, fechas de inicio y fin de la simulación).
+    -   mod_model.R: implementa la lógica del modelo SEIR
+    -   mod_server.R: define la lógica del servidor de la aplicación y orquesta los módulos de datos, modelo y visualización.
+    -   mod_data.R: simula la ingesta de datos y proporciona un conjunto de datos estructurado para la utilización en el resto de los módulos.
+    -   mod_viz.R: genera las visualizaciones interactivas.
+    -   mod_ui.R: define la interfaz de usuario.
+
+\
+
+------------------------------------------------------------------------
+
+## ⚙️ Parámetros Epidemiológicos
+
+### Parámetros base
+
+| Parámetro | Valor inicial | Fuente o justificación | Decisión actual |
+|------------------|------------------|------------------|------------------|
+| Población total | 45.000.000 | [Proyecciones de población - INDEC](https://www.indec.gob.ar/indec/web/Nivel4-Tema-2-24-84) | Aproximado población Argentina |
+| R₀ | 2,5 | IECS modelo base | Ajustable por UI |
+| IFR | 0,01 | Valor global estimado | Ajustable por UI |
+| Período de incubación | 5 días | CDC/OMS promedio | Ajustable por UI |
+| Período infeccioso | 7 días | Estudios clínicos | Ajustable por UI |
+
+### 🔁 Opciones
+
+#### R₀ Dinámico vs. Fijo
+
+**R₀**, o número básico de reproducción, estima el número promedio de infecciones generadas por una persona en el período infeccioso. Puede utilizarse un valor estimado fijo (en este caso, 2.5) o bien, tal como ocurre en el modelo IECS, adoptar una fórmula dinámica que permita calcular en base a la evolución de la incidencia de exposición.
+
+[**Fórmula utilizada en IECS**]{.underline}
+
+$$
+R_0 = \left( E_{t+1} - E_t + \frac{E_t}{\lambda_E} \right) \left( \frac{\lambda_I \cdot N}{I_t \cdot S_t} \right)
+$$
+
+**Donde:**
+
+-   $E_t, E_{t+1}$: número de expuestos en días consecutivos\
+-   $\lambda_E$: duración media del período pre-infeccioso\
+-   $\lambda_I$: duración media del período infeccioso\
+-   $N$: población total\
+-   $I_t$: cantidad de infectados actuales\
+-   $S_t$: cantidad de susceptibles actuales
+
+Por ahora se mantiene la estimación fija de R₀ como parámetro inicial. La opción dinámica queda documentada como para, eventualmente, incorporar en el server y/o habilitar desde la UI.
+
+#### IFR global vs. IFR por grupo etario
+
+El **IFR (Infection Fatality Rate, o tasa de fatalidad por infección)** representa la proporción de personas infectadas que fallecen a causa de la enfermedad. A diferencia del **CFR (Case Fatality Rate)**, que se calcula sólo sobre los casos detectados, el IFR intenta reflejar la letalidad real incluyendo también los casos no detectados (asintomáticos, no testeados, etc.).
+
+-   En modelos básicos, se suele usar un valor **global fijo** (por ejemplo, 0.01 o 1%).
+-   En modelos más complejos, el IFR se puede segmentar por grupo etario.
+
+Actualmente se usa un IFR global como valor por defecto en el modelo (0.01).
+
+------------------------------------------------------------------------
+
+## 🏥 Parámetros de Recursos Sanitarios
+
+### Parámetros base
+
+| Parámetro | Valor inicial | Fuente o justificación | Decisión actual |
+|------------------|------------------|-------------------|------------------|
+| Tasa de infectados que requieren UCI (`ICU_RATE`) | 0.136 | [Estimación IECS adaptada a Argentina (13,6%)](https://www.iecs.org.ar/wp-content/uploads/Modelo-epi-y-eval-econ_para-web.pdf) | Ajustable por UI |
+| Tasa de infectados que requieren ventilador (`VENTILATOR_RATE`) | 0.02 | [Estimación conservadora en base a estudios internacionales](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0246318) (2-3% de infectados totales) | Ajustable por UI |
+| Estadía hospitalaria promedio (`HOSPITAL_STAY_DAYS`) | 10 días | [Modelo IECS, en base a datos publicados por CDC](https://www.iecs.org.ar/wp-content/uploads/Modelo-epi-y-eval-econ_para-web.pdf) | Default |
+| Capacidad inicial de camas UCI (`ICU_CAPACITY`) | 6000 | [Estimación basada en SATI](https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0025-76802022000100035) | Ajustable por UI |
+| Disponibilidad inicial de ventiladores (`VENTILATOR_AVAILABILITY`) | 2000 | [Estimación basada en SATI](https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0025-76802022000100035) | Ajustable por UI |
+| Personal de salud inicial (`HEALTHCARE_STAFF`) | 10.000 | Valor acotado para simular personal directamente vinculado a atención COVID-19 en escenarios críticos. [Se estima que Argentina tiene \~1.2M trabajadores en salud en total (en todas las funciones)](https://ri.conicet.gov.ar/bitstream/handle/11336/161336/CONICET_Digital_Nro.9508fef7-fcb8-4e0e-9bcd-8c593177d630_A.pdf?sequence=2) | Ajustable por UI |
+
+------------------------------------------------------------------------
+
+## 🔄 Dinámica del Modelo SEIR
+
+El módulo `mod_model.R` define las ecuaciones diferenciales ordinarias (EDOs) que rigen el modelo SEIR. La población se divide en cuatro compartimentos:
+
+-   S (Susceptibles)
+-   E (Expuestos)
+-   I (Infectados)
+-   R (Recuperados)
+
+### 🔢 Ecuaciones utilizadas:
+
+$$
+\begin{aligned}
+\frac{dS}{dt} &= - \beta \cdot \frac{S \cdot I}{N} \\
+\frac{dE}{dt} &= \beta \cdot \frac{S \cdot I}{N} - \sigma \cdot E \\
+\frac{dI}{dt} &= \sigma \cdot E - \gamma \cdot I \\
+\frac{dR}{dt} &= \gamma \cdot I
+\end{aligned}
+$$
+
+Donde:
+
+-   $N$ = Población total
+
+-   $\beta = \frac{R_0}{\gamma}$ = tasa de infección
+
+-   $\sigma = \frac{1}{\lambda_E}$ = tasa de progresión de incubación
+
+-   $\gamma = \frac{1}{\lambda_I}$ = tasa de recuperación
+
+\
+
+Esta versión del modelo puede, eventualmente, segmentarse por severidad (leve, severo, crítico) o por grupos etarios.
+
+------------------------------------------------------------------------
+
+\
+
+### 🧠 Cálculo de R₀ efectivo
+
+-   `effective_R0`: Se implementa una reducción simplificada de R₀ basada en política sanitaira. Por ejemplo, frente a un nivel de cumplimiento del 100%, el R₀ se reduce en un 50.
+
+### 🧮 Resolución del sistema SEIR: Se utiliza deSolve::ode() para integrar el sistema de ecuaciones diferenciales, con:
+
+-   initial_state: valores de S, E, I, R al tiempo cero
+
+-   parameters: conjunto de parámetros claves (effective_R0, incubation_period, infectious_period)
+
+-   times: vector de tiempos extraído desde raw_data_df()
+
+### 📊 Resultados del modelo
+
+Se construye un results_df con:
+
+-   Casos diarios (Daily_New_Infections) y acumulados (Cumulative_Cases)
+
+-   Muertes simuladas (Daily_Deaths, Cumulative_Deaths) usando IFR
+
+-   Demanda diaria de recursos críticos:
+
+    -   ICU_Daily_Demand = I × tasa_UCI
+
+    -   Vent_Daily_Demand = I × tasa_ventilador
+
+-   Simulación de ocupación por rolling sum:
+
+    -   ICU_Occupancy_Sim = acumulado en ventana móvil de hospital_stay_days
+
+    -   Vent_Usage_Sim = idem para ventiladores
+
+\
+⚠️ Este cálculo es una simplificación. Un modelo más avanzado podría incorporar retrasos (lag), colas (queueing models) o tiempos individuales de atención.
+
+\
+📌 Decisiones clave
+
+-   Las variables de capacidad (icu_capacity, ventilator_availability) se manejan por separado en el módulo de visualización.
+
+-   La saturación de recursos se evalúa comparando ICU_Occupancy_Sim vs. capacidad.
+
+-   Todos los parámetros son ajustables desde UI, lo que permite simular distintos escenarios sanitarios.
+
+\
+🔁 Mejoras posibles
+
+-   Modelar contagio entre segmentos (edad, severidad).
+
+-   Agregar compartimentos clínicos: hospitalizado, crítico, fallecido.
+
+-   Incorporar grupos geográficos.
+
+------------------------------------------------------------------------
+
+## 🧠 Arquitectura del módulo `mod_server.R`
+
+Este módulo centraliza la lógica de la app Shiny. Su función es orquestar la interacción entre:
+
+-   Inputs del usuario (`input`)
+-   Parámetros internos (`app_params`)
+-   Módulos de simulación (`data_sim`, `seir_model`)
+-   Módulo de visualización (`main_viz`)
+
+------------------------------------------------------------------------
+
+## 🧬 Módulo `mod_data.R`: Inicialización de Datos
+
+Este módulo simula la ingesta de datos epidemiológicos y genera una estructura estándar para la simulación del modelo SEIR.
+
+------------------------------------------------------------------------
+
+### 🔢 Estado inicial simulado
+
+Se simula una población inicial mayormente susceptible, con 10.000 individuos ya infectados. Este dummy_data se pasa al módulo model_seir_server como raw_data_df
+
+El modelo lee los valores iniciales (S, E, I, R) desde el día time == 0
+
+El resto de las columnas son sobrescritas por el resultado del modelo
+
+### 📁 Futuras extensiones
+
+En lugar de generar datos simulados, el módulo podría:
+
+-   Leer archivos .csv, .xlsx con datos reales
+
+-   Consultar una API (p.ej., datos.gob.ar)
+
+-   Aplicar lógica de limpieza / imputación de datos para calibrar el modelo
+
+### ✍️ Decisión actual
+
+Se mantiene la estructura simulada para el prototipo, asegurando compatibilidad con el modelo SEIR. El módulo está preparado para integrar datos reales en versiones posteriores.\
+
+------------------------------------------------------------------------
+
+## 📊 Módulo `mod_viz.R`: Gráficos Interactivos
+
+Este módulo renderiza tres visualizaciones basadas en los datos simulados por el modelo SEIR. Todas se actualizan dinámicamente al cambiar los parámetros o al ejecutar una nueva simulación.
+
+------------------------------------------------------------------------
+
+### 1️⃣ Dinámica SEIR (`seir_plot`)
+
+Visualiza la evolución temporal de los cuatro compartimentos del modelo:
+
+| Compartimento    | Color    | Descripción                  |
+|------------------|----------|------------------------------|
+| S (Susceptibles) | Verde    | Personas aún no infectadas   |
+| E (Expuestos)    | Amarillo | Personas incubando el virus  |
+| I (Infectados)   | Rojo     | Personas que contagian       |
+| R (Recuperados)  | Azul     | Personas que ya no contagian |
+
+------------------------------------------------------------------------
+
+### 2️⃣ Casos y Muertes Acumuladas (`cases_deaths_plot`)
+
+| Métrica            | Color   | Descripción                       |
+|--------------------|---------|-----------------------------------|
+| Casos acumulados   | Naranja | Suma de nuevas infecciones        |
+| Muertes acumuladas | Gris    | Suma de muertes simuladas por IFR |
+
+-   Gráfico de líneas con acumulativos
+-   Permite monitorear evolución de impacto total
+
+------------------------------------------------------------------------
+
+### 3️⃣ Presión sobre Recursos Críticos (`resource_pressure_plot`)
+
+| Métrica | Línea | Área sombreada | Color |
+|-----------------|---------------------|-------------------|----------------|
+| Demanda UCI | Sólida | Cuando excede capacidad | Rojo |
+| Capacidad UCI | Punteada | Línea de referencia | Celeste |
+| Demanda Ventiladores | Sólida | Cuando excede capacidad | Rojo |
+| Capacidad Vent. | Punteada | Línea de referencia | Celeste |
+| Exceso de demanda | Área bajo `geom_ribbon()` | Rosa pálido |  |
+
+-   Comparación diaria entre demanda simulada y capacidad ingresada por usuario
+-   `geom_ribbon()` destaca días donde la demanda supera la capacidad
+
+------------------------------------------------------------------------
+
+### 🔁 Reactividad
+
+-   Cada gráfico se actualiza automáticamente si:
+    -   Se ejecuta una nueva simulación (`trigger_sim`)
+
+    -   Se modifican los inputs de capacidad (`ICU`, `Ventiladores`)
+
+------------------------------------------------------------------------
+
+### 🧠 Mejoras futuras
+
+-   Agregar visualización de saturación del personal de salud
+-   Incorporar comparaciones entre escenarios
+-   Permitir zoom interactivo (e.g., `plotly` o `ggiraph`)
+
+## 🖥️ Módulo `mod_ui.R`: Interfaz de Usuario
+
+Este módulo define la UI del tablero epidemiológico en Shiny, agrupando controles por tipo de parámetro y renderizando las visualizaciones principales en pestañas.
+
+------------------------------------------------------------------------
+
+### 🔧 Estructura modular
+
+| Función                | Descripción                                    |
+|------------------------|------------------------------------------------|
+| `ui_seir_params()`     | Controles para parámetros del modelo SEIR      |
+| `ui_policy_params()`   | Controles para parámetros de intervención      |
+| `ui_resource_params()` | Controles para parámetros de recursos críticos |
+| `ui_main()`            | Define la disposición general del tablero      |
+
+------------------------------------------------------------------------
+
+### 1️⃣ Parámetros SEIR
+
+Incluye sliders para:
+
+-   `R₀` (transmisibilidad inicial)
+-   Período de incubación (`λ_E`)
+-   Período infeccioso (`λ_I`)
+-   Tasa de letalidad por infección (`IFR`)
+
+> Cada control está inicializado con los valores definidos en `global.R`, facilitando ajuste por parte del usuario.
+
+------------------------------------------------------------------------
+
+### 2️⃣ Políticas públicas
+
+-   `policy_type`: selector con cuatro estrategias
+    -   Sin intervención
+    -   Mitigación por fases
+    -   Intervención intermitente
+    -   Activación gatillada por saturación UTI
+-   `compliance_level`: slider con cumplimiento en porcentaje
+
+🗒️ Estos valores afectan el cálculo de `effective_R0` en el módulo de modelo.
+
+------------------------------------------------------------------------
+
+### 3️⃣ Recursos críticos
+
+Inputs numéricos para definir:
+
+-   Capacidad de UCI
+-   Disponibilidad de respiradores
+-   Personal de salud disponible
+
+Sliders para tasas de utilización:
+
+-   Tasa de ingreso a UCI (sobre infectados)
+-   Tasa de uso de respiradores (sobre infectados)
+
+📌 Todos estos parámetros impactan en el cálculo de presión sanitaria (`ICU_Occupancy_Sim`, `Vent_Usage_Sim`).
+
+------------------------------------------------------------------------
