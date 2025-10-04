@@ -1,0 +1,12 @@
+name: proto_epi
+title: proto_epi
+username: druiz
+account: druiz
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14962588
+bundleId: 10879312
+url: https://druiz.shinyapps.io/proto_epi/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
