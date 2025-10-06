@@ -2,26 +2,26 @@
 # Este archivo define la interfaz de usuario (UI) para el tablero.
 
 # Función para definir los parámetros del modelo SEIR en la UI
-ui_seir_params <- function() {
+ui_seir_params <- function(ns) {
   div(
     h4("Parámetros del Modelo Epidemiológico"),
     sliderInput(
-      inputId = "r0_value",
+      inputId = ns("r0_value"),
       label = HTML("Número Reproductivo Básico (R<sub>0</sub>)"),
       min = 0.5, max = 5.0, value = INITIAL_R0, step = 0.1
     ),
     sliderInput(
-      inputId = "incubation_period",
+      inputId = ns("incubation_period"),
       label = "Período de Incubación (días)",
       min = 1, max = 14, value = INITIAL_INCUBATION_PERIOD, step = 1
     ),
     sliderInput(
-      inputId = "infectious_period",
+      inputId = ns("infectious_period"),
       label = "Período Infeccioso (días)",
       min = 1, max = 21, value = INITIAL_INFECTIOUS_PERIOD, step = 1
     ),
     sliderInput(
-      inputId = "ifr_value",
+      inputId = ns("ifr_value"),
       label = "Tasa de Letalidad por Infección (IFR - %)",
       min = 0.01, max = 5.0, value = INITIAL_IFR * 100, step = 0.01
     )
@@ -29,11 +29,11 @@ ui_seir_params <- function() {
 }
 
 # Función para definir los parámetros de políticas públicas en la UI
-ui_policy_params <- function() {
+ui_policy_params <- function(ns) {
   div(
     h4("Parámetros de Políticas Públicas"),
     selectInput(
-      inputId = "policy_type",
+      inputId = ns("policy_type"),
       label = "Tipo de Intervención",
       choices = c(
         "Sin Intervención" = "no_intervention",
@@ -44,7 +44,7 @@ ui_policy_params <- function() {
       selected = "no_intervention"
     ),
     sliderInput(
-      inputId = "compliance_level",
+      inputId = ns("compliance_level"),
       label = "Nivel de Cumplimiento (%)",
       min = 0, max = 100, value = 50, step = 5
     )
@@ -52,31 +52,31 @@ ui_policy_params <- function() {
 }
 
 # Función para definir los parámetros de recursos críticos en la UI
-ui_resource_params <- function() {
+ui_resource_params <- function(ns) {
   div(
     h4("Parámetros de Recursos Críticos"),
     numericInput(
-      inputId = "icu_capacity",
+      inputId = ns("icu_capacity"),
       label = "Capacidad de Camas UCI",
       value = INITIAL_ICU_CAPACITY, min = 0
     ),
     numericInput(
-      inputId = "ventilator_availability",
+      inputId = ns("ventilator_availability"),
       label = "Disponibilidad de Respiradores",
       value = INITIAL_VENTILATOR_AVAILABILITY, min = 0
     ),
     numericInput(
-      inputId = "healthcare_staff",
+      inputId = ns("healthcare_staff"),
       label = "Personal de Salud Disponible",
       value = INITIAL_HEALTHCARE_STAFF, min = 0
     ),
     sliderInput(
-      inputId = "icu_admission_rate",
+      inputId = ns("icu_admission_rate"),
       label = "Tasa de Admisión a UCI (%)",
       min = 0.1, max = 30.0, value = INITIAL_ICU_RATE * 100, step = 0.1
     ),
     sliderInput(
-      inputId = "ventilator_usage_rate",
+      inputId = ns("ventilator_usage_rate"),
       label = "Tasa de Uso de Respiradores (%)",
       min = 0.1, max = 10.0, value = INITIAL_VENTILATOR_RATE * 100, step = 0.1
     )
@@ -86,7 +86,9 @@ ui_resource_params <- function() {
 # Función principal para la interfaz de usuario
 # Acepta un 'viz_id' para el namespacing de los outputs de visualización
 ui_main <- function(viz_id) {
+  ns <- NS(viz_id)
   ns_viz <- NS(viz_id) # Crear el namespace para los outputs de visualización
+ 
   fluidPage(
     useShinyjs(),
     
@@ -115,22 +117,22 @@ ui_main <- function(viz_id) {
                            width = "100px"
                ) %>% 
                  tagAppendAttributes(style = "text-align: left; margin-left: 0;"),
-               uiOutput("tema_icono")
+               uiOutput(ns("tema_icono"))
            )
     ),
     
     sidebarLayout(
       sidebarPanel(
         # Controles del modelo
-        wellPanel(ui_seir_params()),
+        wellPanel(ui_seir_params(ns)),
         hr(), # Separador
         # Controles de políticas
-        wellPanel(ui_policy_params()),
+        wellPanel(ui_policy_params(ns)),
         hr(),
         # Controles de recursos
-        wellPanel(ui_resource_params()),
+        wellPanel(ui_resource_params(ns)),
         hr(),
-        actionButton("run_simulation", "Ejecutar Simulación")
+        actionButton(ns("run_simulation"), "Ejecutar Simulación")
       ),
       mainPanel(
         tabsetPanel(
@@ -149,7 +151,7 @@ ui_main <- function(viz_id) {
           tabPanel(
             "Datos Simulados",
             h3("Tabla de Datos Simulados"),
-            tableOutput("simulated_data_table") # Esta tabla no es parte del módulo de visualización
+            tableOutput(ns("simulated_data_table")) 
           )
         )
       )

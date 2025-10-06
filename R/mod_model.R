@@ -58,9 +58,13 @@ model_seir_server <- function(id, input_params, raw_data_df) {
       policy_type <- input_params()$policy_type
       compliance_level <- input_params()$compliance_level / 100 # Convertir a decimal
       
+      # ⭐ AGREGAR ESTO: Validar que policy_type y compliance_level existen
+      req(policy_type, compliance_level)
+      
       # Lógica para calcular el R0 efectivo basado en la política y el cumplimiento
       effective_R0 <- R0 # Por defecto, es el R0 del slider
-      if (policy_type != "no_intervention") {
+      
+      if (!is.null(policy_type) && policy_type != "no_intervention") {
         # Para MVP, una reducción simple del R0 basada en el nivel de cumplimiento
         # Ejemplo: 100% cumplimiento reduce R0 a la mitad
         effective_R0 <- R0 * (1 - (compliance_level * 0.5)) # Reducción del 50% max
