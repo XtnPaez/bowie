@@ -135,12 +135,12 @@ mod_server <- function(id, dataset_selector) {
     )
     
     # Módulo de visualización
-    viz_plot_server(
-      "viz",
-      model_data = seir_model_output,
-      icu_capacity_input = reactive(input$icu_capacity),
-      ventilator_availability_input = reactive(input$ventilator_availability)
-    )
+    # viz_plot_server(
+    #   "viz",
+    #   model_data = seir_model_output,
+    #   icu_capacity_input = reactive(input$icu_capacity),
+    #   ventilator_availability_input = reactive(input$ventilator_availability)
+    # )
     
     # Tabla de datos simulados
     output$simulated_data_table <- renderTable({
@@ -174,6 +174,13 @@ mod_server <- function(id, dataset_selector) {
     hover = TRUE,
     bordered = TRUE
     )
+    
+    ## Devolver los datos para app.R
+    return(list(
+      model_data = seir_model_output,
+      icu_capacity = reactive(input$icu_capacity),
+      ventilator_availability = reactive(input$ventilator_availability)
+    ))
     
   }) # Fin de moduleServer
 } # Fin de mod_server

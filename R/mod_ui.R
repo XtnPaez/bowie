@@ -87,7 +87,7 @@ ui_resource_params <- function(ns) {
 # Acepta un 'viz_id' para el namespacing de los outputs de visualización
 ui_main <- function(viz_id) {
   ns <- NS(viz_id)
-  ns_viz <- NS("viz") # Crear el namespace para los outputs de visualización
+  ns_viz <- NS(viz_id) # Crear el namespace para los outputs de visualización
  
   fluidPage(
     useShinyjs(),

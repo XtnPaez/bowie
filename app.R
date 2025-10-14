@@ -32,20 +32,36 @@ server <- function(input, output, session) {
     if (pantalla() == "index") {
       mod_index_ui("index")
     } else {
-      ui_main("main_viz")  # ⚠️ Este ID debe coincidir con el del servidor
+      ui_main("main_viz")
     }
   })
   
   # Servidor del index
   mod_index_server("index", pantalla, dataset_selector)
   
-  # llamar al servidor principal como módulo
-  # Solo se activa cuando pantalla != "index"
+  # Variable reactiva para guardar el resultado de mod_server
+  server_outputs <- reactiveVal(NULL)
+  
+  # Llamar al servidor principal y guardar sus outputs
   observe({
     if (pantalla() != "index") {
-      mod_server("main_viz", dataset_selector)  # ← ID debe coincidir con ui_main
+      outputs <- mod_server("main_viz", dataset_selector)
+      server_outputs(outputs)
     }
   })
-}
+  
+  # Llamar a viz_plot_server SOLO cuando tengamos datos
+  observe({
+    req(server_outputs())
+    
+    viz_plot_server(
+      "main_viz",
+      model_data = server_outputs()$model_data,
+      icu_capacity_input = server_outputs()$icu_capacity,
+      ventilator_availability_input = server_outputs()$ventilator_availability
+    )
+  })
+  
+} # ← Cierre de la función server
 
 shinyApp(ui = ui, server = server)
