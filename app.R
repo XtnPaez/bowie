@@ -39,7 +39,7 @@ server <- function(input, output, session) {
   # Servidor del index
   mod_index_server("index", pantalla, dataset_selector)
   
-  # ⭐ CRÍTICO: Llamar al servidor principal como módulo
+  # llamar al servidor principal como módulo
   # Solo se activa cuando pantalla != "index"
   observe({
     if (pantalla() != "index") {

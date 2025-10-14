@@ -136,7 +136,7 @@ mod_server <- function(id, dataset_selector) {
     
     # Módulo de visualización
     viz_plot_server(
-      "main_viz",
+      "viz",
       model_data = seir_model_output,
       icu_capacity_input = reactive(input$icu_capacity),
       ventilator_availability_input = reactive(input$ventilator_availability)
