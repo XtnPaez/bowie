@@ -1,0 +1,57 @@
+name: R-CMD-check and pkgdown deploy
+
+on:
+  push:
+    branches: [ feat/paez ]
+  pull_request:
+    branches: [ feat/paez ]
+
+jobs:
+  build-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Set up Pandoc
+        uses: r-lib/actions/setup-pandoc@v2
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+
+      - name: Install R dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::devtools, any::pkgdown, any::roxygen2, any::testthat, any::lintr
+          needs: check
+
+      - name: Check package
+        run: |
+          Rscript -e 'devtools::check(error_on = "error")'
+          Rscript -e 'lintr::lint_package()'
+
+      - name: Build documentation
+        run: |
+          Rscript -e 'devtools::document()'
+          Rscript -e 'pkgdown::build_site()'
+
+      - name: Upload pkgdown site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        if: github.event_name == 'push'
+        uses: actions/deploy-pages@v4
