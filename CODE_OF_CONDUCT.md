@@ -16,7 +16,7 @@ Unacceptable behaviors include:
 - Public or private harassment of any kind.  
 
 ## Enforcement
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project maintainer at **cpaez@siempro.gob.ar**.  
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project maintainer at **paez.cristian@gmail.com**.  
 All complaints will be reviewed and investigated promptly and fairly.
 
 ## Attribution

@@ -39,4 +39,3 @@ MIT License (see LICENSE file)
 
 ## Authors
 - Cristian Paez (Lead Developer)  
-- Fernando Poletta (Data Science Expert)
