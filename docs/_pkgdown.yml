@@ -1,0 +1,75 @@
+# ==========================================================
+# _pkgdown.yml
+# Configuration file for the pkgdown documentation site
+# ==========================================================
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    primary: "#006699"
+    base_font: { google: "Roboto" }
+    heading_font: { google: "Roboto Slab" }
+    code_font: { google: "Fira Code" }
+
+destination: docs
+
+url: https://edeleitha.github.io/proto_epi/
+title: "proto_epi: SEIR Epidemiological Modeling Toolkit"
+description: >
+  A modular Shiny prototype for SEIR epidemiological modeling.
+  Built as part of the Pandemic Preparedness Toolkit – Argentina Unit.
+
+navbar:
+  structure:
+    left:
+      - home
+      - reference
+      - articles
+      - news
+    right:
+      - github
+  components:
+    home:
+      text: "Home"
+      href: index.html
+    reference:
+      text: "Reference"
+      href: reference/index.html
+    articles:
+      text: "Documentation"
+      href: articles/index.html
+    news:
+      text: "Changelog"
+      href: news/index.html
+    github:
+      icon: fa-github
+      href: https://github.com/edeleitha/proto_epi
+
+authors:
+  Cristian Paez:
+    href: https://github.com/cpaez-si
+  Fernando Poletta:
+    href: https://github.com/fernandopoletta
+
+reference:
+  - title: "Core Modules"
+    contents:
+      - mod_server
+      - mod_data
+      - mod_model
+      - mod_viz
+      - mod_ui
+  - title: "Utilities"
+    contents:
+      - utils_helpers
+      - utils_validation
+      - utils_logging
+
+articles:
+  - title: "Getting Started"
+    contents: 
+      - articles/intro
+
+news:
+  one_page: true
