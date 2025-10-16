@@ -67,5 +67,5 @@ El plan completo se encuentra documentado en **roadmap.md** (en la raíz del rep
 
 ## 👥 Créditos
 
-- Equipo técnico Bowie / Revisión: Cristian Páez  
+- Equipo técnico Bowie Project
 - Agradecimientos a los colaboradores del proyecto y a la comunidad Shiny.
