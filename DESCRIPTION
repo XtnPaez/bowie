@@ -2,7 +2,7 @@ Package: proto_epi
 Title: SEIR Epidemiological Modeling Prototype
 Version: 0.1.0
 Authors@R: 
-    person("Cristian", "Paez", email = "cpaez@siempro.gob.ar", role = c("aut", "cre"))
+    person("Cristian", "Paez", email = "paez.cristian@gmail.com", role = c("aut", "cre"))
 Description: Modular Shiny prototype for SEIR epidemiological modeling as part of the Pandemic Preparedness Toolkit (Argentina Unit).
 License: MIT + file LICENSE
 Encoding: UTF-8
