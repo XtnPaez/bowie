@@ -1,14 +1,14 @@
-SEIR Shiny – Prototype Dashboard
+# SEIR Shiny – Prototype Dashboard
 
 This repository contains a modular Shiny prototype implementing an SEIR (Susceptible–Exposed–Infectious–Recovered) epidemiological model.
 It was developed as part of the Pandemic Preparedness Toolkit – Argentina Unit (Work Package: Modeling of Infectious Diseases).
 
-Project Overview
+# Project Overview
 
 The app simulates disease spread and healthcare resource demand using adjustable epidemiological parameters.
 It is designed to be extensible, allowing new models to be plugged in via modular architecture.
 
-Folder Structure
+## Folder Structure
 
 R/ – Shiny modules (mod_*) including data, model, UI, and visualization logic.
 
@@ -18,7 +18,7 @@ man/ – Auto-generated documentation using roxygen2.
 
 docs/ – Technical documentation and rendered pkgdown site.
 
-Setup
+## Setup
 
 Clone the repository:
 git clone https://github.com/edeleitha/proto_epi.git
@@ -29,18 +29,16 @@ renv::restore()
 Run the app:
 shiny::runApp()
 
-Documentation
+## Documentation
 
 Generate package documentation and site:
 devtools::document()
 pkgdown::build_site()
 
-License
+## License
 
 MIT License (see LICENSE file)
 
-Authors
+## Author
 
 Cristian Paez (Lead Developer)
-
-Fernando Poletta (Data Science Expert)
