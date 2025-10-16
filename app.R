@@ -1,4 +1,5 @@
 # app.R
+
 # Este es el archivo principal de la aplicación Shiny que une todos los módulos.
 
 message("Shiny app starting...")
