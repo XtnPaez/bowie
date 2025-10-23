@@ -1,113 +1,100 @@
-# Proyecto SEIR Shiny – Roadmap y Análisis Estructural
+# SEIR Shiny – Roadmap and Strategic Plan
 
-## Introducción
-La aplicación actual presenta una arquitectura modular sólida y replicable, con módulos independientes (`mod_data`, `mod_model`, `mod_viz`, `mod_ui`, `mod_server`).  
-Requiere sin embargo una segunda capa de ingeniería: reproducibilidad, internacionalización y desacople de datos.  
-Este documento define el plan de evolución hacia un **Model Hub** multi-dominio (capaz de integrar distintos modelos, como epidemiología o accidentología).
-
----
-
-## Estructura del Proyecto y Fortalezas
-- Flujo modular `data → model → viz → ui → server`.
-- Documentación técnica robusta y coherente (ver `/docs/`).
-- Capacidad de replicabilidad y escalabilidad.
-- Modularización compatible con despliegue Shiny Server o ShinyApps.io.
+## Introduction
+The SEIR Shiny dashboard has evolved into a modular and reproducible framework.  
+The next development phase focuses on creating a **Data Hub** to manage datasets and a **dual visualisation experience** (simple / advanced).  
+This plan integrates the original modular roadmap with the new functional vision.
 
 ---
 
-## Debilidades Detectadas
-- `mod_server` concentra demasiadas responsabilidades.
-- No existe una capa desacoplada de datos (`data_interface`).
-- Falta control de entorno (`renv`, `DESCRIPTION`).
-- Sin estructura de testeo (`/tests/`).
-- Textos de UI fijos en español (sin i18n).
-- Ausencia de `/R/utils/` para funciones comunes.
+## Strengths and Achievements
+- Modular workflow `data → model → viz → ui → server`.
+- Stable codebase with logging, validation, and reproducibility.  
+- English-only code and documentation for international consistency.  
+- Completed Issues 1–4: refactor, utils, validation, logging, and UI standardisation.
 
 ---
 
-## Roadmap General
-
-### 🔹 Bloque 1 – Reestructuración técnica
-**Objetivo:** Consolidar una base modular, reproducible y escalable.  
-**Subtareas:**
-- Implementar `renv` o `DESCRIPTION` con dependencias.
-- Refactor de `mod_server` → `server_loader`, `server_reactivity`, `server_outputs`.
-- Crear `/R/utils/` (helpers, logging, validaciones, plot_factory).
-- Crear `/R/data_interface.R` (lectura desde API, CSV o DB + validaciones).
-- Introducir `/config/app.yml` y `/config/models.yml`.
-- Revisar naming conventions y limpieza de imports.
-- Esqueleto de `/tests/testthat/` y `/tests/shinytest2/`.
+## Current Weaknesses
+- No centralised data interface (Data Hub missing).  
+- Limited user navigation between visualisation modes.  
+- Lack of persistent dataset storage and schema validation.  
+- Overloaded `mod_server` responsibilities.  
+- No integrated test suite yet.
 
 ---
 
-### 🔹 Bloque 2 – Internacionalización y Comentado del Código
-**Objetivo:** Código íntegramente en inglés, UI multilingüe, documentación coherente.  
-**Subtareas:**
-- Incorporar `shiny.i18n` y archivos `/i18n/en.json` y `/i18n/es.json`.
-- Migrar textos de UI (`mod_ui.R`) a `t("label_key")`.
-- Reescribir comentarios inline y encabezados `roxygen2`.
-- Implementar plantilla de comentario estándar:
-  - Summary / Inputs / Outputs / Side-effects / Errors.
-- Configurar `pkgdown` para documentación multilanguage.
+## Updated Roadmap
+
+### 🔹 Block 1 – Core Refactor (completed)
+**Goal:** Ensure reproducible, modular, and scalable architecture.  
+**Status:** ✅ Completed.
+
+### 🔹 Block 2 – Code Internationalisation (completed)
+**Goal:** Migrate to English-only codebase and clean UI.  
+**Status:** ✅ Completed.
+
+### 🔹 Block 3 – Data Hub Interface (current focus)
+**Goal:** Implement `/R/data_interface.R` to manage dataset loading, validation, and persistence.  
+**Subtasks:**
+- Create `get_data(source, params)` for CSV / API / local access.  
+- Add `validate_schema(data)` for structure checks.  
+- Implement dataset saving and retrieval functions.  
+- Add metadata management and source registration.  
+- Provide basic test coverage for validation functions.
+
+### 🔹 Block 4 – User Experience Redesign
+**Goal:** Rebuild the entry screen and navigation system.  
+**Subtasks:**
+- Redesign `mod_index.R` → `mod_entry.R` (data source selection).  
+- Implement navigation between **Simple** and **Advanced** visualisation views.  
+- Persist selected dataset between sessions.  
+- Introduce a unified top menu for switching views.
+
+### 🔹 Block 5 – Simplified Visualisation Mode
+**Goal:** Offer a simplified “decision-maker” interface.  
+**Subtasks:**
+- Create `mod_viz_simple.R` with core SEIR plots only.  
+- Hide complex parameter controls.  
+- Provide clear KPIs and resource summaries.  
+
+### 🔹 Block 6 – Model Hub Expansion
+**Goal:** Extend framework to support additional infection models.  
+**Subtasks:**
+- Create `/models/` folder and registry (`model_registry.R`).  
+- Define model API (`init`, `run`, `describe`, `schema_in/out`).  
+- Integrate model-specific UI controls.  
+- Include metadata in YAML format.
+
+### 🔹 Block 7 – Testing and Deployment
+**Goal:** Ensure robustness and reproducibility.  
+**Subtasks:**
+- Implement unit tests (`testthat`) and UI tests (`shinytest2`).  
+- CI/CD with GitHub Actions.  
+- Reproducibility snapshot with `renv::snapshot()`.  
+- Continuous performance logging.
 
 ---
 
-### 🔹 Bloque 3 – Generación del Model Hub
-**Objetivo:** Transformar el proyecto SEIR en un framework multi-modelo.  
-**Subtareas:**
-- Crear `/models/` con estructura modular (`/seir/`, `/accidentologia/`, ...).
-- Desarrollar `/R/model_engine.R` y `/R/model_registry.R`.
-- Establecer interfaz estándar de modelos (`init`, `run`, `describe`, `schema_in/out`, `ui_controls`).
-- Crear `/R/schema.R` para normalizar estructuras de datos entre modelos.
-- Ajustar `mod_server` (o nuevo `server_dispatcher`) para seleccionar modelo activo.
-- Agregar soporte para visualizaciones dinámicas según modelo.
-- Integrar metadatos YAML (`metadata.yml`) para cada modelo.
+## Dependencies and Execution
+
+| Block | Depends On | Parallel Execution | Notes |
+|-------|-------------|--------------------|-------|
+| **1. Core Refactor** | – | 🔴 No | Foundation for all other blocks. |
+| **2. Internationalisation** | 1 | 🟢 Done | Stable and standardised. |
+| **3. Data Hub Interface** | 1 | 🟡 Partial | Base for UX redesign. |
+| **4. User Experience Redesign** | 3 | 🟡 Partial | UI work depends on Data Hub. |
+| **5. Simplified Visualisation Mode** | 3 | 🟢 Yes | Can be developed in parallel. |
+| **6. Model Hub Expansion** | 3, 4 | 🟡 Partial | Relies on Data Hub architecture. |
+| **7. Testing and Deployment** | All | 🟢 Continuous | Runs across all stages. |
 
 ---
 
-### 🔹 Bloque 4 – Traducción y Documentación
-**Objetivo:** Generar versiones documentales multilanguage y guías.  
-**Subtareas:**
-- Traducir documentación técnica (`documentacion.pdf`, `documentacion.Rmd`) al inglés.
-- Generar guía de implementación (`Implementation Guide`) y guía de usuario (`User Guide`).
-- Normalizar nomenclatura técnica entre documentos y código.
-- Crear estructura `/docs/en/` y `/docs/es/`.
-- Integrar documentación automatizada (`pkgdown`).
+## Summary
+The SEIR Shiny project is transitioning from a prototype into a **flexible, data-centric modelling platform**.  
+This roadmap emphasises user experience, dynamic data integration, and model extensibility while maintaining scientific integrity and modular reproducibility.  
 
----
+**Next target:** Implement Block 3 – Data Hub Interface.  
 
-### 🔹 Bloque 5 – Testing y Despliegue
-**Objetivo:** Asegurar calidad, reproducibilidad y despliegue confiable.  
-**Subtareas:**
-- Testing de ecuaciones SEIR y funciones utilitarias (`testthat`).
-- Pruebas de UI críticas (`shinytest2`).
-- Linter y análisis estático (`lintr`, `goodpractice`).
-- CI/CD con GitHub Actions.
-- Snapshot de dependencias (`renv::snapshot()`).
-- Validación de reproducibilidad (bootstrap desde repo limpio).
-
----
-
-## Plan de Ejecución y Dependencias
-
-| Bloque | Dependencia | Ejecución paralela | Justificación |
-|--------|--------------|--------------------|----------------|
-| **1. Reestructuración técnica** | Base de todos los demás | 🔴 No | Debe completarse primero |
-| **2. Internacionalización / comentarios** | Depende del 1 | 🟡 Parcial | Puede iniciar mientras se estabiliza el refactor |
-| **3. Model Hub** | Depende del 1 | 🟡 Parcial | Diseño puede avanzar mientras se termina la estructura |
-| **4. Traducción / documentación** | Depende del 1 y 2 | 🟢 Sí | Puede ejecutarse en paralelo al desarrollo del Hub |
-| **5. Testing / despliegue** | Transversal | 🟢 Sí | Acompaña cada fase del desarrollo |
-
----
-
-## Conclusiones
-La base del proyecto es **sólida y científicamente consistente**.  
-Con las mejoras estructurales e introducción del **Model Hub**, se convertirá en una plataforma **modular, reproducible, internacionalizable y mantenible**, alineada con los lineamientos del *Kit de Herramientas para la Preparación ante Pandemias*.  
-
-Este roadmap debe implementarse en la rama `feat/paez` antes de integrar a `main`.  
-Cada bloque puede desarrollarse en ramas hijas (`feat/refactor`, `feat/i18n`, `feat/hub`, etc.) con *pull requests* documentados y trazables.
-
----
-
-**Autor:** Equipo técnico Bowie / Revisión: Cristian Páez  
-**Fecha:** Octubre 2025
+**Maintainer:** Cristian Paez  
+**Date:** October 2025

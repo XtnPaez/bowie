@@ -1,71 +1,57 @@
-# 🧮 Proyecto SEIR Shiny – Kit de Herramientas de Modelización
+# Estado de Avance – Octubre 2025
 
-**Repositorio:** `edeleitha/proto_epi`  
-**Rama activa:** `feat/paez`  
-**Responsable técnico:** Cristian Páez  
-
----
-
-## 📘 Descripción general
-
-Este proyecto implementa una **aplicación Shiny modular** basada en el modelo epidemiológico **SEIR**
-(Susceptibles – Expuestos – Infectados – Recuperados) como parte del *Kit de Herramientas para la Preparación ante Pandemias*.
-
-El objetivo es evolucionar desde un prototipo funcional hacia un **framework multi-modelo (Model Hub)**
-capaz de incorporar distintos dominios (epidemiología, accidentología, economía de la salud, etc.),
-manteniendo estándares de reproducibilidad, documentación y escalabilidad.
+Este documento registra el estado operativo del proyecto **SEIR Shiny – Prototype Dashboard**.  
+Actualizado tras la reorganización estratégica centrada en el nuevo **Data Hub** y la experiencia de usuario.
 
 ---
 
-## 🧩 Estructura del repositorio
+## 🔍 Resumen General
 
-R/                  — Scripts modulares (data, model, ui, server, viz)  
-data/               — Datasets de prueba o externos  
-docs/               — Documentación técnica y guías  
-config/             — Archivos YAML de configuración (por implementar)  
-models/             — Estructura para nuevos modelos (por implementar)  
-tests/              — Tests unitarios y de UI (por implementar)  
-roadmap.md          — Plan general de desarrollo y análisis estructural  
+El proyecto completó su primera fase técnica (Issues 1–4), consolidando la base modular y la internacionalización del código.  
+Actualmente se avanza hacia la segunda fase, centrada en la gestión dinámica de datos y la experiencia de usuario (Data Hub + vistas simples/avanzadas).
 
 ---
 
-## 🚀 Roadmap y Progreso
-
-El plan completo se encuentra documentado en **roadmap.md** (en la raíz del repo).
-
-**Estado actual del avance (Octubre 2025):**
+## 🧭 Tabla de Estado Actual
 
 | Bloque | Descripción | Estado | Avance |
 |--------|--------------|--------|--------|
-| 🟥 1. Reestructuración técnica | Refactor del server, utils, renv, config | 🟡 En curso | ▓▓▓░░ 60% |
-| 🟦 2. Internacionalización y Comentado | Código en inglés, i18n, documentación | ⚪ Pendiente | ░░░░░ 0% |
-| 🟣 3. Generación del Model Hub | Orquestador multi-modelo y schemas | ⚪ Pendiente | ░░░░░ 0% |
-| 🟢 4. Traducción y Documentación | Documentación multilanguage | ⚪ Pendiente | ░░░░░ 0% |
-| 🟠 5. Testing y Despliegue | Validación, CI/CD, reproducibilidad | ⚪ Pendiente | ░░░░░ 0% |
-
-*Actualizá esta tabla a medida que avances o cierres issues vinculados.*
-
----
-
-## 🧭 Cómo contribuir
-
-1. Trabajá siempre sobre una rama nueva derivada de `feat/paez`  
-   - Ejemplo: `git checkout -b feat/nombre-tarea`
-2. Al completar una tarea, abrí un *pull request* hacia `feat/paez`
-3. Etiquetá el PR con el bloque correspondiente (reestructuración, i18n, hub, documentación, testing)
-4. Vinculá el PR con el/los issues relacionados
+| 🟩 **1. Refactor Técnico** | Modularización, utils, logging, validaciones. | ✅ Completo | █████ 100% |
+| 🟩 **2. Internacionalización** | Código y UI en inglés, limpieza de dependencias. | ✅ Completo | █████ 100% |
+| 🟨 **3. Data Hub Interface** | Interfaz `/R/data_interface.R` para carga, validación y persistencia de datasets. | 🟡 En curso | ▓▓░░░ 40% |
+| 🟦 **4. Rediseño de Experiencia de Usuario** | Nueva pantalla de entrada, menú de vistas simple/avanzada. | ⚪ Planificado | ░░░░░ 0% |
+| 🟪 **5. Visualización Simplificada** | Módulo `mod_viz_simple.R` con KPIs y curvas clave. | ⚪ Planificado | ░░░░░ 0% |
+| 🟧 **6. Model Hub** | Incorporación de nuevos modelos de infección y estructura plug-in. | ⚪ Planificado | ░░░░░ 0% |
+| 🟫 **7. Testing y Despliegue** | Test unitarios (`testthat`) y CI/CD (GitHub Actions). | ⚪ Planificado | ░░░░░ 0% |
 
 ---
 
-## 🔐 Reproducibilidad y seguridad
+## 🧩 Prioridades Inmediatas
 
-- Uso recomendado de **renv** para congelar dependencias.  
-- Variables sensibles en `.Renviron` (no commitear credenciales).  
-- CI con GitHub Actions para tests y chequeos de estilo.  
+1. **Finalizar Bloque 3 – Data Hub Interface.**
+   - Implementar funciones `get_data()`, `validate_schema()`, `save_dataset()` y `list_datasets()`.
+   - Probar validaciones con datasets reales (mock + IECS).
+
+2. **Diseñar Bloque 4 – UX Redesign.**
+   - Rediseñar pantalla de entrada y navegación de vistas (simple/avanzada).
+   - Definir flujos de persistencia de dataset seleccionado.
+
+3. **Iniciar prototipo de Bloque 5 – Simplified View.**
+   - Módulo `mod_viz_simple.R` con visualización compacta y KPIs.
 
 ---
 
-## 👥 Créditos
+## 🧱 Estructura de Avance
 
-- Equipo técnico Bowie Project
-- Agradecimientos a los colaboradores del proyecto y a la comunidad Shiny.
+- **Primera fase (Issues 1–4):** arquitectura técnica consolidada ✅  
+- **Segunda fase (Issues 5–7):** centrada en Data Hub, experiencia de usuario y visualización.  
+- **Tercera fase (futura):** expansión del Model Hub y nuevos modelos de infección.
+
+---
+
+## 📅 Próxima Actualización
+
+> **Próxima revisión del estado:** Noviembre 2025  
+> Responsable: Cristian Paez  
+> Proyecto: *Bowie / proto_epi*
+
