@@ -1,157 +1,148 @@
-# ui_module.R
-# Este archivo define la interfaz de usuario (UI) para el tablero.
+# mod_ui.R
+# User Interface (UI) module for the SEIR Epidemiological Dashboard
+# All interface text and comments are written in English for international use.
 
-# Función para definir los parámetros del modelo SEIR en la UI
+# --- SEIR model parameters section ---
 ui_seir_params <- function(ns) {
   div(
-    h4("Parámetros del Modelo Epidemiológico"),
+    h4("Epidemiological Model Parameters"),
     sliderInput(
       inputId = ns("r0_value"),
-      label = HTML("Número Reproductivo Básico (R<sub>0</sub>)"),
+      label = HTML("Basic Reproduction Number (R<sub>0</sub>)"),
       min = 0.5, max = 5.0, value = INITIAL_R0, step = 0.1
     ),
     sliderInput(
       inputId = ns("incubation_period"),
-      label = "Período de Incubación (días)",
+      label = "Incubation Period (days)",
       min = 1, max = 14, value = INITIAL_INCUBATION_PERIOD, step = 1
     ),
     sliderInput(
       inputId = ns("infectious_period"),
-      label = "Período Infeccioso (días)",
+      label = "Infectious Period (days)",
       min = 1, max = 21, value = INITIAL_INFECTIOUS_PERIOD, step = 1
     ),
     sliderInput(
       inputId = ns("ifr_value"),
-      label = "Tasa de Letalidad por Infección (IFR - %)",
+      label = "Infection Fatality Rate (IFR, %)",
       min = 0.01, max = 5.0, value = INITIAL_IFR * 100, step = 0.01
     )
   )
 }
 
-# Función para definir los parámetros de políticas públicas en la UI
+# --- Public policy parameters section ---
 ui_policy_params <- function(ns) {
   div(
-    h4("Parámetros de Políticas Públicas"),
+    h4("Public Policy Parameters"),
     selectInput(
       inputId = ns("policy_type"),
-      label = "Tipo de Intervención",
+      label = "Type of Intervention",
       choices = c(
-        "Sin Intervención" = "no_intervention",
-        "Mitigación por Fases" = "phased_mitigation",
-        "Intervención Intermitente" = "intermittent",
-        "Medidas Gatilladas por Ocupación UTI" = "icu_triggered"
+        "No Intervention" = "no_intervention",
+        "Phased Mitigation" = "phased_mitigation",
+        "Intermittent Intervention" = "intermittent",
+        "ICU-triggered Measures" = "icu_triggered"
       ),
       selected = "no_intervention"
     ),
     sliderInput(
       inputId = ns("compliance_level"),
-      label = "Nivel de Cumplimiento (%)",
+      label = "Compliance Level (%)",
       min = 0, max = 100, value = 50, step = 5
     )
   )
 }
 
-# Función para definir los parámetros de recursos críticos en la UI
+# --- Critical resource parameters section ---
 ui_resource_params <- function(ns) {
   div(
-    h4("Parámetros de Recursos Críticos"),
+    h4("Critical Resource Parameters"),
     numericInput(
       inputId = ns("icu_capacity"),
-      label = "Capacidad de Camas UCI",
+      label = "ICU Bed Capacity",
       value = INITIAL_ICU_CAPACITY, min = 0
     ),
     numericInput(
       inputId = ns("ventilator_availability"),
-      label = "Disponibilidad de Respiradores",
+      label = "Ventilator Availability",
       value = INITIAL_VENTILATOR_AVAILABILITY, min = 0
     ),
     numericInput(
       inputId = ns("healthcare_staff"),
-      label = "Personal de Salud Disponible",
+      label = "Available Healthcare Staff",
       value = INITIAL_HEALTHCARE_STAFF, min = 0
     ),
     sliderInput(
       inputId = ns("icu_admission_rate"),
-      label = "Tasa de Admisión a UCI (%)",
+      label = "ICU Admission Rate (%)",
       min = 0.1, max = 30.0, value = INITIAL_ICU_RATE * 100, step = 0.1
     ),
     sliderInput(
       inputId = ns("ventilator_usage_rate"),
-      label = "Tasa de Uso de Respiradores (%)",
+      label = "Ventilator Usage Rate (%)",
       min = 0.1, max = 10.0, value = INITIAL_VENTILATOR_RATE * 100, step = 0.1
     )
   )
 }
 
-# Función principal para la interfaz de usuario
-# Acepta un 'viz_id' para el namespacing de los outputs de visualización
+# --- Main UI ---
 ui_main <- function(viz_id) {
   ns <- NS(viz_id)
-  ns_viz <- NS(viz_id) # Crear el namespace para los outputs de visualización
- 
+  ns_viz <- NS(viz_id)
+  
   fluidPage(
     useShinyjs(),
-    
-    theme = bs_theme(
-      version = 5,
-      bootswatch = "flatly"  
-    ),
+    theme = bs_theme(version = 5, bootswatch = "flatly"),
     
     tags$head(
       tags$style(HTML("
-    .fade-transition {
-      transition: opacity 0.5s ease-in-out;
-    }
-  "))
+        .fade-transition { transition: opacity 0.5s ease-in-out; }
+      "))
     ),
     
+    titlePanel("SEIR Epidemiological Dashboard - Argentina"),
     
-    titlePanel("Prototipo Tablero Epidemiológico SEIR - Argentina"),
-    
-    
-    column(12, 
-           div(style = "display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 10px;",
-               selectInput("theme_selector", NULL,
-                           choices = c("Claro" = "flatly", "Oscuro" = "darkly"),
-                           selected = "flatly",
-                           width = "100px"
-               ) %>% 
-                 tagAppendAttributes(style = "text-align: left; margin-left: 0;"),
-               uiOutput(ns("tema_icono"))
-           )
+    # Theme selector bar
+    column(
+      12,
+      div(
+        style = "display: flex; align-items: centre; justify-content: flex-start; gap: 10px; padding: 10px;",
+        selectInput(
+          "theme_selector", "Theme",
+          choices = c("Light" = "flatly", "Dark" = "darkly"),
+          selected = "flatly", width = "150px"
+        )
+      )
     ),
     
     sidebarLayout(
       sidebarPanel(
-        # Controles del modelo
         wellPanel(ui_seir_params(ns)),
-        hr(), # Separador
-        # Controles de políticas
+        hr(),
         wellPanel(ui_policy_params(ns)),
         hr(),
-        # Controles de recursos
         wellPanel(ui_resource_params(ns)),
         hr(),
-        actionButton(ns("run_simulation"), "Ejecutar Simulación")
+        actionButton(ns("run_simulation"), "Run Simulation")
       ),
+      
       mainPanel(
         tabsetPanel(
           tabPanel(
-            "Curvas Epidemiológicas",
-            h3("Simulación del Modelo SEIR (S, E, I, R)"),
-            plotOutput(ns_viz("seir_plot")), # Usar el namespace aquí
-            h3("Casos y Muertes Simuladas"),
-            plotOutput(ns_viz("cases_deaths_plot")) # Usar el namespace aquí
+            "Epidemic Curves",
+            h3("SEIR Model Simulation (S, E, I, R)"),
+            plotOutput(ns_viz("seir_plot")),
+            h3("Simulated Cases and Deaths"),
+            plotOutput(ns_viz("cases_deaths_plot"))
           ),
           tabPanel(
-            "Presión sobre Recursos",
-            h3("Ocupación de Recursos Críticos"),
-            plotOutput(ns_viz("resource_pressure_plot")) # Usar el namespace aquí
+            "Resource Pressure",
+            h3("Critical Resource Occupancy"),
+            plotOutput(ns_viz("resource_pressure_plot"))
           ),
           tabPanel(
-            "Datos Simulados",
-            h3("Tabla de Datos Simulados"),
-            tableOutput(ns("simulated_data_table")) 
+            "Simulated Data",
+            h3("Simulated Data Table"),
+            tableOutput(ns("simulated_data_table"))
           )
         )
       )

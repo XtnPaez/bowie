@@ -1,4 +1,4 @@
-#mod_server.R
+# mod_server.R
 
 # Este archivo define la lógica del servidor de la aplicación Shiny,
 # orquestando los módulos de datos, modelo y visualización.
@@ -7,7 +7,7 @@
 mod_server <- function(id, dataset_selector) {
   moduleServer(id, function(input, output, session) {
     
-    message("mod_server iniciado con dataset: ", dataset_selector())
+    log_message("INFO", paste0("mod_server iniciado con dataset: ", dataset_selector()), .module = "SERVER")
     
     # Selector de tema oscuro/claro
     observeEvent(input$theme_selector, {
@@ -59,7 +59,7 @@ mod_server <- function(id, dataset_selector) {
       req(dataset_selector())  # Esperar a que exista
       
       if (dataset_selector() == "iecs") {
-        message("Cargando datos IECS...")
+        log_message("INFO", "Cargando datos IECS...", .module = "SERVER")
         load("data/iecs_data.RData")
         
         # Sobrescribir parámetros con datos IECS
@@ -76,9 +76,9 @@ mod_server <- function(id, dataset_selector) {
         
         app_params$population <- iecs_data$poblacion
         
-        message("Datos IECS cargados exitosamente")
+        log_message("INFO", "Datos IECS cargados exitosamente", .module = "SERVER")
       } else {
-        message("Usando datos simulados (mock)")
+        log_message("INFO", "Usando datos simulados (mock)", .module = "SERVER")
       }
       
       # Trigger inicial de simulación
@@ -93,7 +93,7 @@ mod_server <- function(id, dataset_selector) {
     # Trigger manual con botón
     observeEvent(input$run_simulation, {
       app_params$trigger_sim <- app_params$trigger_sim + 1
-      message("Simulación ejecutada manualmente")
+      log_message("INFO", "Simulación ejecutada manualmente", .module = "SERVER")
     })
     
     # Módulo de datos
@@ -133,14 +133,6 @@ mod_server <- function(id, dataset_selector) {
       }),
       raw_data_df = simulated_raw_data
     )
-    
-    # Módulo de visualización
-    # viz_plot_server(
-    #   "viz",
-    #   model_data = seir_model_output,
-    #   icu_capacity_input = reactive(input$icu_capacity),
-    #   ventilator_availability_input = reactive(input$ventilator_availability)
-    # )
     
     # Tabla de datos simulados
     output$simulated_data_table <- renderTable({

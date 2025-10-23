@@ -1,35 +1,34 @@
 # mod_index.R
-# Módulo para la pantalla de selección de datos (Index)
+# Module for the initial data selection screen (Index)
 
 mod_index_ui <- function(id) {
   ns <- NS(id)
   tagList(
     fluidPage(
-      titlePanel("Seleccionar Set de Datos para Simulación"),
+      titlePanel("Select Data Set for Simulation"),
       br(),
-      p("Este tablero permite simular escenarios epidemiológicos usando distintos conjuntos de datos."),
-      p("Seleccioná el origen de los datos que querés usar para la simulación:"),
+      p("This dashboard allows you to simulate epidemiological scenarios using different data sets."),
+      p("Select the data source you would like to use for the simulation:"),
       selectInput(
         inputId = ns("dataset_selector"),
-        label = "Conjunto de Datos",
+        label = "Data Set",
         choices = c(
-          "Datos Simulados (por defecto)" = "mock",
-          "Modelo IECS (Santoro)" = "iecs"
+          "Simulated Data (default)" = "mock",
+          "IECS Model (Santoro)" = "iecs"
         ),
         selected = "mock"
       ),
-      actionButton(ns("go_to_model"), "Ir al Modelo", class = "btn-primary")
+      actionButton(ns("go_to_model"), "Go to Model", class = "btn-primary")
     )
   )
 }
 
-mod_index_server <- function(id, pantalla, dataset_selector) {
+mod_index_server <- function(id, screen, dataset_selector) {
   moduleServer(id, function(input, output, session) {
     
     observeEvent(input$go_to_model, {
-      dataset_selector(input$dataset_selector)  # Guardar en reactiveVal
-      pantalla("main")
+      dataset_selector(input$dataset_selector)  # Save in reactiveVal
+      screen("main")
     })
   })
 }
-

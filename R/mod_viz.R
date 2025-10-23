@@ -1,71 +1,34 @@
 # mod_viz.R
-# Este módulo se encarga de generar las visualizaciones interactivas.
+# This module handles the generation of interactive visualisations for the SEIR model.
 
-# Función para el servidor del módulo de visualización
-viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_availability_input) { # Aceptar inputs individuales
+# Server function for the visualisation module
+viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_availability_input) {
   moduleServer(id, function(input, output, session) {
     
-    
-    # Gráfico de las curvas SEIR
+    # --- SEIR curves plot ---
     output$seir_plot <- renderPlot({
+      plot_data <- model_data()
       
-      plot_data <- model_data() # Access the reactive data here
       if (is.null(plot_data) || nrow(plot_data) == 0) {
         cat("VIZ_MODULE: model_data() is NULL or empty for seir_plot, returning empty plot.\n")
-        return(ggplot() + annotate("text", x = 0.5, y = 0.5, label = "Datos no disponibles", size = 8) + theme_void())
-      }
-      req(plot_data) # Asegurarse de que los datos del modelo estén disponibles y no sean NULL
-      
-      ggplot(plot_data, aes(x = date)) +
-        geom_line(aes(y = S, color = "Susceptibles"), size = 1) +
-        geom_line(aes(y = E, color = "Expuestos"), size = 1) +
-        geom_line(aes(y = I, color = "Infectados"), size = 1) +
-        geom_line(aes(y = R, color = "Recuperados"), size = 1) +
-        labs(
-          title = "Dinámica de la Población (SEIR)",
-          x = "Fecha",
-          y = "Número de Individuos",
-          color = "Estado"
-        ) +
-        scale_y_continuous(labels = scales::comma) + # Formato de números grandes
-        theme_minimal() +
-        theme(
-          plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
-          axis.title = element_text(size = 12),
-          axis.text = element_text(size = 10),
-          legend.position = "bottom",
-          legend.title = element_blank()
-        ) +
-        scale_color_manual(
-          values = c(
-            "Susceptibles" = "#4CAF50",
-            "Expuestos" = "#FFC107",
-            "Infectados" = "#F44336",
-            "Recuperados" = "#2196F3"
-          )
+        return(
+          ggplot() +
+            annotate("text", x = 0.5, y = 0.5, label = "No data available", size = 8) +
+            theme_void()
         )
-    }#, 
-    #bg = "transparent"
-    )
-    
-    # Gráfico de casos y muertes acumuladas
-    output$cases_deaths_plot <- renderPlot({
-      
-      plot_data <- model_data()
-      if (is.null(plot_data) || nrow(plot_data) == 0) {
-        
-        return(ggplot() + annotate("text", x = 0.5, y = 0.5, label = "Datos no disponibles", size = 8) + theme_void())
       }
       req(plot_data)
       
       ggplot(plot_data, aes(x = date)) +
-        geom_line(aes(y = Cumulative_Cases, color = "Casos Acumulados"), size = 1) +
-        geom_line(aes(y = Cumulative_Deaths, color = "Muertes Acumuladas"), size = 1) +
+        geom_line(aes(y = S, colour = "Susceptible"), size = 1) +
+        geom_line(aes(y = E, colour = "Exposed"), size = 1) +
+        geom_line(aes(y = I, colour = "Infected"), size = 1) +
+        geom_line(aes(y = R, colour = "Recovered"), size = 1) +
         labs(
-          title = "Casos y Muertes Acumuladas Simuladas",
-          x = "Fecha",
-          y = "Número Acumulado",
-          color = "Métrica"
+          title = "Population Dynamics (SEIR)",
+          x = "Date",
+          y = "Number of Individuals",
+          colour = "Compartment"
         ) +
         scale_y_continuous(labels = scales::comma) +
         theme_minimal() +
@@ -76,107 +39,138 @@ viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_avail
           legend.position = "bottom",
           legend.title = element_blank()
         ) +
-        scale_color_manual(
+        scale_colour_manual(
           values = c(
-            "Casos Acumulados" = "#FF9800",
-            "Muertes Acumuladas" = "#607D8B"
+            "Susceptible" = "#4CAF50",
+            "Exposed" = "#FFC107",
+            "Infected" = "#F44336",
+            "Recovered" = "#2196F3"
           )
         )
     })
     
-    # Gráfico de presión sobre recursos críticos
+    # --- Cumulative cases and deaths plot ---
+    output$cases_deaths_plot <- renderPlot({
+      plot_data <- model_data()
+      
+      if (is.null(plot_data) || nrow(plot_data) == 0) {
+        return(
+          ggplot() +
+            annotate("text", x = 0.5, y = 0.5, label = "No data available", size = 8) +
+            theme_void()
+        )
+      }
+      req(plot_data)
+      
+      ggplot(plot_data, aes(x = date)) +
+        geom_line(aes(y = Cumulative_Cases, colour = "Cumulative Cases"), size = 1) +
+        geom_line(aes(y = Cumulative_Deaths, colour = "Cumulative Deaths"), size = 1) +
+        labs(
+          title = "Simulated Cumulative Cases and Deaths",
+          x = "Date",
+          y = "Cumulative Number",
+          colour = "Metric"
+        ) +
+        scale_y_continuous(labels = scales::comma) +
+        theme_minimal() +
+        theme(
+          plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+          axis.title = element_text(size = 12),
+          axis.text = element_text(size = 10),
+          legend.position = "bottom",
+          legend.title = element_blank()
+        ) +
+        scale_colour_manual(
+          values = c(
+            "Cumulative Cases" = "#FF9800",
+            "Cumulative Deaths" = "#607D8B"
+          )
+        )
+    })
+    
+    # --- Critical resource pressure plot ---
     output$resource_pressure_plot <- renderPlot({
-      cat("VIZ_MODULE: resource_pressure_plot rendering.\n") # Debug print
+      cat("VIZ_MODULE: resource_pressure_plot rendering.\n")
       plot_data_raw <- model_data()
       
-      # Obtener los valores de capacidad actuales directamente de los inputs reactivos
-      # al ser reactive, estos se actualizan cada vez que el input numérico cambia.
-      current_icu_capacity <- icu_capacity_input() # Acceso correcto a reactive()
-      current_ventilator_availability <- ventilator_availability_input() # Acceso correcto a reactive()
-      
+      current_icu_capacity <- icu_capacity_input()
+      current_ventilator_availability <- ventilator_availability_input()
       
       if (is.null(plot_data_raw) || nrow(plot_data_raw) == 0) {
         cat("VIZ_MODULE: model_data() is NULL or empty for resource plot, returning empty plot.\n")
-        return(ggplot() + annotate("text", x = 0.5, y = 0.5, label = "Datos no disponibles", size = 8) + theme_void())
+        return(
+          ggplot() +
+            annotate("text", x = 0.5, y = 0.5, label = "No data available", size = 8) +
+            theme_void()
+        )
       }
-      req(plot_data_raw) # Solo requerir que los datos del modelo estén disponibles
+      req(plot_data_raw)
       
-      # Preparar los datos de demanda
       demand_plot_data <- plot_data_raw %>%
-        select(
-          date,
-          ICU_Occupancy_Sim,
-          Vent_Usage_Sim
-        ) %>%
+        select(date, ICU_Occupancy_Sim, Vent_Usage_Sim) %>%
         pivot_longer(
-          cols = -date, # Todas las columnas excepto 'date'
+          cols = -date,
           names_to = "Metric",
           values_to = "Value"
         ) %>%
         mutate(
           Resource_Category = case_when(
-            grepl("ICU", Metric) ~ "UCI",
-            grepl("Vent", Metric) ~ "Respiradores",
+            grepl("ICU", Metric) ~ "ICU",
+            grepl("Vent", Metric) ~ "Ventilators",
             TRUE ~ NA_character_
           ),
-          Metric_Label = "Demanda" # Todas estas son métricas de demanda
+          Metric_Label = "Demand"
         ) %>%
-        filter(!is.na(Resource_Category)) # Eliminar cualquier fila que no se haya clasificado
+        filter(!is.na(Resource_Category))
       
-      # Preparar los datos de capacidad (se generan reactivamente)
-      # Esto es clave para que los cambios en la capacidad de la UI activen la actualización del gráfico
       capacity_data_icu <- data.frame(
-        date = unique(demand_plot_data$date), # Usar las mismas fechas que los datos de demanda
+        date = unique(demand_plot_data$date),
         Value = current_icu_capacity,
-        Metric = "ICU_Capacity_Current", # Nombre de métrica para UCI
-        Resource_Category = "UCI",
-        Metric_Label = "Capacidad"
+        Metric = "ICU_Capacity_Current",
+        Resource_Category = "ICU",
+        Metric_Label = "Capacity"
       )
       
       capacity_data_vent <- data.frame(
-        date = unique(demand_plot_data$date), # Usar las mismas fechas que los datos de demanda
+        date = unique(demand_plot_data$date),
         Value = current_ventilator_availability,
-        Metric = "Ventilator_Availability_Current", # Nombre de métrica para Respiradores
-        Resource_Category = "Respiradores",
-        Metric_Label = "Capacidad"
+        Metric = "Ventilator_Availability_Current",
+        Resource_Category = "Ventilators",
+        Metric_Label = "Capacity"
       )
       
-      # Combinar los datos de demanda y capacidad
       combined_plot_data <- bind_rows(demand_plot_data, capacity_data_icu, capacity_data_vent)
       
-      # Preparar los datos específicos para el geom_ribbon de forma más segura
       ribbon_data <- combined_plot_data %>%
-        filter(Metric_Label %in% c("Demanda", "Capacidad")) %>% # Filtrar solo demanda y capacidad
+        filter(Metric_Label %in% c("Demand", "Capacity")) %>%
         pivot_wider(
           names_from = Metric_Label,
           values_from = Value,
           id_cols = c(date, Resource_Category),
-          values_fill = list(Value = 0) # Rellenar NAs si una métrica no existe para una categoría
+          values_fill = list(Value = 0)
         ) %>%
-        # Asegurarse de que 'Demanda' y 'Capacidad' son numéricas antes de la comparación
         mutate(
-          Demanda = as.numeric(Demanda),
-          Capacidad = as.numeric(Capacidad)
+          Demand = as.numeric(Demand),
+          Capacity = as.numeric(Capacity)
         ) %>%
-        filter(Demanda > Capacidad) # Ahora esta comparación debería funcionar correctamente
+        filter(Demand > Capacity)
       
-      
-      ggplot(combined_plot_data, aes(x = date, y = Value, color = Metric_Label, linetype = Metric_Label)) +
+      ggplot(combined_plot_data, aes(x = date, y = Value, colour = Metric_Label, linetype = Metric_Label)) +
         geom_line(size = 1) +
         geom_ribbon(
-          data = ribbon_data, # Usar los datos preparados específicamente para el ribbon
-          aes(ymin = Capacidad, ymax = Demanda, x = date, fill = "Exceso de Demanda"),
+          data = ribbon_data,
+          aes(ymin = Capacity, ymax = Demand, x = date, fill = "Demand Exceeded"),
           alpha = 0.5,
-          inherit.aes = FALSE # Importante para que el geom_ribbon use su propio mapeo de datos
+          inherit.aes = FALSE
         ) +
         facet_wrap(~Resource_Category, scales = "free_y", ncol = 1) +
         labs(
-          title = "Demanda y Capacidad de Recursos Críticos",
-          x = "Fecha",
-          y = "Número de Unidades",
-          color = "Tipo de Métrica",
-          linetype = "Tipo de Métrica", # Asegurar que la leyenda muestre ambos tipos
-          fill = "Alerta" # Nueva leyenda para el color de relleno
+          title = "Critical Resource Demand and Capacity",
+          x = "Date",
+          y = "Number of Units",
+          colour = "Metric Type",
+          linetype = "Metric Type",
+          fill = "Alert"
         ) +
         scale_y_continuous(labels = scales::comma) +
         theme_minimal() +
@@ -186,24 +180,11 @@ viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_avail
           axis.text = element_text(size = 10),
           legend.position = "bottom",
           legend.title = element_blank(),
-          strip.text = element_text(size = 12, face = "bold") # Títulos de facet_wrap
+          strip.text = element_text(size = 12, face = "bold")
         ) +
-        scale_color_manual(
-          values = c(
-            "Demanda" = "#FF5722",
-            "Capacidad" = "#00BCD4"
-          )
-        ) +
-        scale_linetype_manual(
-          values = c(
-            "Demanda" = "solid",
-            "Capacidad" = "dashed"
-          )
-        ) +
-        scale_fill_manual( # Nueva escala de color para el relleno del ribbon
-          values = c("Exceso de Demanda" = "#FFCDD2"),
-          name = "Alerta" # Nombre para la leyenda del fill
-        )
+        scale_colour_manual(values = c("Demand" = "#FF5722", "Capacity" = "#00BCD4")) +
+        scale_linetype_manual(values = c("Demand" = "solid", "Capacity" = "dashed")) +
+        scale_fill_manual(values = c("Demand Exceeded" = "#FFCDD2"), name = "Alert")
     })
   })
 }
