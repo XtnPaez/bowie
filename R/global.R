@@ -1,31 +1,43 @@
-# global.R
-# Este archivo contiene las configuraciones globales y carga de librerías necesarias.
+# ============================================================
+# File: global.R
+# ------------------------------------------------------------
+# Description: Global configuration file. Loads libraries,
+# defines constants, and sources shared utility functions.
+# Author: Cristian Paez
+# Created: 2025-11-07
+# ============================================================
 
-# --- Librerías principales ---
+# --- Core libraries ---
 library(shiny)
 library(dplyr)
-library(bslib)       # Para temas
-library(deSolve)     # Para resolver ecuaciones diferenciales (EDOs)
-library(ggplot2)     # Para visualizaciones
-library(lubridate)   # Para manejo de fechas
-library(RcppRoll)    # Para rolling sum (ocupación de UCI)
-library(tidyr)       # Para replace_na(), pivot_longer, etc.
-library(scales)      # Para formato de ejes (scales::comma)
-library(purrr)       # Para listas de parámetros
-library(plotly)      # Para gráficos interactivos
-library(shinyjs)     # Para UI
+library(bslib)       # For UI themes
+library(deSolve)     # For solving differential equations (ODEs)
+library(ggplot2)     # For static visualisations
+library(lubridate)   # For date manipulation
+library(RcppRoll)    # For rolling window operations (e.g. ICU occupancy)
+library(tidyr)       # For data reshaping (pivot, replace_na, etc.)
+library(scales)      # For axis formatting (comma separators)
+library(purrr)       # For list and parameter mapping
+library(plotly)      # For interactive charts
+library(shinyjs)     # For dynamic UI manipulation
+
+# Prevent scientific notation for large numbers
 options(scipen = 999)
 
-# --- Definiciones globales ---
+# ============================================================
+# --- Global constants ---
+# ============================================================
+
+# Population baseline (Argentina)
 POPULATION_ARGENTINA <- 45000000
 
-# Parámetros básicos del modelo SEIR
+# --- SEIR model base parameters ---
 INITIAL_R0 <- 2.5
 INITIAL_INCUBATION_PERIOD <- 5
 INITIAL_INFECTIOUS_PERIOD <- 7
 INITIAL_IFR <- 0.01  # 1%
 
-# Parámetros de simulación de recursos
+# --- Healthcare resource parameters ---
 INITIAL_ICU_RATE <- 0.136
 INITIAL_VENTILATOR_RATE <- 0.02
 INITIAL_HOSPITAL_STAY_DAYS <- 10
@@ -33,16 +45,24 @@ INITIAL_ICU_CAPACITY <- 6000
 INITIAL_VENTILATOR_AVAILABILITY <- 2000
 INITIAL_HEALTHCARE_STAFF <- 10000
 
-# Fechas por defecto
+# --- Default simulation dates ---
 START_DATE <- as.Date("2020-03-01")
 END_DATE   <- as.Date("2021-03-01")
 
-# --- Cargar funciones utilitarias ---
+# ============================================================
+# --- Load shared utility functions ---
+# ------------------------------------------------------------
+# Dynamically sources all scripts from /R/utils if available.
+# These include functions for logging, validation, and helpers.
+# ============================================================
+
 utils_path <- file.path("R", "utils")
+
 if (dir.exists(utils_path)) {
   utils_files <- list.files(utils_path, pattern = "\\.R$", full.names = TRUE)
   sapply(utils_files, source)
-  message(sprintf("Se cargaron %d archivos de utilidades desde %s", length(utils_files), utils_path))
+  message(sprintf("✅ %d utility files loaded from %s",
+                  length(utils_files), utils_path))
 } else {
-  warning("⚠️  No se encontró el directorio R/utils/. Las funciones log_message(), validate_params(), etc. no estarán disponibles.")
+  warning("⚠️ Directory R/utils/ not found. Functions like log_message() or validate_params() may be unavailable.")
 }

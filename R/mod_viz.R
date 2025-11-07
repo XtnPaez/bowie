@@ -1,16 +1,40 @@
-# mod_viz.R
-# This module handles the generation of interactive visualisations for the SEIR model.
+# ============================================================
+# File: mod_viz.R
+# ------------------------------------------------------------
+# Description: Handles generation of SEIR model visualisations,
+# including compartment curves, cumulative cases/deaths, and
+# critical resource demand vs. capacity plots.
+# Author: Cristian Paez
+# Created: 2025-11-07
+# ============================================================
 
-# Server function for the visualisation module
+# ------------------------------------------------------------
+# Function: viz_plot_server()
+# Description:
+#   Manages interactive plots derived from SEIR model output.
+#   Generates three visualisation panels:
+#     1. SEIR compartment dynamics
+#     2. Cumulative cases and deaths
+#     3. Critical resource demand and capacity
+# Parameters:
+#   id – Shiny module identifier.
+#   model_data – reactive dataset from SEIR model.
+#   icu_capacity_input – reactive numeric input for ICU capacity.
+#   ventilator_availability_input – reactive numeric input for ventilator availability.
+# Returns:
+#   Server-side visualisation outputs.
+# ------------------------------------------------------------
 viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_availability_input) {
   moduleServer(id, function(input, output, session) {
     
-    # --- SEIR curves plot ---
+    # --------------------------------------------------------
+    # --- SEIR compartment curves plot ---
+    # --------------------------------------------------------
     output$seir_plot <- renderPlot({
       plot_data <- model_data()
       
       if (is.null(plot_data) || nrow(plot_data) == 0) {
-        cat("VIZ_MODULE: model_data() is NULL or empty for seir_plot, returning empty plot.\n")
+        cat("VIZ_MODULE: model_data() is NULL or empty for seir_plot.\n")
         return(
           ggplot() +
             annotate("text", x = 0.5, y = 0.5, label = "No data available", size = 8) +
@@ -49,7 +73,9 @@ viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_avail
         )
     })
     
+    # --------------------------------------------------------
     # --- Cumulative cases and deaths plot ---
+    # --------------------------------------------------------
     output$cases_deaths_plot <- renderPlot({
       plot_data <- model_data()
       
@@ -88,7 +114,9 @@ viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_avail
         )
     })
     
+    # --------------------------------------------------------
     # --- Critical resource pressure plot ---
+    # --------------------------------------------------------
     output$resource_pressure_plot <- renderPlot({
       cat("VIZ_MODULE: resource_pressure_plot rendering.\n")
       plot_data_raw <- model_data()
@@ -97,7 +125,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_avail
       current_ventilator_availability <- ventilator_availability_input()
       
       if (is.null(plot_data_raw) || nrow(plot_data_raw) == 0) {
-        cat("VIZ_MODULE: model_data() is NULL or empty for resource plot, returning empty plot.\n")
+        cat("VIZ_MODULE: model_data() is NULL or empty for resource plot.\n")
         return(
           ggplot() +
             annotate("text", x = 0.5, y = 0.5, label = "No data available", size = 8) +
@@ -106,6 +134,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_avail
       }
       req(plot_data_raw)
       
+      # Prepare demand dataset
       demand_plot_data <- plot_data_raw %>%
         select(date, ICU_Occupancy_Sim, Vent_Usage_Sim) %>%
         pivot_longer(
@@ -123,6 +152,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_avail
         ) %>%
         filter(!is.na(Resource_Category))
       
+      # Capacity data for reference
       capacity_data_icu <- data.frame(
         date = unique(demand_plot_data$date),
         Value = current_icu_capacity,
@@ -141,6 +171,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_avail
       
       combined_plot_data <- bind_rows(demand_plot_data, capacity_data_icu, capacity_data_vent)
       
+      # Identify periods of excess demand
       ribbon_data <- combined_plot_data %>%
         filter(Metric_Label %in% c("Demand", "Capacity")) %>%
         pivot_wider(
@@ -155,6 +186,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input, ventilator_avail
         ) %>%
         filter(Demand > Capacity)
       
+      # Build plot
       ggplot(combined_plot_data, aes(x = date, y = Value, colour = Metric_Label, linetype = Metric_Label)) +
         geom_line(size = 1) +
         geom_ribbon(

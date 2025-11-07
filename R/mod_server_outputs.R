@@ -1,10 +1,30 @@
-# mod_server_outputs.R
-# Define outputs principales del servidor: tablas, métricas y descargas.
+# ============================================================
+# File: mod_server_outputs.R
+# ------------------------------------------------------------
+# Description: Defines main server outputs, including summary
+# tables, downloadable results, and KPI indicators for the
+# SEIR simulation results.
+# Author: Cristian Paez
+# Created: 2025-11-07
+# ============================================================
 
+# ------------------------------------------------------------
+# Function: mod_server_outputs()
+# Description:
+#   Manages key outputs of the SEIR model results, including:
+#     • Summary result table
+#     • CSV download handler
+#     • KPI text indicators (cases and deaths)
+# Parameters:
+#   id – Shiny module identifier.
+#   model_data – reactiveVal containing SEIR simulation results.
+# Returns:
+#   Server-side outputs bound to UI elements.
+# ------------------------------------------------------------
 mod_server_outputs <- function(id, model_data) {
   moduleServer(id, function(input, output, session) {
     
-    # Tabla resumida de resultados
+    # --- Render summary table with last model values ---
     output$summary_table <- renderTable({
       req(model_data())
       df <- model_data()
@@ -18,7 +38,7 @@ mod_server_outputs <- function(id, model_data) {
       )
     })
     
-    # Descarga de resultados
+    # --- Define download handler for CSV export ---
     output$download_results <- downloadHandler(
       filename = function() {
         paste0("SEIR_results_", Sys.Date(), ".csv")
@@ -28,15 +48,22 @@ mod_server_outputs <- function(id, model_data) {
       }
     )
     
-    # Indicadores principales (para UI futura)
+    # --- KPI: total cumulative cases ---
     output$kpi_cases <- renderText({
       req(model_data())
-      paste0(format(round(max(model_data()$Cumulative_Cases)), big.mark = ","), " total cases")
+      paste0(
+        format(round(max(model_data()$Cumulative_Cases)), big.mark = ","),
+        " total cases"
+      )
     })
     
+    # --- KPI: total cumulative deaths ---
     output$kpi_deaths <- renderText({
       req(model_data())
-      paste0(format(round(max(model_data()$Cumulative_Deaths)), big.mark = ","), " total deaths")
+      paste0(
+        format(round(max(model_data()$Cumulative_Deaths)), big.mark = ","),
+        " total deaths"
+      )
     })
   })
 }

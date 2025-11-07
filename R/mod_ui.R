@@ -1,8 +1,23 @@
-# mod_ui.R
-# User Interface (UI) module for the SEIR Epidemiological Dashboard
-# All interface text and comments are written in English for international use.
+# ============================================================
+# File: mod_ui.R
+# ------------------------------------------------------------
+# Description: Defines the User Interface (UI) module for the
+# SEIR Epidemiological Dashboard. Includes all control panels
+# for parameters, policies, and healthcare resources, along
+# with main visualisation tabs.
+# Author: Cristian Paez
+# Created: 2025-11-07
+# ============================================================
 
-# --- SEIR model parameters section ---
+# ------------------------------------------------------------
+# Function: ui_seir_params()
+# Description:
+#   Creates UI controls for SEIR model parameters.
+# Parameters:
+#   ns – namespace function for the module.
+# Returns:
+#   HTML UI elements.
+# ------------------------------------------------------------
 ui_seir_params <- function(ns) {
   div(
     h4("Epidemiological Model Parameters"),
@@ -29,7 +44,15 @@ ui_seir_params <- function(ns) {
   )
 }
 
-# --- Public policy parameters section ---
+# ------------------------------------------------------------
+# Function: ui_policy_params()
+# Description:
+#   Creates UI controls for public health policy configuration.
+# Parameters:
+#   ns – namespace function for the module.
+# Returns:
+#   HTML UI elements.
+# ------------------------------------------------------------
 ui_policy_params <- function(ns) {
   div(
     h4("Public Policy Parameters"),
@@ -52,7 +75,15 @@ ui_policy_params <- function(ns) {
   )
 }
 
-# --- Critical resource parameters section ---
+# ------------------------------------------------------------
+# Function: ui_resource_params()
+# Description:
+#   Creates UI controls for healthcare resource configuration.
+# Parameters:
+#   ns – namespace function for the module.
+# Returns:
+#   HTML UI elements.
+# ------------------------------------------------------------
 ui_resource_params <- function(ns) {
   div(
     h4("Critical Resource Parameters"),
@@ -84,7 +115,16 @@ ui_resource_params <- function(ns) {
   )
 }
 
-# --- Main UI ---
+# ------------------------------------------------------------
+# Function: ui_main()
+# Description:
+#   Builds the main layout of the dashboard, including parameter
+#   panels, visualisation tabs, and theme selector.
+# Parameters:
+#   viz_id – namespace for visualisation module.
+# Returns:
+#   Complete Shiny UI layout.
+# ------------------------------------------------------------
 ui_main <- function(viz_id) {
   ns <- NS(viz_id)
   ns_viz <- NS(viz_id)
@@ -101,7 +141,7 @@ ui_main <- function(viz_id) {
     
     titlePanel("SEIR Epidemiological Dashboard - Argentina"),
     
-    # Theme selector bar
+    # --- Theme selector bar ---
     column(
       12,
       div(
@@ -114,6 +154,7 @@ ui_main <- function(viz_id) {
       )
     ),
     
+    # --- Main layout: sidebar and content area ---
     sidebarLayout(
       sidebarPanel(
         wellPanel(ui_seir_params(ns)),

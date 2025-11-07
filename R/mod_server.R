@@ -1,15 +1,36 @@
-# mod_server.R
+# ============================================================
+# File: mod_server.R
+# ------------------------------------------------------------
+# Description: Defines the main server logic for the Shiny app.
+# Orchestrates data, model, and visualisation modules to build
+# a complete SEIR simulation workflow.
+# Author: Cristian Paez
+# Created: 2025-11-07
+# ============================================================
 
-# Este archivo define la lógica del servidor de la aplicación Shiny,
-# orquestando los módulos de datos, modelo y visualización.
-
-# Función principal para la lógica del servidor - AHORA ES UN MÓDULO
+# ------------------------------------------------------------
+# Function: mod_server()
+# Description:
+#   Main server module integrating the data, SEIR model, and
+#   visualisation layers. Manages parameter reactivity,
+#   theme switching, and dataset selection.
+# Parameters:
+#   id – Shiny module identifier.
+#   dataset_selector – reactive value specifying the data source.
+# Returns:
+#   List containing model outputs and capacity reactives.
+# ------------------------------------------------------------
 mod_server <- function(id, dataset_selector) {
   moduleServer(id, function(input, output, session) {
     
-    log_message("INFO", paste0("mod_server iniciado con dataset: ", dataset_selector()), .module = "SERVER")
+    log_message("INFO",
+                paste0("mod_server started with dataset: ",
+                       dataset_selector()),
+                .module = "SERVER")
     
-    # Selector de tema oscuro/claro
+    # --------------------------------------------------------
+    # --- Theme selector: light/dark mode ---
+    # --------------------------------------------------------
     observeEvent(input$theme_selector, {
       shinyjs::addClass(selector = "body", class = "fade-transition")
       shinyjs::runjs("document.body.style.opacity = 0.5;")
@@ -20,7 +41,9 @@ mod_server <- function(id, dataset_selector) {
       shinyjs::runjs("document.body.style.opacity = 1;")
     })
     
-    # Función que actualiza los parámetros reactivos
+    # --------------------------------------------------------
+    # --- Helper: update reactive parameter list ---
+    # --------------------------------------------------------
     update_app_params <- function(input, app_params) {
       app_params$r0_value <- input$r0_value
       app_params$incubation_period <- input$incubation_period
@@ -35,7 +58,9 @@ mod_server <- function(id, dataset_selector) {
       app_params$compliance_level <- input$compliance_level
     }
     
-    # ReactiveValues para parámetros
+    # --------------------------------------------------------
+    # --- ReactiveValues: global simulation parameters ---
+    # --------------------------------------------------------
     app_params <- reactiveValues(
       r0_value = INITIAL_R0,
       incubation_period = INITIAL_INCUBATION_PERIOD,
@@ -54,15 +79,17 @@ mod_server <- function(id, dataset_selector) {
       trigger_sim = 0
     )
     
-    # ⭐ NUEVO: Cargar datos según selección del usuario
+    # --------------------------------------------------------
+    # --- Data loading based on user selection ---
+    # --------------------------------------------------------
     observe({
-      req(dataset_selector())  # Esperar a que exista
+      req(dataset_selector())
       
       if (dataset_selector() == "iecs") {
-        log_message("INFO", "Cargando datos IECS...", .module = "SERVER")
+        log_message("INFO", "Loading IECS dataset...", .module = "SERVER")
         load("data/iecs_data.RData")
         
-        # Sobrescribir parámetros con datos IECS
+        # Overwrite parameters using IECS data
         app_params$r0_value <- iecs_data$parametros$R0
         app_params$incubation_period <- iecs_data$parametros$incubation_period
         app_params$infectious_period <- iecs_data$parametros$infectious_period
@@ -76,27 +103,34 @@ mod_server <- function(id, dataset_selector) {
         
         app_params$population <- iecs_data$poblacion
         
-        log_message("INFO", "Datos IECS cargados exitosamente", .module = "SERVER")
+        log_message("INFO", "IECS data loaded successfully", .module = "SERVER")
       } else {
-        log_message("INFO", "Usando datos simulados (mock)", .module = "SERVER")
+        log_message("INFO", "Using simulated mock dataset", .module = "SERVER")
       }
       
-      # Trigger inicial de simulación
+      # Trigger first simulation
       app_params$trigger_sim <- 1
     })
     
-    # Actualizar parámetros cuando cambian los inputs
+    # --------------------------------------------------------
+    # --- Update parameters on input change ---
+    # --------------------------------------------------------
     observe({
       update_app_params(input, app_params)
     })
     
-    # Trigger manual con botón
+    # --------------------------------------------------------
+    # --- Manual simulation trigger (Run Simulation button) ---
+    # --------------------------------------------------------
     observeEvent(input$run_simulation, {
       app_params$trigger_sim <- app_params$trigger_sim + 1
-      log_message("INFO", "Simulación ejecutada manualmente", .module = "SERVER")
+      log_message("INFO", "Simulation manually triggered",
+                  .module = "SERVER")
     })
     
-    # Módulo de datos
+    # --------------------------------------------------------
+    # --- Data Module: generate or simulate initial dataset ---
+    # --------------------------------------------------------
     simulated_raw_data <- mod_data_server(
       "data_sim",
       params = reactive({
@@ -109,7 +143,9 @@ mod_server <- function(id, dataset_selector) {
       })
     )
     
-    # Módulo del modelo SEIR
+    # --------------------------------------------------------
+    # --- Model Module: run SEIR model simulation ---
+    # --------------------------------------------------------
     seir_model_output <- model_seir_server(
       "seir_model",
       input_params = reactive({
@@ -134,7 +170,9 @@ mod_server <- function(id, dataset_selector) {
       raw_data_df = simulated_raw_data
     )
     
-    # Tabla de datos simulados
+    # --------------------------------------------------------
+    # --- Render data preview table ---
+    # --------------------------------------------------------
     output$simulated_data_table <- renderTable({
       req(seir_model_output())
       
@@ -143,7 +181,7 @@ mod_server <- function(id, dataset_selector) {
       
       data_for_table <- data_for_table %>%
         select(
-          Fecha = date, 
+          Fecha = date,
           Susceptibles = S,
           Expuestos = E,
           Infectados = I,
@@ -156,7 +194,10 @@ mod_server <- function(id, dataset_selector) {
         mutate(
           across(
             where(is.numeric),
-            ~format(round(., 2), big.mark = ".", decimal.mark = ",", nsmall = 2)
+            ~format(round(., 2),
+                    big.mark = ".",
+                    decimal.mark = ",",
+                    nsmall = 2)
           )
         )
       
@@ -164,15 +205,15 @@ mod_server <- function(id, dataset_selector) {
     },
     striped = TRUE,
     hover = TRUE,
-    bordered = TRUE
-    )
+    bordered = TRUE)
     
-    ## Devolver los datos para app.R
+    # --------------------------------------------------------
+    # --- Return reactive model data for app.R integration ---
+    # --------------------------------------------------------
     return(list(
       model_data = seir_model_output,
       icu_capacity = reactive(input$icu_capacity),
       ventilator_availability = reactive(input$ventilator_availability)
     ))
-    
-  }) # Fin de moduleServer
-} # Fin de mod_server
+  })
+}

@@ -1,7 +1,12 @@
-# ==========================================================
-# _pkgdown.yml
-# Configuration file for the pkgdown documentation site
-# ==========================================================
+# ============================================================
+# File: _pkgdown.yml
+# ------------------------------------------------------------
+# Description: Configuration file for pkgdown static site
+# generation. Defines site layout, navigation, styling, and
+# structure for the proto_epi documentation.
+# Author: Cristian Paez
+# Created: 2025-11-07
+# ============================================================
 
 template:
   bootstrap: 5
@@ -12,14 +17,20 @@ template:
     heading_font: { google: "Roboto Slab" }
     code_font: { google: "Fira Code" }
 
+# Output directory for pkgdown site
 destination: docs
 
+# Project metadata
 url: https://edeleitha.github.io/proto_epi/
-title: "proto_epi: SEIR Epidemiological Modeling Toolkit"
+title: "proto_epi: SEIR Epidemiological Modelling Toolkit"
 description: >
-  A modular Shiny prototype for SEIR epidemiological modeling.
-  Built as part of the Pandemic Preparedness Toolkit – Argentina Unit.
+  A modular Shiny prototype implementing SEIR epidemiological
+  modelling. Developed under the Pandemic Preparedness Toolkit –
+  Argentina Unit.
 
+# ------------------------------------------------------------
+# Navbar configuration
+# ------------------------------------------------------------
 navbar:
   structure:
     left:
@@ -46,12 +57,18 @@ navbar:
       icon: fa-github
       href: https://github.com/edeleitha/proto_epi
 
+# ------------------------------------------------------------
+# Authors
+# ------------------------------------------------------------
 authors:
   Cristian Paez:
     href: https://github.com/cpaez-si
   Fernando Poletta:
     href: https://github.com/fernandopoletta
 
+# ------------------------------------------------------------
+# Reference sections
+# ------------------------------------------------------------
 reference:
   - title: "Core Modules"
     contents:
@@ -66,10 +83,16 @@ reference:
       - utils_validation
       - utils_logging
 
+# ------------------------------------------------------------
+# Articles and documentation
+# ------------------------------------------------------------
 articles:
   - title: "Getting Started"
-    contents: 
+    contents:
       - articles/intro
 
+# ------------------------------------------------------------
+# News and changelog
+# ------------------------------------------------------------
 news:
   one_page: true
