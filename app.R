@@ -1,86 +1,55 @@
 # ============================================================
 # File: app.R
 # ------------------------------------------------------------
-# Description: Main entry point for the SEIR Shiny application.
-# Integrates all UI and server modules, controls navigation
-# between screens, and manages reactive module coordination.
-# Author: Cristian Paez
-# Created: 2025-11-07
+# Description: Main SEIR Shiny app integrating Entry,
+#              Menu, Simple and Advanced Views.
 # ============================================================
 
-# --- Application startup message ---
-message("Shiny app starting...")
-
-# ------------------------------------------------------------
-# Load global configuration and required libraries
-# ------------------------------------------------------------
+library(shiny)
+library(shinyjs)
 source("R/global.R")
 
-# ------------------------------------------------------------
-# Load module definitions
-# ------------------------------------------------------------
-source("R/mod_ui.R")
-source("R/mod_server.R")
-source("R/mod_data.R")
-source("R/mod_model.R")
-source("R/mod_viz.R")
-source("R/mod_index.R")
+mods <- list.files("R", pattern = "^mod_.*\\.R$", full.names = TRUE)
+sapply(mods, source)
 
-# ------------------------------------------------------------
-# UI definition
-# ------------------------------------------------------------
 ui <- fluidPage(
-  uiOutput("current_screen")
+  useShinyjs(),
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")  # << aquí
+  ),
+  uiOutput("main_ui")
 )
 
-# ------------------------------------------------------------
-# Server logic
-# ------------------------------------------------------------
 server <- function(input, output, session) {
   
-  # --- Reactive: controls which screen is active (index/main) ---
-  screen <- reactiveVal("index")
+  screen <- reactiveVal("entry")
+  dataset_selector <- reactiveVal(NULL)
+  dataset_loaded <- reactiveVal(NULL)
+  trigger_sim <- reactiveVal(0)
   
-  # --- Reactive: stores selected dataset type ---
-  dataset_selector <- reactiveVal("mock")
-  
-  # --- Dynamic screen rendering ---
-  output$current_screen <- renderUI({
-    if (screen() == "index") {
-      mod_index_ui("index")
-    } else {
-      ui_main("main_viz")
-    }
-  })
-  
-  # --- Index server module (dataset selection screen) ---
-  mod_index_server("index", screen, dataset_selector)
-  
-  # --- ReactiveVal: stores output list from main server ---
-  server_outputs <- reactiveVal(NULL)
-  
-  # --- Initialise core server once user proceeds to main screen ---
-  observe({
-    if (screen() != "index") {
-      outputs <- mod_server("main_viz", dataset_selector)
-      server_outputs(outputs)
-    }
-  })
-  
-  # --- Initialise visualisation module once data is ready ---
-  observe({
-    req(server_outputs())
+  output$main_ui <- renderUI({
+    current <- screen()
+    menu_ui <- if (current != "entry") mod_menu_ui("menu") else NULL
     
-    viz_plot_server(
-      "main_viz",
-      model_data = server_outputs()$model_data,
-      icu_capacity_input = server_outputs()$icu_capacity,
-      ventilator_availability_input = server_outputs()$ventilator_availability
+    main_content <- switch(
+      current,
+      "entry"    = mod_entry_ui("entry"),
+      "simple"   = ui_main("viz_simple"),
+      "advanced" = ui_main("viz_advanced"),
+      div(h3("Unknown view"))
     )
+    
+    tagList(menu_ui, main_content)
+  })
+  
+  mod_entry_server("entry", screen, dataset_selector, dataset_loaded, trigger_sim)
+  mod_menu_server("menu", screen, dataset_selector)
+  
+  # --- Launch model when entering Advanced View ---
+  observe({
+    req(screen() == "advanced", dataset_loaded())
+    mod_server("seir_server", reactive({ dataset_selector() }))
   })
 }
 
-# ------------------------------------------------------------
-# Launch Shiny application
-# ------------------------------------------------------------
-shinyApp(ui = ui, server = server)
+shinyApp(ui, server)

@@ -1,0 +1,23 @@
+/* ============================================================
+   custom.css – visual overrides for Shiny + bslib
+   ============================================================ */
+
+/* --- Global select controls --- */
+select.form-select,
+select.form-select option {
+  font-size: 1.4rem !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+  padding: 10px 14px !important;
+}
+
+/* --- Navbar override --- */
+.navbar {
+  background-color: #E9ECEF !important;
+  border-bottom: 1px solid #ccc;
+}
+
+/* --- Optional buttons consistency --- */
+.btn {
+  font-size: 1rem !important;
+}

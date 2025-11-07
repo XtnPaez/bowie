@@ -141,19 +141,6 @@ ui_main <- function(viz_id) {
     
     titlePanel("SEIR Epidemiological Dashboard - Argentina"),
     
-    # --- Theme selector bar ---
-    column(
-      12,
-      div(
-        style = "display: flex; align-items: centre; justify-content: flex-start; gap: 10px; padding: 10px;",
-        selectInput(
-          "theme_selector", "Theme",
-          choices = c("Light" = "flatly", "Dark" = "darkly"),
-          selected = "flatly", width = "150px"
-        )
-      )
-    ),
-    
     # --- Main layout: sidebar and content area ---
     sidebarLayout(
       sidebarPanel(
