@@ -1,25 +1,60 @@
-convert_R_to_txt <- function(path = "R") {
-  # Verificar si la carpeta existe
+convert_R_to_txt <- function(path = "R", out_dir = "txt_out") {
+  # Verify that the input folder exists
   if (!dir.exists(path)) stop("La carpeta especificada no existe.")
   
-  # Listar los archivos .R dentro de la carpeta
-  archivos_R <- list.files(path, pattern = "\\.R$", full.names = TRUE)
+  # Ensure output folder exists
+  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  
+  # Collect all .R/.r files recursively (includes R/utils/)
+  archivos_R <- list.files(
+    path,
+    pattern = "\\.[Rr]$",
+    full.names = TRUE,
+    recursive = TRUE,
+    all.files = TRUE
+  )
   
   if (length(archivos_R) == 0) {
-    message("No se encontraron archivos .R en la carpeta especificada.")
+    message("No se encontraron archivos .R/.r en la carpeta especificada.")
     return(invisible(NULL))
   }
   
-  # Recorrer los archivos y crear su versión .txt
+  message("📌 getwd(): ", getwd())
+  message("📌 Input path: ", normalizePath(path, winslash = "/", mustWork = FALSE))
+  message("📌 Output dir: ", normalizePath(out_dir, winslash = "/", mustWork = FALSE))
+  message("📌 Total files found: ", length(archivos_R))
+  
+  ok <- 0
+  fail <- 0
+  
   for (archivo in archivos_R) {
-    contenido <- readLines(archivo, warn = FALSE)
-    nuevo_nombre <- sub("\\.R$", ".txt", archivo)
-    writeLines(contenido, nuevo_nombre)
-    message(paste("✅ Generado:", basename(nuevo_nombre)))
+    tryCatch({
+      contenido <- readLines(archivo, warn = FALSE)
+      
+      rel_path <- sub(
+        paste0("^", normalizePath(path, winslash = "/", mustWork = FALSE), "/"),
+        "",
+        normalizePath(archivo, winslash = "/", mustWork = FALSE)
+      )
+      
+      target_txt <- file.path(
+        out_dir,
+        sub("\\.[Rr]$", ".txt", rel_path)
+      )
+      
+      dir.create(dirname(target_txt), recursive = TRUE, showWarnings = FALSE)
+      writeLines(contenido, target_txt)
+      
+      ok <- ok + 1
+      message("✅ Generado: ", target_txt)
+    }, error = function(e) {
+      fail <- fail + 1
+      message("❌ Falló: ", archivo, " | ", e$message)
+    })
   }
   
-  message("🚀 Conversión completa.")
+  message("🚀 Conversión completa. OK=", ok, " FAIL=", fail)
+  
+  invisible(list(ok = ok, fail = fail, files = archivos_R))
 }
 
-# Ejemplo de uso:
-# convert_R_to_txt("R")

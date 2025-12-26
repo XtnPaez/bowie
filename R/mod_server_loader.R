@@ -15,7 +15,7 @@ mod_server_loader <- function(id) {
       }
       
       if (source == "iecs" && file.exists("data/iecs_data.RData")) {
-        load("data/iecs_data.RData", envir = environment())
+        iecs_data <- load_iecs_data()
         # Extract simplified structure if object is a list
         if (is.list(iecs_data)) {
           params <- iecs_data$parametros

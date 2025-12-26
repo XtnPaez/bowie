@@ -171,3 +171,11 @@ if (interactive()) {
   path <- save_dataset(df, "test_mock")
   print(list_datasets())
 }
+
+# INITIAL
+if (!is.null(iecs_data$recursos$INICIAL_HEALTHCARE_STAFF) &&
+    is.null(iecs_data$recursos$INITIAL_HEALTHCARE_STAFF)) {
+  iecs_data$recursos$INITIAL_HEALTHCARE_STAFF <- iecs_data$recursos$INICIAL_HEALTHCARE_STAFF
+  iecs_data$recursos$INICIAL_HEALTHCARE_STAFF <- NULL
+}
+

@@ -117,7 +117,7 @@ mod_entry_server <- function(id, screen, dataset_selector, dataset_loaded, trigg
         data <- readRDS("data/mock_dataset.rds")
         
       } else if (source == "iecs" && file.exists("data/iecs_data.RData")) {
-        load("data/iecs_data.RData", envir = environment())
+        iecs_data <- load_iecs_data()
         if (exists("iecs_data")) {
           # If dataset is a list, build minimal SEIR-like data frame
           if (is.list(iecs_data)) {
@@ -149,8 +149,7 @@ mod_entry_server <- function(id, screen, dataset_selector, dataset_loaded, trigg
         if (!first_load()) {
           dataset_selector(NULL)
           dataset_loaded(NULL)
-          trigger_sim(0)
-        }
+              }
         first_load(FALSE)
       }
     })
@@ -169,8 +168,7 @@ mod_entry_server <- function(id, screen, dataset_selector, dataset_loaded, trigg
         ds <- safe_load_dataset(input$dataset_selector)
         req(ds)
         dataset_loaded(ds)
-        trigger_sim(trigger_sim() + 1)
-        
+     
         # Success alert (auto-hides after 3 seconds)
         output$status_message <- renderUI({
           div(class = "alert alert-success", id = ns("alert_box"),
