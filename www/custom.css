@@ -150,10 +150,46 @@ select.form-select option {
   border: 1px solid #e9ecef;
   border-radius: 6px;
   padding: 16px;
+  /* overflow must be visible so selectize dropdowns are not
+     clipped inside the well container                        */
+  overflow: visible !important;
 }
 
 .sidebar-panel {
   font-size: 0.95rem;
+}
+
+/* ============================================================
+   Sticky sidebar
+   ------------------------------------------------------------
+   Keeps the control panel fixed in the viewport while the
+   main plot area scrolls. Works in all modern browsers via
+   the -webkit- prefix fallback.
+   max-height + overflow-y allow internal scrolling if the
+   sidebar content is taller than the screen.
+   ============================================================ */
+.sticky-sidebar {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 10px;
+  max-height: calc(100vh - 20px);
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+/* ============================================================
+   Selectize dropdown fix
+   ------------------------------------------------------------
+   Ensures the policy type dropdown renders above all other
+   elements including sliders and neighbouring well panels.
+   ============================================================ */
+.shiny-input-container {
+  overflow: visible !important;
+}
+
+.selectize-dropdown {
+  z-index: 9999 !important;
+  position: absolute !important;
 }
 
 /* ============================================================
