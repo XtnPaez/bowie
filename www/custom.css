@@ -1,23 +1,192 @@
 /* ============================================================
-   custom.css – visual overrides for Shiny + bslib
+   custom.css – visual overrides for Shiny + bslib (flatly)
+   ============================================================
+   Design principles:
+   - Single neutral colour palette derived from flatly's teal (#18BC9C)
+   - Consistent button language across Entry and Menu screens
+   - Improved readability via larger base font and spacing
+   - No changes to application logic or module structure
    ============================================================ */
+
+/* --- Base font size and body spacing --- */
+body {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #2C3E50;
+}
+
+h2, h3, h4 {
+  color: #2C3E50;
+  font-weight: 600;
+}
+
+p {
+  font-size: 1.05rem;
+  color: #4a4a4a;
+}
 
 /* --- Global select controls --- */
 select.form-select,
 select.form-select option {
-  font-size: 1.4rem !important;
-  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+  font-weight: 500 !important;
   line-height: 1.5 !important;
-  padding: 10px 14px !important;
+  padding: 8px 12px !important;
 }
 
-/* --- Navbar override --- */
-.navbar {
-  background-color: #E9ECEF !important;
-  border-bottom: 1px solid #ccc;
-}
+/* ============================================================
+   Button system – unified palette
+   ------------------------------------------------------------
+   Primary action  → teal fill    (.btn-primary)
+   Secondary nav   → teal outline (.btn-outline-primary)
+   Destructive/back→ light grey   (.btn-outline-secondary)
+   All buttons share the same size and border-radius.
+   ============================================================ */
 
-/* --- Optional buttons consistency --- */
 .btn {
   font-size: 1rem !important;
+  font-weight: 500 !important;
+  padding: 8px 20px !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Override Bootstrap colour classes to use a single teal palette */
+.btn-primary,
+.btn-success,
+.btn-info {
+  background-color: #18BC9C !important;
+  border-color: #18BC9C !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.btn-info:hover {
+  background-color: #128f76 !important;
+  border-color: #128f76 !important;
+  color: #ffffff !important;
+}
+
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-info {
+  background-color: transparent !important;
+  border-color: #18BC9C !important;
+  color: #18BC9C !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-info:hover {
+  background-color: #18BC9C !important;
+  border-color: #18BC9C !important;
+  color: #ffffff !important;
+}
+
+.btn-outline-secondary {
+  background-color: transparent !important;
+  border-color: #95a5a6 !important;
+  color: #95a5a6 !important;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #95a5a6 !important;
+  border-color: #95a5a6 !important;
+  color: #ffffff !important;
+}
+
+/* ============================================================
+   Entry screen layout
+   ============================================================ */
+.entry-container {
+  margin-top: 8%;
+  text-align: center;
+}
+
+.entry-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.mode-button {
+  min-width: 150px;
+}
+
+/* ============================================================
+   Navbar override
+   ============================================================ */
+.navbar {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #dee2e6 !important;
+  padding: 0.5rem 1rem !important;
+}
+
+.navbar .text-dark {
+  font-size: 0.9rem;
+  color: #6c757d !important;
+}
+
+/* ============================================================
+   Alerts
+   ============================================================ */
+.alert {
+  width: 380px;
+  margin: 16px auto;
+  text-align: center;
+  font-size: 0.95rem;
+  border-radius: 6px;
+}
+
+/* ============================================================
+   Sidebar and panel spacing
+   ============================================================ */
+.well {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.sidebar-panel {
+  font-size: 0.95rem;
+}
+
+/* ============================================================
+   Tab panel titles
+   ============================================================ */
+.nav-tabs .nav-link {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #2C3E50;
+}
+
+.nav-tabs .nav-link.active {
+  color: #18BC9C;
+  border-bottom: 2px solid #18BC9C;
+  font-weight: 600;
+}
+
+/* ============================================================
+   Table styling
+   ============================================================ */
+table.table {
+  font-size: 0.9rem;
+}
+
+table.table thead th {
+  background-color: #18BC9C;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ============================================================
+   Fade transition utility (used by theme switcher)
+   ============================================================ */
+.fade-transition {
+  transition: opacity 0.4s ease-in-out;
 }
