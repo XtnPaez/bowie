@@ -107,7 +107,7 @@ Work Package 5.
 
 ---
 
-## 🧭 Next Phase (Q2 2026)
+## 🧭 Next Phase
 
 Ordered by ToR priority:
 
@@ -120,5 +120,5 @@ Ordered by ToR priority:
 
 **Maintainer:** Cristian Paez  
 **Date:** March 2026  
-**Project:** Pandemic Preparedness Toolkit (Argentina Unit)  
+**Project:** Bowie / proto\_epi — Pandemic Preparedness Toolkit (Argentina Unit)  
 **Funded by:** Wellcome
