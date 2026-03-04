@@ -2,8 +2,8 @@
 
 This document summarises the overall progress of the **Bowie / SEIR Shiny** project.  
 It reflects the current maturity level based on technical, functional, and strategic dimensions,
-and maps deliverables against the Terms of Reference (ToR) for the Pandemic Preparedness Toolkit
-(Argentina Unit), Work Package 5.
+and maps deliverables strictly against the Terms of Reference (ToR) for the Pandemic Preparedness
+Toolkit (Argentina Unit), Work Package 5.
 
 **Live deployment:** <https://cpaez.shinyapps.io/bowie-seir/>  
 **Repository:** <https://github.com/XtnPaez/bowie>
@@ -12,98 +12,97 @@ and maps deliverables against the Terms of Reference (ToR) for the Pandemic Prep
 
 ## 📋 ToR Alignment – Product Delivery Status
 
-The ToR defines three products for this Unit. Current status:
+The ToR defines three products for this Unit:
 
 | Product | Description | Status | Progress |
 |---------|-------------|--------|----------|
 | **Product 1** | Case Study: COVID-19 modelling in Argentina | 🟡 Embedded in dashboard | **60%** |
-| **Product 2** | Modular Shiny Dashboard prototype | ✅ Deployed and functional | **85%** |
+| **Product 2** | Modular Shiny Dashboard prototype | 🟡 Deployed, partial ToR coverage | **65%** |
 | **Product 3** | Implementation and User Guides | 🟡 Draft in progress | **20%** |
 
 ### Product 1 — Case Study
-The case study is implemented as an **interactive demonstration** rather than a standalone document.  
-The IECS dataset (Santoro model) contains real COVID-19 data from Argentina and is directly loadable
-in the dashboard. Users can explore actual epidemic dynamics, compare them against SEIR model
-projections, and adjust parameters to understand the modelling decisions made during the pandemic.  
-This approach aligns with the ToR's emphasis on combining theoretical foundations with practical examples.
+The case study is implemented as an **interactive demonstration** embedded in the dashboard.  
+The IECS/Santoro dataset contains real COVID-19 data from Argentina, loadable directly in the
+platform. Users can explore actual epidemic dynamics, compare them against SEIR model projections,
+and adjust parameters to understand modelling decisions made during the pandemic.
 
-Remaining work: narrative documentation contextualising the Santoro dataset — its origin, calibration
-decisions, and lessons learned — to be added to `docs/` as part of Product 3.
+Remaining work: narrative documentation contextualising the Santoro dataset — its origin,
+calibration decisions, and lessons learned — to be added to `docs/` as part of Product 3.
 
 ### Product 2 — Modular Shiny Dashboard
-Fully deployed at https://cpaez.shinyapps.io/bowie-seir/. Core features operational.  
-Remaining: Simplified View (`mod_viz_simple.R`) and external API connectivity (WHO, OWID).
+Core modular architecture fully deployed. The following ToR requirements remain pending:
+- Simplified View (decision-maker interface with KPIs)
+- External data connectivity (WHO, OWID APIs)
+- Sociodemographic data layer (demographics, mobility, socioeconomic factors)
+- Interactive presentation with practical exercises
 
 ### Product 3 — Implementation and User Guides
 Technical documentation exists as `docs/documentacion.Rmd` (currently in Spanish).  
-Translation to English and update to reflect current architecture is in progress.
+Translation to English, update to current architecture, and Santoro narrative are in progress.
 
 ### Access Model
-The ToR notes that different user groups require distinct access levels. For this open-source
-prototype, access is managed by design: the public deployment provides the interactive frontend
-for all users, while researchers and NSOs who require access to private datasets run the platform
-locally in their own R environment. This approach is consistent with the ToR's confirmation that
-the platform will be open source.
+Access is managed by open-source design: the public deployment provides the interactive frontend
+for all users; researchers and NSOs requiring private datasets run the platform locally in their
+own R environment. This is consistent with the ToR's open-source mandate.
 
 ---
 
 ## 🧠 1. Technical Evaluation
 
-| Component | Status | Estimated Progress |
-|-----------|--------|--------------------|
+| Component | Status | Progress |
+|-----------|--------|----------|
 | Modular structure `/R/mod_*` | ✅ Complete and stable | **100%** |
 | Logging and validation system (`utils_*`) | ✅ Consolidated | **100%** |
 | SEIR model core (equations and reactivity) | ✅ Stable and deployed | **95%** |
+| Open-source design for model extensibility | ✅ By architecture | **100%** |
 | Data Hub Interface (`data_interface.R`) | ✅ Implemented | **90%** |
-| Advanced visualisation module (`mod_viz`) | ✅ Functional — all plots rendering | **90%** |
-| Visualisation module wiring (`viz_plot_server`) | ✅ Fixed and connected | **100%** |
+| Advanced visualisation module (`mod_viz`) | ✅ All plots rendering | **90%** |
 | CSV export of simulation results | ✅ Implemented | **100%** |
 | IECS / Santoro dataset integration | ✅ Loadable and functional | **90%** |
 | Internationalisation and code cleanup | ✅ Completed | **100%** |
-| **Subtotal Technical** | | **≈ 97%** |
+| **Subtotal Technical** | | **≈ 96%** |
 
-> **Summary:** The technical core is robust, fully modular, and deployed. All major reactive
-> connections between parameters, model, and visualisation are functional. The Santoro dataset
-> is integrated and serves as the interactive COVID-19 Argentina case study.
+> **Summary:** The technical core is robust, fully modular, and deployed. Model extensibility
+> is achieved by open-source design as specified in the ToR, not by a separate plug-in system.
 
 ---
 
-## 🧩 2. Functional Evaluation
+## 🧩 2. Functional Evaluation (ToR Product 2 requirements)
 
-| Element | Status | Estimated Progress |
-|---------|--------|--------------------|
-| Workflow "dataset → model → visualisation" | ✅ Fully functional | **90%** |
-| Entry screen and dataset selection | ✅ Implemented (mock + IECS/Santoro) | **90%** |
-| Advanced View with real-time parameter updates | ✅ Operational | **90%** |
-| Navigation menu with dataset indicator | ✅ Implemented | **100%** |
-| Public deployment on shinyapps.io | ✅ Live | **100%** |
-| CSV scenario export | ✅ Implemented | **100%** |
-| Product 1: interactive COVID-19 case study (Santoro) | 🟡 Dataset integrated, narrative pending | **60%** |
-| Simplified visualisation mode (Simple View) | 🟡 Placeholder only | **10%** |
+| ToR Requirement | Status | Progress |
+|-----------------|--------|----------|
+| Modular architecture (UI, Model, Data, Viz modules) | ✅ Implemented | **100%** |
+| User-driven parameter adjustments | ✅ Operational | **100%** |
+| Flexible model integration (open-source, modifiable) | ✅ By design | **90%** |
+| Interactive visualisations | ✅ Three plot panels functional | **90%** |
+| Web deployment | ✅ Live on shinyapps.io | **100%** |
+| COVID-19 Argentina case study (Santoro dataset) | 🟡 Dataset integrated, narrative pending | **60%** |
+| Simplified View — decision-maker interface | 🟡 Placeholder only | **10%** |
 | External data connectivity (WHO, OWID APIs) | 🔴 Not implemented | **0%** |
-| **Subtotal Functional** | | **≈ 76%** |
+| Sociodemographic data layer | 🔴 Not implemented | **0%** |
+| Interactive presentation with practical exercises | 🔴 Not implemented | **0%** |
+| **Subtotal Functional** | | **≈ 65%** |
 
-> **Summary:** Core functionality is operational and deployed. The Santoro dataset provides
-> the interactive case study component. Remaining gaps are the Simplified View, narrative
-> documentation, and external API connectivity.
+> **Summary:** Core dashboard functionality is operational and deployed. Four ToR requirements
+> remain pending: Simplified View, external API connectivity, sociodemographic data, and
+> the interactive presentation.
 
 ---
 
 ## 🧬 3. Strategic Evaluation
 
-| Strategic Pillar | Status | Estimated Progress |
-|------------------|--------|--------------------|
+| Strategic Pillar | Status | Progress |
+|------------------|--------|----------|
 | Development plan and milestones | ✅ Defined and up to date | **100%** |
-| Technical and organisational documentation | ✅ Updated (March 2026) | **95%** |
+| Repository documentation | ✅ Updated (March 2026) | **95%** |
 | Public deployment with live URL | ✅ Achieved | **100%** |
 | Access model aligned with open-source ToR | ✅ Resolved by design | **100%** |
-| Scalability to new infection models | 🟡 Viable but unimplemented | **30%** |
-| Testing and CI/CD | 🔴 Pending | **0%** |
-| **Subtotal Strategic** | | **≈ 70%** |
+| Product 3 — technical documentation | 🟡 Draft in Spanish, translation pending | **20%** |
+| **Subtotal Strategic** | | **≈ 83%** |
 
 > **Summary:** Strategic foundations are strong. Deployment is live, documentation is current,
-> and the access model is coherent with the open-source mandate. Testing and Model Hub
-> expansion remain as next-phase priorities.
+> and the access model is coherent with the open-source mandate. Product 3 translation
+> is the main remaining strategic task.
 
 ---
 
@@ -111,35 +110,36 @@ the platform will be open source.
 
 | Dimension | Weight | Progress |
 |-----------|--------|----------|
-| Technical | 40% | 97% |
-| Functional | 40% | 76% |
-| Strategic | 20% | 70% |
-| **Total Weighted Progress** | | **≈ 82%** ✅ |
+| Technical | 40% | 96% |
+| Functional | 40% | 65% |
+| Strategic | 20% | 83% |
+| **Total Weighted Progress** | | **≈ 77%** ✅ |
 
-> The project has advanced from ~57% (October 2025) to approximately **82% complete**
-> as of March 2026, with the Santoro dataset integration and access model clarification
-> contributing to the revised estimate.
+> The project covers approximately **77% of ToR deliverables** as of March 2026.  
+> The technical backbone is mature. Remaining work is concentrated in four functional
+> ToR requirements and the Product 3 translation.
 
 ---
 
 ## 📈 Interpretation
 
-- The project has successfully transitioned from a **prototype** to a **deployed simulation platform**.
-- The core SEIR modelling pipeline — data ingestion, ODE solving, visualisation, and export — is fully operational.
+- The project has successfully transitioned from a prototype to a **deployed simulation platform**.
+- The core SEIR pipeline — data ingestion, ODE solving, visualisation, and export — is fully operational.
 - The IECS/Santoro dataset provides the **interactive COVID-19 Argentina case study** (Product 1).
-- Remaining work covers three areas: Simplified View, narrative documentation, and test coverage — all lower-risk tasks with clear implementation paths.
+- Four ToR requirements for Product 2 remain pending: Simplified View, external data, sociodemographic layer, and interactive presentation.
+- Product 3 exists as a draft and requires translation and expansion.
 
 ---
 
 ## 🧭 Next Phase (Q2 2026)
 
-1. **Narrative documentation for Product 1** — contextualise the Santoro dataset in `docs/`: origin, calibration, lessons learned.
-2. **Simple View** — implement `mod_viz_simple.R` with core curves and KPIs for decision-makers.
-3. **Product 3 translation** — complete English translation and update of `docs/documentacion.Rmd`.
-4. **External Data Connectivity** — API integration with WHO and OWID for real-time surveillance data.
-5. **Model Hub** — plug-in architecture to support SIR, SEIRD, and custom models.
-6. **Testing Layer** — unit tests (`testthat`) and UI tests (`shinytest2`).
-7. **CI/CD Pipeline** — GitHub Actions for automated validation on push.
+Ordered by ToR priority:
+
+1. **Simplified View** — implement `mod_viz_simple.R` with core curves and KPIs for decision-makers (Product 2).
+2. **External data connectivity** — API integration with WHO and OWID (Product 2).
+3. **Sociodemographic data layer** — demographics and mobility data integration (Product 2).
+4. **Interactive presentation** — infographic and practical exercises anchored to the Santoro case study (Product 2).
+5. **Product 3** — translate, update, and expand `docs/documentacion.Rmd`; add Santoro narrative.
 
 ---
 

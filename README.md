@@ -11,11 +11,29 @@
 
 ## Overview
 
-**Bowie** is a modular, interactive Shiny dashboard for infectious disease modelling. It implements a **SEIR (Susceptible–Exposed–Infectious–Recovered)** compartmental model with real-time parameter adjustment, scenario simulation, and healthcare resource pressure analysis.
+**Bowie** is a modular, interactive Shiny dashboard for infectious disease modelling, developed as
+**Product 2** of the Pandemic Preparedness Toolkit (Argentina Unit), Work Package 5 (WP5).
 
-The platform is developed as **Product 2** of the Pandemic Preparedness Toolkit (Argentina Unit), part of Work Package 5 (WP5). Its goal is to support evidence-based decision-making in public health by enabling interactive scenario exploration, resource planning, and educational use.
+It implements a **SEIR (Susceptible–Exposed–Infectious–Recovered)** compartmental model with
+real-time parameter adjustment, scenario simulation, and healthcare resource pressure analysis.
+The platform is designed to support evidence-based decision-making in public health by enabling
+interactive scenario exploration, resource planning, and educational use across multiple user groups.
 
 **Live deployment:** https://cpaez.shinyapps.io/bowie-seir/
+
+---
+
+## ToR Products
+
+This repository covers three ToR deliverables:
+
+| Product | Description | Status |
+|---------|-------------|--------|
+| **Product 1** | COVID-19 Argentina case study — interactive via IECS/Santoro dataset | 🟡 60% |
+| **Product 2** | Modular Shiny Dashboard prototype | 🟡 65% |
+| **Product 3** | Implementation and User Guides | 🟡 20% |
+
+See [`proj_evolution.md`](proj_evolution.md) for detailed ToR alignment and progress breakdown.
 
 ---
 
@@ -24,11 +42,10 @@ The platform is developed as **Product 2** of the Pandemic Preparedness Toolkit 
 - **Interactive SEIR simulation** — adjust R₀, incubation period, infectious period, and IFR in real time
 - **Public policy modelling** — simulate four intervention strategies: no intervention, phased mitigation, intermittent, and ICU-triggered
 - **Healthcare resource pressure analysis** — compare simulated ICU and ventilator demand against configurable capacity thresholds
-- **COVID-19 Argentina case study** — the IECS/Santoro dataset contains real COVID-19 data from Argentina, loadable directly in the dashboard as an interactive case study (ToR Product 1)
-- **Dual dataset support** — load simulated (mock) or real (IECS/Santoro) datasets
+- **COVID-19 Argentina case study** — the IECS/Santoro dataset contains real COVID-19 Argentina data, loadable directly in the dashboard (ToR Product 1)
+- **Dual dataset support** — simulated (mock) or real (IECS/Santoro) datasets
 - **CSV export** — download full simulation results in European locale format
-- **Modular architecture** — clean separation between data, model, visualisation, UI, and server layers
-- **Structured logging and validation** — all parameters validated before model execution
+- **Modular open-source architecture** — clean separation between data, model, visualisation, UI, and server layers; easily modifiable for SIR, SEIRD, or custom models
 
 ---
 
@@ -45,7 +62,7 @@ bowie/
 ├── CONTRIBUTING.md              # Contribution guidelines
 ├── CODE_OF_CONDUCT.md           # Community standards
 ├── roadmap.md                   # Strategic roadmap and block status
-├── proj_evolution.md            # Progress status report (March 2026)
+├── proj_evolution.md            # ToR alignment and progress report (March 2026)
 │
 ├── R/
 │   ├── global.R                 # Global constants and library loading
@@ -66,10 +83,10 @@ bowie/
 │
 ├── data/
 │   ├── mock_dataset.rds         # Simulated default dataset
-│   └── iecs_data.RData          # IECS/Santoro dataset — real COVID-19 Argentina data (ToR Product 1)
+│   └── iecs_data.RData          # IECS/Santoro — real COVID-19 Argentina data (ToR Product 1)
 │
 ├── docs/
-│   └── documentacion.Rmd        # Technical documentation (translation in progress)
+│   └── documentacion.Rmd        # Technical documentation — Product 3 (translation in progress)
 │
 └── www/
     └── custom.css               # Visual overrides for bslib / Bootstrap 5
@@ -82,7 +99,7 @@ bowie/
 ### Prerequisites
 
 - R >= 4.3
-- The following packages (see `DESCRIPTION` for full list):
+- Required packages (see `DESCRIPTION` for full list):
 
 ```r
 install.packages(c(
@@ -94,14 +111,10 @@ install.packages(c(
 
 ### Run locally
 
-1. Clone the repository:
-
 ```bash
 git clone https://github.com/XtnPaez/bowie.git
 cd bowie
 ```
-
-2. Open the project in RStudio and run:
 
 ```r
 shiny::runApp()
@@ -131,31 +144,29 @@ rsconnect::deployApp(
    - **Resource Pressure** — ICU and ventilator demand vs. capacity thresholds
    - **Simulated Data** — tabular preview and CSV download
 
-> **Simple View** is currently disabled — implementation planned for the next phase.
+> **Simple View** is currently disabled — implementation planned for the next phase (ToR requirement).
 
 ---
 
 ## Development Status
 
-| Block | Description | Status |
-|-------|-------------|--------|
-| 1. Core Refactor | Modular architecture, logging, validation | ✅ Complete |
-| 2. Internationalisation | English-only codebase | ✅ Complete |
-| 3. Data Hub Interface | `data_interface.R` — loading, validation, persistence | ✅ Complete |
-| 4. UX Redesign | Entry screen, navigation, Advanced View | ✅ Complete |
-| 5. Simplified Visualisation | Simple View with KPIs for decision-makers | 🟡 In progress |
-| 6. Model Hub | Plug-in architecture for additional models | 🔴 Planned |
-| 7. External Data Connectivity | WHO / OWID API integration | 🔴 Planned |
-| 8. Testing and CI/CD | `testthat`, `shinytest2`, GitHub Actions | 🔴 Planned |
+| Block | ToR Requirement | Status |
+|-------|----------------|--------|
+| 1–4. Foundation | Modular architecture, Data Hub, UX | ✅ Complete |
+| 5. Simplified Visualisation | Decision-maker interface with KPIs | 🟡 In progress |
+| 6. External Data Connectivity | WHO / OWID API integration | 🔴 Pending |
+| 7. Sociodemographic Data | Demographics and mobility layer | 🔴 Pending |
+| 8. Interactive Presentation | Infographic and practical exercises | 🔴 Pending |
+| Product 3 | Implementation and User Guides | 🟡 Draft in progress |
 
-Overall progress: **≈ 82%** — see [`proj_evolution.md`](proj_evolution.md) for full breakdown.
+Overall ToR coverage: **≈ 77%** — see [`proj_evolution.md`](proj_evolution.md) for full breakdown.
 
 ---
 
 ## Documentation
 
-Technical documentation is available in [`docs/documentacion.Rmd`](docs/documentacion.Rmd).  
-⚠️ Translation from Spanish to English is currently in progress.
+Technical documentation (Product 3) is available in [`docs/documentacion.Rmd`](docs/documentacion.Rmd).  
+⚠️ Currently in Spanish — translation and update in progress.
 
 For coding standards, see [`CODESTYLE.md`](CODESTYLE.md).  
 For contribution guidelines, see [`CONTRIBUTING.md`](CONTRIBUTING.md).
