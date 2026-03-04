@@ -339,6 +339,57 @@ mod_server <- function(id, dataset_selector) {
     }, striped = TRUE, hover = TRUE, bordered = TRUE)
 
     # --------------------------------------------------------
+    # Download handler: exports full simulation results as CSV
+    # Uses write.csv2() (semicolon separator, comma decimal)
+    # for compatibility with European locale settings.
+    # Numbers are exported raw (no formatting) so each user's
+    # spreadsheet application applies its own locale correctly.
+    # Filename includes dataset source and date for easy
+    # scenario comparison.
+    # --------------------------------------------------------
+    output$download_csv <- downloadHandler(
+      filename = function() {
+        paste0(
+          "SEIR_scenario_",
+          dataset_selector(),
+          "_",
+          format(Sys.Date(), "%Y%m%d"),
+          ".csv"
+        )
+      },
+      content = function(file) {
+        req(seir_model_output())
+
+        export_df <- seir_model_output() %>%
+          dplyr::mutate(date = format(date, "%d-%m-%Y")) %>%
+          dplyr::select(
+            Date                 = date,
+            Susceptible          = S,
+            Exposed              = E,
+            Infected             = I,
+            Recovered            = R,
+            Daily_New_Infections,
+            Cumulative_Cases,
+            Daily_Deaths,
+            Cumulative_Deaths,
+            ICU_Occupancy_Sim,
+            Vent_Usage_Sim
+          ) %>%
+          dplyr::mutate(
+            dplyr::across(where(is.numeric), ~round(., 0))
+          )
+
+        # write.csv2: semicolon separator, comma decimal point
+        # Standard for European locale — avoids Excel misreading
+        # numeric columns when opened with regional settings.
+        write.csv2(export_df, file, row.names = FALSE)
+
+        log_message("INFO", paste("CSV exported:", basename(file)),
+                    .module = "SERVER")
+      }
+    )
+
+    # --------------------------------------------------------
     # Return outputs for downstream integration
     # --------------------------------------------------------
     return(list(

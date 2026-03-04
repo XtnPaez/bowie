@@ -109,11 +109,12 @@ ui_main <- function(viz_id) {
           wellPanel(ui_seir_params(ns)),
           wellPanel(ui_policy_params(ns)),
           wellPanel(ui_resource_params(ns)),
-          actionButton(
-            ns("run_simulation"),
-            label = "Run Simulation",
-            class = "btn btn-primary w-100"
-          ),
+          # Run Simulation button — temporarily hidden, kept for future use
+          # actionButton(
+          #   ns("run_simulation"),
+          #   label = "Run Simulation",
+          #   class = "btn btn-primary w-100"
+          # ),
           br()
         )
       ),
@@ -142,7 +143,14 @@ ui_main <- function(viz_id) {
             "Simulated Data",
             br(),
             h5("Simulation Output \u2014 First 10 Rows"),
-            tableOutput(ns("simulated_data_table"))
+            tableOutput(ns("simulated_data_table")),
+            br(),
+            # Download button: exports full simulation results as CSV
+            downloadButton(
+              ns("download_csv"),
+              label = "Download Results (CSV)",
+              class = "btn btn-primary"
+            )
           )
         )
       )
