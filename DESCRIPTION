@@ -1,9 +1,13 @@
 Package: proto_epi
-Title: SEIR Epidemiological Modeling Prototype
+Title: SEIR Epidemiological Modelling Prototype
 Version: 0.1.0
-Authors@R: 
+Authors@R:
     person("Cristian", "Paez", email = "paez.cristian@gmail.com", role = c("aut", "cre"))
-Description: Modular Shiny prototype for SEIR epidemiological modeling as part of the Pandemic Preparedness Toolkit (Argentina Unit).
+Description: Modular Shiny prototype for interactive SEIR epidemiological
+    modelling, developed as part of the Pandemic Preparedness Toolkit
+    (Argentina Unit), funded by Wellcome. Supports scenario simulation,
+    parameter adjustment, healthcare resource pressure analysis, and
+    CSV export of results.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -11,17 +15,22 @@ RoxygenNote: 7.3.1
 Depends: R (>= 4.3)
 Imports:
     shiny,
-    ggplot2,
-    dplyr,
-    deSolve,
-    RcppRoll,
     shinyjs,
     bslib,
-    jsonlite
+    ggplot2,
+    plotly,
+    dplyr,
+    tidyr,
+    purrr,
+    scales,
+    lubridate,
+    deSolve,
+    RcppRoll,
+    rsconnect
 Suggests:
     testthat,
     shinytest2,
     pkgdown,
     lintr
-URL: https://github.com/edeleitha/proto_epi
-BugReports: https://github.com/edeleitha/proto_epi/issues
+URL: https://github.com/XtnPaez/bowie, https://cpaez.shinyapps.io/bowie-seir/
+BugReports: https://github.com/XtnPaez/bowie/issues
