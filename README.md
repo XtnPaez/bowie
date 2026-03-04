@@ -24,7 +24,8 @@ The platform is developed as **Product 2** of the Pandemic Preparedness Toolkit 
 - **Interactive SEIR simulation** — adjust R₀, incubation period, infectious period, and IFR in real time
 - **Public policy modelling** — simulate four intervention strategies: no intervention, phased mitigation, intermittent, and ICU-triggered
 - **Healthcare resource pressure analysis** — compare simulated ICU and ventilator demand against configurable capacity thresholds
-- **Dual dataset support** — load simulated (mock) or IECS (Santoro) datasets
+- **COVID-19 Argentina case study** — the IECS/Santoro dataset contains real COVID-19 data from Argentina, loadable directly in the dashboard as an interactive case study (ToR Product 1)
+- **Dual dataset support** — load simulated (mock) or real (IECS/Santoro) datasets
 - **CSV export** — download full simulation results in European locale format
 - **Modular architecture** — clean separation between data, model, visualisation, UI, and server layers
 - **Structured logging and validation** — all parameters validated before model execution
@@ -65,7 +66,7 @@ bowie/
 │
 ├── data/
 │   ├── mock_dataset.rds         # Simulated default dataset
-│   └── iecs_data.RData          # IECS (Santoro) dataset
+│   └── iecs_data.RData          # IECS/Santoro dataset — real COVID-19 Argentina data (ToR Product 1)
 │
 ├── docs/
 │   └── documentacion.Rmd        # Technical documentation (translation in progress)
@@ -120,7 +121,9 @@ rsconnect::deployApp(
 
 ## Usage
 
-1. **Select a dataset** on the entry screen (Simulated or IECS) and click **Load Dataset**
+1. **Select a dataset** on the entry screen and click **Load Dataset**:
+   - **Simulated (mock)** — synthetic data for parameter exploration
+   - **IECS / Santoro** — real COVID-19 Argentina data (interactive case study)
 2. Navigate to **Advanced View**
 3. Adjust epidemiological, policy, and resource parameters using the sidebar controls
 4. Explore results across three tabs:
@@ -145,7 +148,7 @@ rsconnect::deployApp(
 | 7. External Data Connectivity | WHO / OWID API integration | 🔴 Planned |
 | 8. Testing and CI/CD | `testthat`, `shinytest2`, GitHub Actions | 🔴 Planned |
 
-Overall progress: **≈ 80%** — see [`proj_evolution.md`](proj_evolution.md) for full breakdown.
+Overall progress: **≈ 82%** — see [`proj_evolution.md`](proj_evolution.md) for full breakdown.
 
 ---
 

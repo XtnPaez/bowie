@@ -13,6 +13,7 @@ The project is part of the **Pandemic Preparedness Toolkit (Argentina Unit)**, f
 
 ## Strengths and Achievements
 
+- IECS/Santoro dataset integrated — real COVID-19 Argentina data serving as the interactive case study (ToR Product 1).
 - Modular workflow `data → model → viz → ui → server` — fully implemented and stable.
 - SEIR ODE model running with `deSolve`, validated against known parameters.
 - Data Hub Interface (`data_interface.R`) — loading, validation, schema checks, and caching.
@@ -48,7 +49,8 @@ The project is part of the **Pandemic Preparedness Toolkit (Argentina Unit)**, f
 
 ### ✅ Block 3 – Data Hub Interface
 **Goal:** Centralised dataset loading, validation, and persistence via `data_interface.R`.  
-**Status:** Complete. Functions implemented: `get_data()`, `validate_schema()`, `save_dataset()`, `list_datasets()`, `load_iecs_data()`.
+**Status:** Complete. Functions implemented: `get_data()`, `validate_schema()`, `save_dataset()`, `list_datasets()`, `load_iecs_data()`.  
+**Note:** The IECS/Santoro dataset (real COVID-19 Argentina data) is integrated via this interface and serves as the interactive case study for ToR Product 1.
 
 ### ✅ Block 4 – User Experience Redesign
 **Goal:** Entry screen, navigation menu, and Advanced View layout.  

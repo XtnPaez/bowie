@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to **proto_epi** — a modular Shiny dashboard for infectious disease modelling, developed as part of the Pandemic Preparedness Toolkit (Argentina Unit), funded by Wellcome.
 
+The platform serves three ToR deliverables: an interactive COVID-19 Argentina case study powered by the IECS/Santoro real dataset (Product 1), the modular Shiny dashboard itself (Product 2), and technical documentation (Product 3).
+
 This project follows best practices for reproducible and modular Shiny development in R.
 
 ---
