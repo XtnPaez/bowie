@@ -109,5 +109,5 @@ practical exercises.
 
 **Maintainer:** Cristian Paez  
 **Date:** March 2026  
-**Project:** Bowie / proto\_epi — Pandemic Preparedness Toolkit (Argentina Unit)  
+**Project:** Pandemic Preparedness Toolkit (Argentina Unit)  
 **Funded by:** Wellcome

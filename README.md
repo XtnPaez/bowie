@@ -172,5 +172,5 @@ MIT License — see [`LICENSE`](LICENSE) for details.
 
 **Cristian Paez** — Lead Developer  
 paez.cristian@gmail.com  
-Bowie / proto\_epi — Pandemic Preparedness Toolkit (Argentina Unit)  
+Pandemic Preparedness Toolkit (Argentina Unit)  
 Funded by Wellcome
