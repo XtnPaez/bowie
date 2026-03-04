@@ -24,6 +24,7 @@ bowie/
 │   └── utils/
 │       ├── utils_logging.R      # Logging utilities
 │       ├── utils_validation.R   # Parameter validation utilities
+│       ├── utils_helpers.R      # Numeric helpers and safe ODE wrapper
 │       └── utils_dependencies.R # Automatic dependency detection and installation
 ├── data/
 │   ├── mock_dataset.rds   # Simulated default dataset
