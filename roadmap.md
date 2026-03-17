@@ -1,8 +1,8 @@
-# Bowie / SEIR Shiny – Roadmap and Strategic Plan
+# SEIR Epidemiological Dashboard – Roadmap and Strategic Plan
 
 ## Introduction
 
-The SEIR Shiny dashboard has evolved from a modular prototype into a **deployed, interactive
+The SEIR dashboard has evolved from a modular prototype into a **deployed, interactive
 epidemiological simulation platform**.  
 This document reflects the current development state as of March 2026 and outlines the remaining
 work ahead.  
@@ -26,6 +26,7 @@ Package 5, funded by Wellcome.
 - CSV export of simulation results with European locale formatting.
 - Public deployment on shinyapps.io.
 - Full repository documentation: `CODESTYLE.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`.
+- UI and chart colours fully aligned with PPT brand guidelines (Wellcome / CEMIC).
 
 ---
 
@@ -59,6 +60,22 @@ The following ToR requirements for Product 2 are pending:
 **Goal:** Entry screen, navigation menu, and Advanced View layout.  
 **Status:** Complete. Includes sticky sidebar, dataset selector, top menu, and view routing.
 
+### ✅ Block 4b – UI Polish and Bug Fixes (March 2026)
+**Goal:** Production-quality UI ahead of first partial delivery (26 March 2026).  
+**Status:** Complete.  
+**Completed items:**
+- UI colour system fully migrated to PPT brand palette (Wellcome / CEMIC style template).
+- Entry screen rebuilt: PPT dark green navbar, card-centred layout, footer attribution.
+- Advanced View rebuilt: earthy tint sidebar, chart cards, PPT-aligned tabs and table headers.
+- All `geom_line(size=)` calls replaced with `linewidth=` (ggplot2 >= 3.4.0 compliance).
+- X-axis guide lines added to all three plots via shared `ppt_theme()` function in `mod_viz.R`.
+- Chart colour palettes updated to PPT categorical and accent colours.
+- Namespace collision fixed: `viz_plot_server()` moved to top-level server in `app.R` to prevent double-prefixed output ids (`viz_advanced-viz_advanced-seir_plot`).
+- CSS false positive fixed in `utils_dependencies.R`: CSS pseudo-selector `col::` was parsed as an R package name; resolved with format-based filter.
+- Selectize dropdown colours overridden to PPT palette.
+- Bootstrap `text-info` class replaced with PPT earthy green in policy description.
+- Fantasy project name removed from all UI-visible strings.
+
 ### 🔹 Block 5 – Simplified Visualisation Mode (ToR)
 **Goal:** A simplified decision-maker interface with core SEIR plots and KPIs only.  
 **Status:** 🟡 In progress — UI placeholder in place, implementation pending.  
@@ -66,6 +83,7 @@ The following ToR requirements for Product 2 are pending:
 - Create `mod_viz_simple.R` with SEIR curves, peak infection KPI, and resource summary.
 - Hide complex parameter controls.
 - Wire Simple View routing in `app.R`.
+- KPI card design agreed in mockup session (March 2026) — ready to implement.
 
 ### 🔹 Block 6 – External Data Connectivity (ToR)
 **Goal:** Connect to real-time epidemiological and sociodemographic data sources via API.  
@@ -93,7 +111,8 @@ The following ToR requirements for Product 2 are pending:
 | **2. Internationalisation** | 1 | ✅ Complete |
 | **3. Data Hub Interface** | 1 | ✅ Complete |
 | **4. UX Redesign** | 3 | ✅ Complete |
-| **5. Simplified Visualisation** | 3, 4 | 🟡 In progress |
+| **4b. UI Polish and Bug Fixes** | 4 | ✅ Complete |
+| **5. Simplified Visualisation** | 3, 4, 4b | 🟡 In progress |
 | **6. External Data + Sociodemographic** | 3 | 🔴 Pending |
 | **7. Interactive Presentation** | 4, 5 | 🔴 Pending |
 
@@ -101,10 +120,10 @@ The following ToR requirements for Product 2 are pending:
 
 ## Summary
 
-The SEIR Shiny project has successfully transitioned from a prototype into a **deployed, functional
-modelling platform**. The technical and UX foundations are stable and fully aligned with the ToR
-modular architecture requirements. Remaining work focuses on three ToR deliverables: the Simplified
-View, external data connectivity with sociodemographic layer, and the interactive presentation with
+The SEIR dashboard has successfully transitioned from a prototype into a **deployed, functional
+modelling platform** with a UI fully aligned with PPT brand guidelines. The technical and UX
+foundations are stable. Remaining work focuses on three ToR deliverables: the Simplified View,
+external data connectivity with sociodemographic layer, and the interactive presentation with
 practical exercises.
 
 **Maintainer:** Cristian Paez  
