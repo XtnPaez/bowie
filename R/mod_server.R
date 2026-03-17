@@ -234,7 +234,7 @@ mod_server <- function(id, dataset_selector) {
         "icu_triggered"     = "Restrictions activate when ICU demand exceeds capacity.",
         ""
       )
-      tags$small(class = "text-info fst-italic", desc)
+      tags$small(style = "color:#48553F; font-style:italic;", desc)
     })
 
     # --------------------------------------------------------

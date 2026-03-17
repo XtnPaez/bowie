@@ -2,156 +2,213 @@
    custom.css – visual overrides for Shiny + bslib (flatly)
    ============================================================
    Design principles:
-   - Single neutral colour palette derived from flatly's teal (#18BC9C)
-   - Consistent button language across Entry and Menu screens
-   - Improved readability via larger base font and spacing
-   - No changes to application logic or module structure
+   - Colour palette aligned with PPT (Pandemic Preparedness
+     Toolkit) brand guidelines (Wellcome / CEMIC).
+   - Primary surface: near-black #1E2A16, dark green #324027,
+     earthy green #48553F.
+   - Background tints: green-grey #F4F6F5, earthy #F8F5F1.
+   - Accent (sparingly): orange #F59342.
+   - No changes to application logic or module structure.
+
+   PPT colour reference:
+     Standard palette  – Dark green   #324027
+                       – Earthy green #48553F
+                       – Orange       #F59342
+                       – Near black   #1E2A16
+     Background tints  – Green grey   #F4F6F5
+                       – Earthy       #F8F5F1
    ============================================================ */
 
-/* --- Base font size and body spacing --- */
+
+/* --- Reset bslib/flatly body defaults --- */
 body {
   font-size: 1rem;
   line-height: 1.6;
-  color: #2C3E50;
+  color: #1E2A16;
+  background-color: #F4F6F5;
+  margin: 0;
+  padding: 0;
 }
 
-h2, h3, h4 {
-  color: #2C3E50;
+/* Remove default fluidPage padding so navbar sits flush */
+.container-fluid {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+h2, h3, h4, h5, h6 {
+  color: #1E2A16;
   font-weight: 600;
 }
 
 p {
-  font-size: 1.05rem;
-  color: #4a4a4a;
+  font-size: 1rem;
+  color: #48553F;
 }
 
-/* --- Global select controls --- */
-select.form-select,
-select.form-select option {
-  font-size: 1.1rem !important;
-  font-weight: 500 !important;
-  line-height: 1.5 !important;
-  padding: 8px 12px !important;
-}
 
 /* ============================================================
-   Button system – unified palette
+   Select controls — native and Selectize
    ------------------------------------------------------------
-   Primary action  → teal fill    (.btn-primary)
-   Secondary nav   → teal outline (.btn-outline-primary)
-   Destructive/back→ light grey   (.btn-outline-secondary)
-   All buttons share the same size and border-radius.
+   Shiny's selectInput renders via Selectize, which creates
+   its own DOM elements (.selectize-input, .selectize-dropdown).
+   The native select.form-select rule is kept as a fallback
+   but the Selectize overrides below are what actually render.
+   ============================================================ */
+
+/* Native select fallback */
+select.form-select,
+select.form-select option {
+  font-size: 1rem !important;
+  background-color: #F8F5F1 !important;
+  color: #1E2A16 !important;
+  border-color: #A8B09F !important;
+}
+
+/* Selectize input box (the visible control) */
+.selectize-input {
+  background-color: #F8F5F1 !important;
+  border: 1px solid #A8B09F !important;
+  color: #1E2A16 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  font-size: 0.95rem !important;
+}
+
+.selectize-input.focus,
+.selectize-input:focus {
+  border-color: #324027 !important;
+  box-shadow: 0 0 0 2px rgba(50, 64, 39, 0.15) !important;
+}
+
+/* Selectize dropdown container */
+.selectize-dropdown {
+  background-color: #ffffff !important;
+  border: 1px solid #A8B09F !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(30, 42, 22, 0.08) !important;
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+/* Individual options in the dropdown */
+.selectize-dropdown-content .option {
+  color: #1E2A16 !important;
+  padding: 8px 12px !important;
+  font-size: 0.95rem !important;
+}
+
+/* Hovered option */
+.selectize-dropdown-content .option:hover,
+.selectize-dropdown-content .option.active {
+  background-color: #EAF0E8 !important;
+  color: #324027 !important;
+}
+
+/* Selected option */
+.selectize-dropdown-content .option.selected {
+  background-color: #324027 !important;
+  color: #F4F6F5 !important;
+}
+
+/* Shiny input container — keep visible for dropdown overflow */
+.shiny-input-container {
+  overflow: visible !important;
+}
+
+
+/* ============================================================
+   Button system – PPT palette
    ============================================================ */
 
 .btn {
-  font-size: 1rem !important;
+  font-size: 0.95rem !important;
   font-weight: 500 !important;
   padding: 8px 20px !important;
   border-radius: 6px !important;
   transition: all 0.2s ease-in-out;
 }
 
-/* Override Bootstrap colour classes to use a single teal palette */
+/* Primary: dark green fill */
 .btn-primary,
 .btn-success,
 .btn-info {
-  background-color: #18BC9C !important;
-  border-color: #18BC9C !important;
-  color: #ffffff !important;
+  background-color: #324027 !important;
+  border-color:     #324027 !important;
+  color:            #F4F6F5 !important;
 }
 
 .btn-primary:hover,
 .btn-success:hover,
 .btn-info:hover {
-  background-color: #128f76 !important;
-  border-color: #128f76 !important;
-  color: #ffffff !important;
+  background-color: #48553F !important;
+  border-color:     #48553F !important;
+  color:            #F4F6F5 !important;
 }
 
+/* Outline variant */
 .btn-outline-primary,
 .btn-outline-success,
 .btn-outline-info {
   background-color: transparent !important;
-  border-color: #18BC9C !important;
-  color: #18BC9C !important;
+  border-color:     #324027 !important;
+  color:            #324027 !important;
 }
 
 .btn-outline-primary:hover,
 .btn-outline-success:hover,
 .btn-outline-info:hover {
-  background-color: #18BC9C !important;
-  border-color: #18BC9C !important;
-  color: #ffffff !important;
+  background-color: #EAF0E8 !important;
+  border-color:     #324027 !important;
+  color:            #324027 !important;
 }
 
+/* Neutral secondary */
 .btn-outline-secondary {
   background-color: transparent !important;
-  border-color: #95a5a6 !important;
-  color: #95a5a6 !important;
+  border-color:     #A8B09F !important;
+  color:            #48553F !important;
 }
 
 .btn-outline-secondary:hover {
-  background-color: #95a5a6 !important;
-  border-color: #95a5a6 !important;
-  color: #ffffff !important;
+  background-color: #EAF0E8 !important;
+  border-color:     #48553F !important;
+  color:            #324027 !important;
 }
+
 
 /* ============================================================
-   Entry screen layout
-   ============================================================ */
-.entry-container {
-  margin-top: 8%;
-  text-align: center;
-}
-
-.entry-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 16px;
-}
-
-.mode-button {
-  min-width: 150px;
-}
-
-/* ============================================================
-   Navbar override
-   ============================================================ */
-.navbar {
-  background-color: #f8f9fa !important;
-  border-bottom: 1px solid #dee2e6 !important;
-  padding: 0.5rem 1rem !important;
-}
-
-.navbar .text-dark {
-  font-size: 0.9rem;
-  color: #6c757d !important;
-}
-
-/* ============================================================
-   Alerts
+   Alerts — PPT palette
    ============================================================ */
 .alert {
-  width: 380px;
-  margin: 16px auto;
-  text-align: center;
-  font-size: 0.95rem;
+  width: 100%;
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
   border-radius: 6px;
 }
 
+.alert-success {
+  background-color: #EAF3DE !important;
+  border-color:     #C0DD97 !important;
+  color:            #3B6D11 !important;
+}
+
+.alert-danger {
+  background-color: #F9EDEA !important;
+  border-color:     #E8B8AD !important;
+  color:            #752111 !important;
+}
+
+
 /* ============================================================
-   Sidebar and panel spacing
+   Sidebar wells — PPT earthy tint
    ============================================================ */
 .well {
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  padding: 16px;
-  /* overflow must be visible so selectize dropdowns are not
-     clipped inside the well container                        */
+  background-color: #F8F5F1 !important;
+  border: 0.5px solid #D0D4CE !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  box-shadow: none !important;
   overflow: visible !important;
 }
 
@@ -159,69 +216,124 @@ select.form-select option {
   font-size: 0.95rem;
 }
 
+
 /* ============================================================
-   Sticky sidebar
-   ------------------------------------------------------------
-   Keeps the control panel fixed in the viewport while the
-   main plot area scrolls. Works in all modern browsers via
-   the -webkit- prefix fallback.
-   max-height + overflow-y allow internal scrolling if the
-   sidebar content is taller than the screen.
+   Sticky sidebar scroll fallback
+   (primary rules in mod_ui.R inline style block)
    ============================================================ */
 .sticky-sidebar {
   position: -webkit-sticky;
   position: sticky;
-  top: 10px;
-  max-height: calc(100vh - 20px);
+  top: 0;
+  max-height: calc(100vh - 52px);
   overflow-y: auto;
   overflow-x: visible;
 }
 
+
 /* ============================================================
-   Selectize dropdown fix
+   Tab panels — PPT green active indicator
    ------------------------------------------------------------
-   Ensures the policy type dropdown renders above all other
-   elements including sliders and neighbouring well panels.
+   bslib/flatly injects high-specificity overrides after
+   static CSS. The rules below use body-anchored selectors
+   and attribute selectors to guarantee they win.
    ============================================================ */
-.shiny-input-container {
-  overflow: visible !important;
+
+/* Tab bar background */
+body ul.nav.nav-tabs,
+body .tabbable ul.nav.nav-tabs {
+  border-bottom: 0.5px solid #D0D4CE !important;
+  background-color: #ffffff !important;
+  padding: 0 8px !important;
 }
 
-.selectize-dropdown {
-  z-index: 9999 !important;
-  position: absolute !important;
+/* All tab links — inactive state */
+body ul.nav.nav-tabs > li > a,
+body ul.nav.nav-tabs .nav-item > .nav-link,
+body ul.nav.nav-tabs a.nav-link {
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  color: #48553F !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  padding: 10px 14px !important;
+  text-decoration: none !important;
 }
+
+/* Active tab link */
+body ul.nav.nav-tabs > li.active > a,
+body ul.nav.nav-tabs .nav-item > .nav-link.active,
+body ul.nav.nav-tabs a.nav-link.active {
+  color: #324027 !important;
+  font-weight: 600 !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid #324027 !important;
+}
+
+/* Hovered inactive tab */
+body ul.nav.nav-tabs > li > a:hover,
+body ul.nav.nav-tabs .nav-item > .nav-link:not(.active):hover,
+body ul.nav.nav-tabs a.nav-link:not(.active):hover {
+  color: #324027 !important;
+  border-bottom: 2px solid #A8B09F !important;
+  background-color: transparent !important;
+}
+
+/* Tab content area */
+.tab-content,
+.tab-content > .tab-pane {
+  background-color: #F4F6F5 !important;
+  border: none !important;
+}
+
 
 /* ============================================================
-   Tab panel titles
-   ============================================================ */
-.nav-tabs .nav-link {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #2C3E50;
-}
-
-.nav-tabs .nav-link.active {
-  color: #18BC9C;
-  border-bottom: 2px solid #18BC9C;
-  font-weight: 600;
-}
-
-/* ============================================================
-   Table styling
+   Table — PPT dark green header
    ============================================================ */
 table.table {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 table.table thead th {
-  background-color: #18BC9C;
-  color: #ffffff;
-  font-weight: 600;
+  background-color: #324027 !important;
+  color:            #F4F6F5 !important;
+  font-weight:      600 !important;
 }
 
+table.table tbody tr:hover {
+  background-color: #F4F6F5;
+}
+
+
 /* ============================================================
-   Fade transition utility (used by theme switcher)
+   Slider inputs — PPT green accent
+   ============================================================ */
+.irs--shiny .irs-bar,
+.irs--shiny .irs-handle {
+  background-color: #324027 !important;
+  border-color:     #324027 !important;
+}
+
+.irs--shiny .irs-from,
+.irs--shiny .irs-to,
+.irs--shiny .irs-single {
+  background-color: #48553F !important;
+}
+
+
+/* ============================================================
+   Radio buttons — PPT green accent
+   ============================================================ */
+input[type="radio"]:checked {
+  accent-color: #324027;
+}
+
+
+/* ============================================================
+   Fade transition utility
    ============================================================ */
 .fade-transition {
   transition: opacity 0.4s ease-in-out;

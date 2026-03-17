@@ -1,15 +1,14 @@
 # ============================================================
 # File: mod_menu.R
 # ------------------------------------------------------------
-# Description: Top navigation menu module. Renders a Bootstrap
-#   navbar that persists across all non-entry views. Provides:
-#     - An active dataset indicator (read-only, italic text).
-#     - Three view navigation buttons: Home, Simple, Advanced.
-#   The Simple View button is intentionally disabled pending
-#   implementation (Block 5 of the roadmap). It renders as a
-#   plain HTML <button> with a native browser tooltip rather
-#   than a Shiny actionButton so that the disabled state and
-#   tooltip work correctly without JavaScript intervention.
+# Description: Top navigation menu module. Renders a PPT-branded
+#   dark green navbar that persists across all non-entry views.
+#   Provides:
+#     - Brand name with orange accent slash.
+#     - Active dataset indicator (italic, muted).
+#     - Three view buttons: Home, Simple (disabled), Advanced.
+#   Simple View button renders as a plain HTML <button> so
+#   the disabled state and native tooltip work correctly.
 # Author: Cristian Paez
 # Created: 2025-11-07
 # ============================================================
@@ -18,13 +17,10 @@
 # ------------------------------------------------------------
 # Function: mod_menu_ui()
 # Description:
-#   Renders the top navigation bar as a Bootstrap navbar.
-#   The bar is right-aligned and contains the dataset indicator
-#   and the three view buttons. It is injected into the page
-#   above the main content by app.R whenever screen() != "entry".
+#   Renders the top navigation bar as a PPT dark green navbar.
+#   Injected above main content by app.R when screen() != "entry".
 # Parameters:
-#   id – Shiny module identifier; used to namespace outputs and
-#        inputs so they do not collide with other modules.
+#   id – Shiny module identifier.
 # Returns:
 #   A tagList() containing the <nav> element.
 # ------------------------------------------------------------
@@ -33,40 +29,77 @@ mod_menu_ui <- function(id) {
 
   tagList(
     tags$nav(
-      class = "navbar navbar-expand-lg border",
-      style = "background-color:#E9ECEF; padding:0.6rem 1rem;",
+      style = paste(
+        "background-color:#324027;",
+        "border-bottom:1px solid #1E2A16;",
+        "padding:0 1rem;",
+        "height:52px;",
+        "display:flex;",
+        "align-items:center;",
+        "justify-content:space-between;"
+      ),
 
-      div(
-        class = "container-fluid d-flex justify-content-end align-items-center gap-3",
+      # Left: brand name
+      tags$span(
+        style = "font-size:14px; font-weight:500; color:#F4F6F5;",
+        "SEIR Dashboard"
+      ),
 
-        # Dataset indicator: shows the active source (e.g. "Dataset: MOCK")
-        # Rendered server-side so it updates reactively on dataset change
-        span(textOutput(ns("active_dataset")),
-             class = "text-dark small fst-italic me-3"),
+      # Centre: active dataset indicator
+      tags$span(
+        textOutput(ns("active_dataset"), inline = TRUE),
+        style = paste(
+          "font-size:11px;",
+          "color:rgba(244,246,245,0.55);",
+          "font-style:italic;"
+        )
+      ),
 
-        # View navigation buttons
-        div(
-          class = "d-flex align-items-center gap-2",
+      # Right: navigation buttons
+      tags$div(
+        style = "display:flex; gap:6px; align-items:center;",
 
-          # Home: returns the user to the entry/dataset-selection screen
-          actionButton(ns("btn_home"), "Home",
-                       class = "btn btn-outline-secondary btn-sm"),
+        # Home button — neutral outline on dark background
+        actionButton(
+          ns("btn_home"), "Home",
+          style = paste(
+            "font-size:11px;",
+            "padding:4px 12px;",
+            "border-radius:5px;",
+            "background:transparent;",
+            "border:0.5px solid rgba(244,246,245,0.3);",
+            "color:#F4F6F5;"
+          )
+        ),
 
-          # Simple View: disabled — Block 5 implementation pending.
-          # Rendered as a raw <button> (not actionButton) so that the
-          # disabled attribute and native tooltip work in all browsers.
-          # pointer-events: none prevents click events reaching Shiny.
-          tags$button(
-            "Simple",
-            class    = "btn btn-outline-secondary btn-sm",
-            disabled = "disabled",
-            title    = "Coming soon",
-            style    = "cursor: not-allowed; opacity: 0.5;"
-          ),
+        # Simple View — disabled, Coming soon tooltip
+        # Raw <button> so disabled + title work in all browsers
+        tags$button(
+          "Simple",
+          disabled = "disabled",
+          title    = "Coming soon",
+          style    = paste(
+            "font-size:11px;",
+            "padding:4px 12px;",
+            "border-radius:5px;",
+            "background:transparent;",
+            "border:0.5px solid rgba(244,246,245,0.15);",
+            "color:rgba(244,246,245,0.3);",
+            "cursor:not-allowed;"
+          )
+        ),
 
-          # Advanced View: navigates to the full parameter dashboard
-          actionButton(ns("btn_advanced"), "Advanced",
-                       class = "btn btn-outline-info btn-sm")
+        # Advanced button — orange accent outline (active state)
+        actionButton(
+          ns("btn_advanced"), "Advanced",
+          style = paste(
+            "font-size:11px;",
+            "padding:4px 12px;",
+            "border-radius:5px;",
+            "background:transparent;",
+            "border:0.5px solid #F59342;",
+            "color:#F59342;"
+          )
         )
       )
     )
@@ -78,27 +111,18 @@ mod_menu_ui <- function(id) {
 # Function: mod_menu_server()
 # Description:
 #   Server logic for the navigation menu. Renders the active
-#   dataset label and wires navigation button click events to
-#   the shared screen() reactive value in app.R.
-#   No observer is registered for btn_simple because the button
-#   is disabled in the UI and cannot emit click events.
+#   dataset label and wires navigation buttons to screen().
 # Parameters:
-#   id              – Shiny module identifier.
-#   screen          – reactiveVal(character); controls which view
-#                     is rendered by output$main_ui in app.R.
-#                     Accepted values: "entry", "advanced".
-#                     ("simple" reserved for Block 5.)
-#   dataset_selector – reactiveVal(character); holds the active
-#                     dataset source key (e.g. "mock", "iecs").
+#   id               – Shiny module identifier.
+#   screen           – reactiveVal(character); active view.
+#   dataset_selector – reactiveVal(character); active source key.
 # Returns:
-#   None (side effects: updates screen() and renders output).
+#   None (side effects only).
 # ------------------------------------------------------------
 mod_menu_server <- function(id, screen, dataset_selector) {
   moduleServer(id, function(input, output, session) {
 
     # --- Reactive block: render active dataset label ---
-    # Displays "No dataset loaded" until a source is selected,
-    # then shows the source key in upper case for visibility
     output$active_dataset <- renderText({
       ds <- dataset_selector()
       if (is.null(ds)) return("No dataset loaded")
@@ -106,16 +130,15 @@ mod_menu_server <- function(id, screen, dataset_selector) {
     })
     # --- End of reactive block ---
 
-    # --- Reactive block: Home button navigation ---
+    # --- Reactive block: Home button ---
     observeEvent(input$btn_home, {
       screen("entry")
     })
     # --- End of reactive block ---
 
-    # btn_simple observer intentionally omitted — button is
-    # disabled in the UI and will be wired in Block 5
+    # btn_simple intentionally omitted — button is disabled in UI
 
-    # --- Reactive block: Advanced button navigation ---
+    # --- Reactive block: Advanced button ---
     observeEvent(input$btn_advanced, {
       screen("advanced")
     })

@@ -10,9 +10,8 @@
 #     - ui_main()            – full page layout that wires all
 #                              panels and plot outputs together
 #
-#   All functions accept a Shiny namespace function (ns) or
-#   a module id (viz_id) so they can be reused across views
-#   without id collisions.
+#   Layout aligned with PPT brand guidelines: dark green navbar,
+#   earthy tint sidebar, PPT colour palette throughout.
 #
 # Author: Cristian Paez
 # Created: 2025-11-07
@@ -25,8 +24,6 @@
 #   Builds the epidemiological parameter control panel.
 #   Provides slider inputs for the four core SEIR parameters:
 #   R0, incubation period, infectious period, and IFR.
-#   All default values are drawn from global constants defined
-#   in global.R so that a single change propagates everywhere.
 # Parameters:
 #   ns – Shiny namespace function produced by NS(id).
 # Returns:
@@ -34,9 +31,20 @@
 # ------------------------------------------------------------
 ui_seir_params <- function(ns) {
   div(
-    h4("Epidemiological Model Parameters"),
+    tags$div(
+      "Epidemiological parameters",
+      style = paste(
+        "font-size:10px; font-weight:500;",
+        "color:#48553F;",
+        "text-transform:uppercase;",
+        "letter-spacing:0.06em;",
+        "padding-bottom:8px;",
+        "border-bottom:0.5px solid #D0D4CE;",
+        "margin-bottom:10px;"
+      )
+    ),
 
-    # R0: basic reproduction number; drives transmission intensity
+    # R0: basic reproduction number
     sliderInput(ns("r0_value"),
                 label = HTML("Basic Reproduction Number (R<sub>0</sub>)"),
                 min = 0.5, max = 5.0, value = INITIAL_R0, step = 0.1),
@@ -44,18 +52,20 @@ ui_seir_params <- function(ns) {
     # Incubation period: average days from exposure to infectiousness
     sliderInput(ns("incubation_period"),
                 label = "Incubation Period (days)",
-                min = 1, max = 14, value = INITIAL_INCUBATION_PERIOD, step = 1),
+                min = 1, max = 14, value = INITIAL_INCUBATION_PERIOD,
+                step = 1),
 
     # Infectious period: average days an individual remains infectious
     sliderInput(ns("infectious_period"),
                 label = "Infectious Period (days)",
-                min = 1, max = 21, value = INITIAL_INFECTIOUS_PERIOD, step = 1),
+                min = 1, max = 21, value = INITIAL_INFECTIOUS_PERIOD,
+                step = 1),
 
-    # IFR expressed as a percentage [0, 100]; converted to proportion
-    # internally by percent_to_prop() before ODE integration
+    # IFR as percentage [0,100]; converted internally by percent_to_prop()
     sliderInput(ns("ifr_value"),
                 label = "Infection Fatality Rate (IFR, %)",
-                min = 0.01, max = 5.0, value = INITIAL_IFR * 100, step = 0.01)
+                min = 0.01, max = 5.0, value = INITIAL_IFR * 100,
+                step = 0.01)
   )
 }
 
@@ -64,10 +74,9 @@ ui_seir_params <- function(ns) {
 # Function: ui_policy_params()
 # Description:
 #   Builds the public policy parameter control panel.
-#   Provides a radio button selector for the intervention type
-#   and a compliance level slider. A dynamic description of
-#   the selected policy is rendered via uiOutput — the
-#   corresponding renderUI lives in mod_server.R.
+#   Provides radio buttons for intervention type and a
+#   compliance slider. Dynamic policy description rendered
+#   via uiOutput — corresponding renderUI in mod_server.R.
 # Parameters:
 #   ns – Shiny namespace function produced by NS(id).
 # Returns:
@@ -75,13 +84,24 @@ ui_seir_params <- function(ns) {
 # ------------------------------------------------------------
 ui_policy_params <- function(ns) {
   div(
-    h4("Public Policy Parameters"),
+    tags$div(
+      "Public policy",
+      style = paste(
+        "font-size:10px; font-weight:500;",
+        "color:#48553F;",
+        "text-transform:uppercase;",
+        "letter-spacing:0.06em;",
+        "padding-bottom:8px;",
+        "border-bottom:0.5px solid #D0D4CE;",
+        "margin-bottom:10px;"
+      )
+    ),
 
-    # Four intervention strategies; selection feeds into the
-    # effective R0 calculation in mod_model.R (Step 3)
+    # Four intervention strategies; selection feeds into
+    # the effective R0 calculation in mod_model.R (Step 3)
     radioButtons(
       inputId  = ns("policy_type"),
-      label    = "Type of Intervention",
+      label    = "Type of intervention",
       choices  = c(
         "No Intervention"           = "no_intervention",
         "Phased Mitigation"         = "phased_mitigation",
@@ -95,15 +115,15 @@ ui_policy_params <- function(ns) {
     uiOutput(ns("policy_description")),
     br(),
 
-    # Compliance level: scales the R0 reduction applied by the
-    # selected policy (0% = no effect, 100% = maximum reduction)
+    # Compliance: scales the R0 reduction applied by the policy
     sliderInput(ns("compliance_level"),
                 label = "Compliance Level (%)",
                 min = 0, max = 100, value = 50, step = 5),
 
-    # Explanatory note for non-technical users
-    tags$small(class = "text-muted",
-               HTML("Policy reduces effective R<sub>0</sub> by up to 50% at full compliance."))
+    tags$small(
+      class = "text-muted",
+      HTML("Policy reduces effective R<sub>0</sub> by up to 50% at full compliance.")
+    )
   )
 }
 
@@ -112,11 +132,8 @@ ui_policy_params <- function(ns) {
 # Function: ui_resource_params()
 # Description:
 #   Builds the healthcare resource parameter control panel.
-#   Numeric inputs (capacity, staff) only update the Resource
-#   Pressure plot threshold lines and do NOT re-run the ODE
-#   solver. Rate sliders (ICU admission, ventilator usage) DO
-#   re-trigger the simulation because they change demand
-#   calculations inside mod_model.R.
+#   Capacity inputs update plot thresholds only (no ODE re-run).
+#   Rate sliders re-trigger the simulation.
 # Parameters:
 #   ns – Shiny namespace function produced by NS(id).
 # Returns:
@@ -124,41 +141,46 @@ ui_policy_params <- function(ns) {
 # ------------------------------------------------------------
 ui_resource_params <- function(ns) {
   div(
-    h4("Critical Resource Parameters"),
+    tags$div(
+      "Healthcare resources",
+      style = paste(
+        "font-size:10px; font-weight:500;",
+        "color:#48553F;",
+        "text-transform:uppercase;",
+        "letter-spacing:0.06em;",
+        "padding-bottom:8px;",
+        "border-bottom:0.5px solid #D0D4CE;",
+        "margin-bottom:10px;"
+      )
+    ),
 
-    # Clarify the distinction between capacity inputs (threshold
-    # only) and rate sliders (trigger re-simulation) for users
-    tags$small(class = "text-muted",
-               "Capacity values update Resource Pressure thresholds.
-       Rate sliders re-run the simulation automatically."),
+    tags$small(
+      class = "text-muted",
+      "Capacity values update Resource Pressure thresholds. ",
+      "Rate sliders re-run the simulation automatically."
+    ),
     br(), br(),
 
     # Capacity inputs — affect plot threshold lines only
     numericInput(ns("icu_capacity"),
                  "ICU Bed Capacity",
-                 INITIAL_ICU_CAPACITY,
-                 min = 0),
+                 INITIAL_ICU_CAPACITY, min = 0),
     numericInput(ns("ventilator_availability"),
                  "Ventilator Availability",
-                 INITIAL_VENTILATOR_AVAILABILITY,
-                 min = 0),
+                 INITIAL_VENTILATOR_AVAILABILITY, min = 0),
     numericInput(ns("healthcare_staff"),
                  "Available Healthcare Staff",
-                 INITIAL_HEALTHCARE_STAFF,
-                 min = 0),
+                 INITIAL_HEALTHCARE_STAFF, min = 0),
 
-    # Rate sliders — stored as percentages [0, 100];
-    # converted to proportions before ODE post-processing
+    # Rate sliders — stored as percentages [0,100]
     sliderInput(ns("icu_admission_rate"),
                 "ICU Admission Rate (%)",
                 min = 0.1, max = 30.0,
-                value = INITIAL_ICU_RATE * 100,
-                step = 0.1),
+                value = INITIAL_ICU_RATE * 100, step = 0.1),
     sliderInput(ns("ventilator_usage_rate"),
                 "Ventilator Usage Rate (%)",
                 min = 0.1, max = 10.0,
-                value = INITIAL_VENTILATOR_RATE * 100,
-                step = 0.1)
+                value = INITIAL_VENTILATOR_RATE * 100, step = 0.1)
   )
 }
 
@@ -166,25 +188,20 @@ ui_resource_params <- function(ns) {
 # ------------------------------------------------------------
 # Function: ui_main()
 # Description:
-#   Assembles the full Advanced View page layout. Combines a
-#   sticky left sidebar (parameter panels) with a right-hand
-#   tabset panel containing three output tabs:
-#     1. Epidemic Curves  – SEIR dynamics and cumulative metrics
-#     2. Resource Pressure – ICU/ventilator demand vs. capacity
-#     3. Simulated Data   – tabular preview and CSV download
+#   Assembles the full Advanced View page layout:
+#     - PPT dark green navbar with dataset indicator and
+#       navigation buttons (Home, Simple disabled, Advanced)
+#     - Sticky left sidebar (parameter panels) on earthy tint
+#     - Right-hand tabset with three output panels
+#     - Footer bar with project attribution
 #
 #   Both ns and ns_viz resolve to the same namespace (viz_id)
-#   so that server-side input observers (mod_server.R) and
-#   plot outputs (mod_viz.R) share a consistent id prefix.
-#
-#   The Run Simulation button is commented out because
-#   simulation fires automatically on parameter change.
-#   It is retained here for future manual-trigger use.
+#   so input observers (mod_server.R) and plot outputs
+#   (mod_viz.R) share a consistent id prefix.
 # Parameters:
-#   viz_id – character; module id used to build the namespace.
-#            Must match the id passed to mod_server() in app.R.
+#   viz_id – character; module id; must match mod_server() id.
 # Returns:
-#   A fluidPage() containing the complete Advanced View UI.
+#   A tagList() containing the complete Advanced View layout.
 # ------------------------------------------------------------
 ui_main <- function(viz_id) {
 
@@ -193,111 +210,192 @@ ui_main <- function(viz_id) {
   ns     <- NS(viz_id)
   ns_viz <- NS(viz_id)
 
-  fluidPage(
+  tagList(
     useShinyjs(),
-    theme = bs_theme(version = 5, bootswatch = "flatly"),
 
-    # --- Inline CSS overrides for the sticky sidebar ---
-    # These supplement custom.css with layout-specific rules
-    # that depend on the #controls-col id being present
+    # --------------------------------------------------------
+    # Inline CSS — sticky sidebar scroll and well colours
+    # --------------------------------------------------------
     tags$head(
       tags$style(HTML("
-        .fade-transition { transition: opacity 0.5s ease-in-out; }
-
         #controls-col {
           position: sticky;
-          top: 10px;
-          height: calc(100vh - 30px);
+          top: 0px;
+          height: calc(100vh - 52px);
           overflow-y: auto;
           overflow-x: hidden;
-          padding-right: 8px;
+          padding: 14px 12px;
+          background-color: #ffffff;
+          border-right: 0.5px solid #D0D4CE;
         }
 
         #controls-col::-webkit-scrollbar { width: 4px; }
         #controls-col::-webkit-scrollbar-thumb {
-          background: #ced4da;
+          background: #D0D4CE;
           border-radius: 4px;
         }
 
         #controls-col .well {
-          background-color: #f8f9fa;
-          border: 1px solid #e9ecef;
-          border-radius: 6px;
-          padding: 14px;
-          margin-bottom: 12px;
+          background-color: #F8F5F1 !important;
+          border: 0.5px solid #D0D4CE !important;
+          border-radius: 8px !important;
+          padding: 12px !important;
+          margin-bottom: 10px !important;
+          box-shadow: none !important;
+        }
+
+        .content-area {
+          background-color: #F4F6F5;
+          min-height: calc(100vh - 52px);
+          padding: 16px;
+        }
+
+        .tab-content {
+          background-color: #F4F6F5;
+        }
+
+        .chart-card {
+          background: #ffffff;
+          border: 0.5px solid #D0D4CE;
+          border-radius: 8px;
+          padding: 14px 16px;
+          margin-bottom: 14px;
+        }
+
+        .ppt-footer {
+          background: #F8F5F1;
+          border-top: 0.5px solid #D0D4CE;
+          padding: 8px 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 11px;
         }
       "))
     ),
 
-    titlePanel("SEIR Epidemiological Dashboard \u2013 Argentina"),
-    br(),
+    # --------------------------------------------------------
+    # Main layout: full-width, no fluidPage padding
+    # --------------------------------------------------------
+    tags$div(
+      style = "display:flex; flex-direction:column; min-height:100vh;",
 
-    fluidRow(
+      # --- Left + right columns ---
+      tags$div(
+        style = "display:flex; flex:1;",
 
-      # --- Left column: sticky parameter sidebar ---
-      column(
-        width = 4,
-        div(
-          id = "controls-col",
+        # Left sidebar
+        tags$div(
+          id    = "controls-col",
+          style = "width:280px; flex-shrink:0;",
           wellPanel(ui_seir_params(ns)),
           wellPanel(ui_policy_params(ns)),
-          wellPanel(ui_resource_params(ns)),
-
+          wellPanel(ui_resource_params(ns))
           # Run Simulation button — temporarily hidden.
-          # Simulation fires automatically on any parameter change.
-          # Uncomment to restore manual-trigger behaviour and also
-          # re-enable the corresponding observeEvent in mod_server.R.
-          # actionButton(
-          #   ns("run_simulation"),
-          #   label = "Run Simulation",
-          #   class = "btn btn-primary w-100"
-          # ),
-          br()
+          # Uncomment to restore manual-trigger behaviour and
+          # re-enable the observeEvent in mod_server.R.
+          # actionButton(ns("run_simulation"), "Run Simulation",
+          #              class = "btn btn-primary w-100")
+        ),
+
+        # Right content area
+        tags$div(
+          class = "content-area",
+          style = "flex:1; overflow-y:auto;",
+
+          tabsetPanel(
+
+            # Tab 1: SEIR compartment dynamics and cumulative metrics
+            tabPanel(
+              "Epidemic Curves",
+              br(),
+              tags$div(
+                class = "chart-card",
+                tags$h6(
+                  "SEIR Compartment Dynamics (S, E, I, R)",
+                  style = "color:#1E2A16; font-weight:500; margin-bottom:8px;"
+                ),
+                plotOutput(ns_viz("seir_plot"), height = "300px")
+              ),
+              tags$div(
+                class = "chart-card",
+                tags$h6(
+                  "Simulated Cumulative Cases and Deaths",
+                  style = "color:#1E2A16; font-weight:500; margin-bottom:8px;"
+                ),
+                plotOutput(ns_viz("cases_deaths_plot"), height = "260px")
+              )
+            ),
+
+            # Tab 2: Healthcare resource demand vs. capacity
+            tabPanel(
+              "Resource Pressure",
+              br(),
+              tags$div(
+                class = "chart-card",
+                tags$h6(
+                  "Critical Resource Demand vs. Capacity",
+                  style = "color:#1E2A16; font-weight:500; margin-bottom:4px;"
+                ),
+                tags$small(
+                  class = "text-muted",
+                  "Shaded area indicates periods where simulated demand exceeds capacity."
+                ),
+                br(),
+                plotOutput(ns_viz("resource_pressure_plot"),
+                           height = "460px")
+              )
+            ),
+
+            # Tab 3: Simulation output table and CSV download
+            tabPanel(
+              "Simulated Data",
+              br(),
+              tags$div(
+                class = "chart-card",
+                tags$h6(
+                  "Simulation Output \u2014 First 10 Rows",
+                  style = "color:#1E2A16; font-weight:500; margin-bottom:12px;"
+                ),
+                tableOutput(ns("simulated_data_table")),
+                br(),
+                # Full results exported via write.csv2()
+                # (semicolon separator, European locale)
+                downloadButton(
+                  ns("download_csv"),
+                  label = "Download Results (CSV)",
+                  class = "btn btn-primary"
+                )
+              )
+            )
+          )
         )
       ),
 
-      # --- Right column: tabbed output panels ---
-      column(
-        width = 8,
-        tabsetPanel(
-
-          # Tab 1: SEIR compartment dynamics and cumulative metrics
-          tabPanel(
-            "Epidemic Curves",
-            br(),
-            h5("SEIR Compartment Dynamics (S, E, I, R)"),
-            plotOutput(ns_viz("seir_plot"), height = "320px"),
-            br(),
-            h5("Simulated Cumulative Cases and Deaths"),
-            plotOutput(ns_viz("cases_deaths_plot"), height = "280px")
-          ),
-
-          # Tab 2: Healthcare resource demand versus capacity thresholds
-          tabPanel(
-            "Resource Pressure",
-            br(),
-            h5("Critical Resource Demand vs. Capacity"),
-            tags$small(class = "text-muted",
-                       "Red shading indicates periods where simulated demand exceeds capacity."),
-            br(),
-            plotOutput(ns_viz("resource_pressure_plot"), height = "480px")
-          ),
-
-          # Tab 3: Raw simulation output — table preview and CSV export
-          tabPanel(
-            "Simulated Data",
-            br(),
-            h5("Simulation Output \u2014 First 10 Rows"),
-            tableOutput(ns("simulated_data_table")),
-            br(),
-            # Full simulation results exported via write.csv2()
-            # (semicolon separator, European locale formatting)
-            downloadButton(
-              ns("download_csv"),
-              label = "Download Results (CSV)",
-              class = "btn btn-primary"
+      # --------------------------------------------------------
+      # Footer bar
+      # --------------------------------------------------------
+      tags$div(
+        class = "ppt-footer",
+        tags$span(
+          tags$span(
+            style = paste(
+              "display:inline-block;",
+              "width:5px; height:5px;",
+              "border-radius:50%;",
+              "background:#F59342;",
+              "margin-right:5px;",
+              "vertical-align:middle;"
             )
+          ),
+          tags$span(
+            "Pandemic Preparedness Toolkit \u00b7 Argentina Unit \u00b7 WP5",
+            style = "color:#7A8A72;"
           )
+        ),
+        tags$span(
+          "Funded by Wellcome \u00b7 CEMIC",
+          style = "color:#A8B09F;"
         )
       )
     )
