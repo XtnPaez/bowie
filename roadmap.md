@@ -27,6 +27,9 @@ Package 5, funded by Wellcome.
 - Public deployment on shinyapps.io.
 - Full repository documentation: `CODESTYLE.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`.
 - UI and chart colours fully aligned with PPT brand guidelines (Wellcome / CEMIC).
+- Implementation Guide (`docs/implementation_guide.md`) — complete technical documentation
+  covering module architecture, SEIR equations, parameters with bibliographic sources,
+  dataset specification, visual design system, and deployment instructions.
 
 ---
 
@@ -34,7 +37,10 @@ Package 5, funded by Wellcome.
 
 The following ToR requirements for Product 2 are pending:
 
-- **Simplified View** — decision-maker interface with core SEIR plots and KPIs (button visible but disabled).
+- **Simplified View** — decision-maker interface with KPI indicators and alarm system
+  (button visible but disabled; design fully specified — ready to implement).
+- **User CSV upload** — ability to load a custom dataset from a local `.csv` file
+  (design session pending; scoped for post-review phase).
 - **External data connectivity** — API integration with WHO, OWID, and national surveillance repositories.
 - **Sociodemographic data layer** — population demographics, mobility patterns, and socioeconomic factors.
 - **Interactive presentation with practical exercises** — visualisation principles infographic and guided exercises.
@@ -43,24 +49,24 @@ The following ToR requirements for Product 2 are pending:
 
 ## Roadmap
 
-### ✅ Block 1 – Core Refactor
+### Block 1 – Core Refactor
 **Goal:** Reproducible, modular, and scalable architecture.  
 **Status:** Complete.
 
-### ✅ Block 2 – Code Internationalisation
+### Block 2 – Code Internationalisation
 **Goal:** English-only codebase and clean UI.  
 **Status:** Complete.
 
-### ✅ Block 3 – Data Hub Interface
+### Block 3 – Data Hub Interface
 **Goal:** Centralised dataset loading, validation, and persistence via `data_interface.R`.  
 **Status:** Complete. Functions: `get_data()`, `validate_schema()`, `save_dataset()`,
 `list_datasets()`, `load_iecs_data()`.
 
-### ✅ Block 4 – User Experience Redesign
+### Block 4 – User Experience Redesign
 **Goal:** Entry screen, navigation menu, and Advanced View layout.  
 **Status:** Complete. Includes sticky sidebar, dataset selector, top menu, and view routing.
 
-### ✅ Block 4b – UI Polish and Bug Fixes (March 2026)
+### Block 4b – UI Polish and Bug Fixes (March 2026)
 **Goal:** Production-quality UI ahead of first partial delivery (26 March 2026).  
 **Status:** Complete.  
 **Completed items:**
@@ -70,32 +76,116 @@ The following ToR requirements for Product 2 are pending:
 - All `geom_line(size=)` calls replaced with `linewidth=` (ggplot2 >= 3.4.0 compliance).
 - X-axis guide lines added to all three plots via shared `ppt_theme()` function in `mod_viz.R`.
 - Chart colour palettes updated to PPT categorical and accent colours.
-- Namespace collision fixed: `viz_plot_server()` moved to top-level server in `app.R` to prevent double-prefixed output ids (`viz_advanced-viz_advanced-seir_plot`).
-- CSS false positive fixed in `utils_dependencies.R`: CSS pseudo-selector `col::` was parsed as an R package name; resolved with format-based filter.
+- Namespace collision fixed: `viz_plot_server()` moved to top-level server in `app.R` to
+  prevent double-prefixed output ids (`viz_advanced-viz_advanced-seir_plot`).
+- CSS false positive fixed in `utils_dependencies.R`: CSS pseudo-selector `col::` was
+  parsed as an R package name; resolved with format-based filter.
 - Selectize dropdown colours overridden to PPT palette.
 - Bootstrap `text-info` class replaced with PPT earthy green in policy description.
 - Fantasy project name removed from all UI-visible strings.
+- Implementation Guide written from scratch in English, aligned with ToR Product 3
+  requirements (`docs/implementation_guide.md`).
 
-### 🔹 Block 5 – Simplified Visualisation Mode (ToR)
-**Goal:** A simplified decision-maker interface with core SEIR plots and KPIs only.  
-**Status:** 🟡 In progress — UI placeholder in place, implementation pending.  
-**Subtasks:**
-- Create `mod_viz_simple.R` with SEIR curves, peak infection KPI, and resource summary.
-- Hide complex parameter controls.
-- Wire Simple View routing in `app.R`.
-- KPI card design agreed in mockup session (March 2026) — ready to implement.
+### Block 5 – Simplified Visualisation Mode (ToR)
+**Goal:** A decision-maker interface that communicates epidemic status through KPI indicators
+and a geometric alarm system, without requiring interpretation of compartmental curves.  
+**Status:** In progress — UI placeholder in place. Design fully specified (March 2026).
+Target completion: 23 March 2026 (ahead of first partial delivery).
 
-### 🔹 Block 6 – External Data Connectivity (ToR)
+#### Design specification
+
+**Layout:** Single-page view. No tabs, no sidebar, no curves.
+
+**Top section — three independent KPI cards**, each with its own alarm indicator.
+Each alarm indicator uses a geometric shape and PPT palette colour:
+
+| State | Shape | Colour | Meaning |
+|-------|-------|--------|---------|
+| Controlled | Circle | PPT sea green `#3EA27F` | Situation under control |
+| Warning | Triangle | PPT orange `#F59342` | Attention required |
+| Critical | Square | PPT dark red `#752111` | Situation out of control |
+
+**Card 1 — Epidemic trajectory**
+Metric: weekly growth rate of the infectious compartment (I).  
+Logic:
+- Circle: I is decreasing or stable (growth rate <= 0%)
+- Triangle: I is growing moderately (growth rate 1–20% weekly)
+- Square: I is growing rapidly (growth rate > 20% weekly)
+
+**Card 2 — ICU pressure**
+Metric: `ICU_Occupancy_Sim` as a percentage of ICU capacity.  
+Logic:
+- Circle: occupancy < 70% of capacity
+- Triangle: occupancy 70–100% of capacity
+- Square: occupancy > 100% of capacity (capacity exceeded)
+
+**Card 3 — Cumulative impact**
+Metric: `Cumulative_Deaths` as a percentage of total population.  
+Logic:
+- Circle: below low threshold (default: 0.05% of population)
+- Triangle: between low and high threshold (default: 0.05–0.20%)
+- Square: above high threshold (default: > 0.20%)
+
+**Bottom section — two parameter sliders only:**
+- R₀ (Basic Reproduction Number) — range and default from `global.R`
+- Compliance Level (%) — range 0–100, default 50
+
+Sliders are **fully isolated from the Advanced View state** and always initialise
+from `global.R` defaults. This ensures the Simple View works correctly whether the
+user enters directly from the entry screen or navigates from the Advanced View.
+
+**Settings panel — threshold configuration:**
+A collapsible "Settings" panel (not a separate route) exposes six numeric inputs
+for overriding the default alarm thresholds:
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| ICU warning threshold (%) | 70 | % of capacity triggering triangle |
+| ICU critical threshold (%) | 100 | % of capacity triggering square |
+| Growth warning threshold (%) | 1 | Weekly I growth rate triggering triangle |
+| Growth critical threshold (%) | 20 | Weekly I growth rate triggering square |
+| Deaths warning threshold (%) | 0.05 | % of population triggering triangle |
+| Deaths critical threshold (%) | 0.20 | % of population triggering square |
+
+All thresholds are reactive — changing them updates the alarm indicators immediately
+without re-running the ODE solver.
+
+#### Implementation plan
+
+| Task | File(s) | Estimated effort |
+|------|---------|-----------------|
+| Create Simple View UI with KPI cards and alarm shapes | `mod_ui_simple.R` (new) | 2 h |
+| Create Simple View server with isolated state and alarm logic | `mod_server_simple.R` (new) | 2 h |
+| Enable Simple button in entry and menu | `mod_entry.R`, `mod_menu.R` | 30 min |
+| Wire Simple View routing in `app.R` | `app.R` | 30 min |
+| Update `implementation_guide.md` and `proj_evolution.md` | docs | 1 h |
+| Testing and deploy | — | 1 h |
+| **Total** | | **~7 h** |
+
+### Block 5b – User CSV Upload (scoped, pending design session)
+**Goal:** Allow users to load a custom `.csv` dataset from their local machine as an
+alternative to the mock and IECS sources.  
+**Status:** Scoped. Design session required before implementation.  
+**Agreed scope:**
+- Format: `.csv` only.
+- User provides population/time data only; model parameters are set via UI sliders.
+- Minimum required columns to be defined in design session (expected to align with
+  current `validate_schema()` requirements: `time`, `S`, `E`, `I`, `R`).
+- `data_interface.R` already has a `"file"` source handler in `get_data()` — this
+  block extends it to accept Shiny `fileInput` uploads.
+- Target: post-review phase (after 26 March 2026 delivery).
+
+### Block 6 – External Data Connectivity (ToR)
 **Goal:** Connect to real-time epidemiological and sociodemographic data sources via API.  
-**Status:** 🔴 Pending.  
+**Status:** Pending.  
 **Subtasks:**
 - Integrate WHO and OWID APIs via `httr` / `jsonlite`.
 - Add sociodemographic data layer (population demographics, mobility patterns).
 - Extend `data_interface.R` with API source handler.
 
-### 🔹 Block 7 – Interactive Presentation and Practical Exercises (ToR)
+### Block 7 – Interactive Presentation and Practical Exercises (ToR)
 **Goal:** Educational component illustrating effective dashboard use and visualisation principles.  
-**Status:** 🔴 Pending.  
+**Status:** Pending.  
 **Subtasks:**
 - Design infographic covering visualisation principles (clarity, graph selection, colour, common errors).
 - Develop practical exercises using real-life dashboard examples.
@@ -107,14 +197,25 @@ The following ToR requirements for Product 2 are pending:
 
 | Block | Depends On | Status |
 |-------|------------|--------|
-| **1. Core Refactor** | – | ✅ Complete |
-| **2. Internationalisation** | 1 | ✅ Complete |
-| **3. Data Hub Interface** | 1 | ✅ Complete |
-| **4. UX Redesign** | 3 | ✅ Complete |
-| **4b. UI Polish and Bug Fixes** | 4 | ✅ Complete |
-| **5. Simplified Visualisation** | 3, 4, 4b | 🟡 In progress |
-| **6. External Data + Sociodemographic** | 3 | 🔴 Pending |
-| **7. Interactive Presentation** | 4, 5 | 🔴 Pending |
+| **1. Core Refactor** | – | Complete |
+| **2. Internationalisation** | 1 | Complete |
+| **3. Data Hub Interface** | 1 | Complete |
+| **4. UX Redesign** | 3 | Complete |
+| **4b. UI Polish and Bug Fixes** | 4 | Complete |
+| **5. Simplified Visualisation** | 3, 4, 4b | In progress — target 23 Mar 2026 |
+| **5b. User CSV Upload** | 3, 5 | Scoped — post-review |
+| **6. External Data + Sociodemographic** | 3 | Pending |
+| **7. Interactive Presentation** | 4, 5 | Pending |
+
+---
+
+## Delivery Timeline
+
+| Milestone | Date | Contents |
+|-----------|------|----------|
+| First partial delivery | 26 March 2026 | Blocks 1–4b complete + Block 5 complete |
+| Review feedback incorporated | TBD | Corrections from Wellcome / CEMIC review |
+| Post-review phase | TBD | Blocks 5b, 6, 7 |
 
 ---
 
@@ -122,9 +223,10 @@ The following ToR requirements for Product 2 are pending:
 
 The SEIR dashboard has successfully transitioned from a prototype into a **deployed, functional
 modelling platform** with a UI fully aligned with PPT brand guidelines. The technical and UX
-foundations are stable. Remaining work focuses on three ToR deliverables: the Simplified View,
-external data connectivity with sociodemographic layer, and the interactive presentation with
-practical exercises.
+foundations are stable. The Simplified View (Block 5) is fully designed and ready to implement,
+with a target completion of 23 March 2026 ahead of the first partial delivery. Remaining work
+after delivery focuses on user CSV upload, external data connectivity, sociodemographic layer,
+and the interactive presentation with practical exercises.
 
 **Maintainer:** Cristian Paez  
 **Date:** March 2026  
