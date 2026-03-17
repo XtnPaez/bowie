@@ -9,6 +9,25 @@
 # by Shiny's loadSupport() mechanism because the project
 # contains a DESCRIPTION file (R package structure).
 # Manual source() calls are therefore NOT required here.
+#
+# Namespace contract for plot outputs:
+#   ui_main("viz_advanced") generates plotOutput ids of the
+#   form "viz_advanced-seir_plot", "viz_advanced-cases_deaths_plot",
+#   and "viz_advanced-resource_pressure_plot".
+#
+#   For output$seir_plot registered inside viz_plot_server() to
+#   resolve to "viz_advanced-seir_plot", viz_plot_server() must
+#   be called with id = "viz_advanced" from the TOP-LEVEL server
+#   function — never from inside another moduleServer() call.
+#
+#   If viz_plot_server() were called from inside mod_server()
+#   (which itself runs under the "viz_advanced" namespace), the
+#   resulting output id would be "viz_advanced-viz_advanced-seir_plot",
+#   which does not match any plotOutput in the UI.
+#
+#   mod_server() therefore does NOT call viz_plot_server().
+#   It returns model_data, icu_capacity, and
+#   ventilator_availability for app.R to pass through.
 # ============================================================
 
 library(shiny)
@@ -42,8 +61,10 @@ server <- function(input, output, session) {
   # Dynamic UI
   # --------------------------------------------------------
   output$main_ui <- renderUI({
-    current  <- screen()
-    menu_ui  <- if (current != "entry") mod_menu_ui("menu") else NULL
+    current <- screen()
+
+    # Menu bar is shown on all views except the entry screen
+    menu_ui <- if (current != "entry") mod_menu_ui("menu") else NULL
 
     main_content <- switch(
       current,
@@ -67,8 +88,11 @@ server <- function(input, output, session) {
   # --------------------------------------------------------
   # Guard flag prevents duplicate module registration if the
   # user navigates away and back to this view.
-  # The id "viz_advanced" must match ui_main("viz_advanced")
-  # so that input widgets and output plots share the same namespace.
+  #
+  # mod_server() runs under the "viz_advanced" namespace.
+  # viz_plot_server() is called here at the top level so that
+  # output ids resolve to "viz_advanced-*" — matching the
+  # plotOutput calls in ui_main("viz_advanced").
   # --------------------------------------------------------
   advanced_initialised <- reactiveVal(FALSE)
 
@@ -79,6 +103,8 @@ server <- function(input, output, session) {
 
     out <- mod_server("viz_advanced", reactive({ dataset_selector() }))
 
+    # Called at top level — output$seir_plot resolves to
+    # "viz_advanced-seir_plot", matching plotOutput in ui_main()
     viz_plot_server(
       id                            = "viz_advanced",
       model_data                    = out$model_data,
@@ -89,6 +115,10 @@ server <- function(input, output, session) {
 
   # --------------------------------------------------------
   # Simple view
+  # --------------------------------------------------------
+  # Same namespace contract as the Advanced view.
+  # viz_plot_server() called at top level so output ids
+  # resolve to "viz_simple-*".
   # --------------------------------------------------------
   simple_initialised <- reactiveVal(FALSE)
 
