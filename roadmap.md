@@ -162,18 +162,70 @@ without re-running the ODE solver.
 | Testing and deploy | — | 1 h |
 | **Total** | | **~7 h** |
 
-### Block 5b – User CSV Upload (scoped, pending design session)
-**Goal:** Allow users to load a custom `.csv` dataset from their local machine as an
-alternative to the mock and IECS sources.  
-**Status:** Scoped. Design session required before implementation.  
-**Agreed scope:**
-- Format: `.csv` only.
-- User provides population/time data only; model parameters are set via UI sliders.
-- Minimum required columns to be defined in design session (expected to align with
-  current `validate_schema()` requirements: `time`, `S`, `E`, `I`, `R`).
-- `data_interface.R` already has a `"file"` source handler in `get_data()` — this
-  block extends it to accept Shiny `fileInput` uploads.
-- Target: post-review phase (after 26 March 2026 delivery).
+### Block 5b – User CSV Upload
+**Goal:** Allow users to load one or more custom `.csv` datasets from their local machine
+as additional sources alongside mock and IECS/Santoro.  
+**Status:** Fully designed. Implementation target: post-review phase (after 26 March 2026).
+
+#### Design specification
+
+**Entry point:** a medium-weight link below the entry screen card —
+"Upload your own dataset →" — navigates to `screen("upload")`. Not a modal.
+
+**Upload screen layout:**
+- PPT-branded navbar with Home button (same style as all other views).
+- Disclaimer section — always visible, never collapsible — containing:
+  - A prose description of requirements.
+  - An example table showing the expected CSV format with realistic dummy data.
+  - A download button for an empty CSV template (headers only, no data rows).
+- File input control and Upload button.
+- Accumulated dataset list panel (see below).
+
+**File name validation:**
+- Allowed characters: letters (`A–Z`, `a–z`), digits (`0–9`), and underscores (`_`).
+- Maximum length: 30 characters, excluding the `.csv` extension.
+- Regex applied server-side: `^[A-Za-z0-9_]{1,30}$` on the bare filename.
+
+**Schema validation — minimum required columns:**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `time` | Integer | Day index starting at 0 |
+| `S` | Numeric | Susceptible individuals |
+| `E` | Numeric | Exposed individuals |
+| `I` | Numeric | Infectious individuals |
+| `R` | Numeric | Recovered individuals |
+
+Validation is performed server-side by the existing `validate_schema()` function
+in `data_interface.R`. No column-level error detail is shown to the user.
+
+**Upload outcome:**
+- Valid file → added to the accumulated list, form refreshes ready for another upload.
+- Invalid file → generic alert message, form refreshes, no error detail provided.
+
+**Accumulated dataset list:**
+- Always shows mock and IECS/Santoro as fixed entries at the top.
+- Validated uploads append below during the session.
+- No delete option — list resets on session reload.
+- List is shared with the entry screen combo: all validated datasets appear as
+  selectable options in the dataset selector on the entry screen.
+
+**Session persistence:** list lives in the current session only. No disk writes beyond
+the existing `data/cache/` mechanism.
+
+#### Files affected
+
+| Task | File(s) | Estimated effort |
+|------|---------|-----------------|
+| Upload screen UI | `mod_upload.R` (new) | 2 h |
+| Upload screen server: validation, list management | `mod_upload.R` (new) | 2 h |
+| Empty CSV template for download | `www/seir_template.csv` (new) | 15 min |
+| Wire upload routing in `app.R` | `app.R` | 30 min |
+| Add upload link to entry screen | `mod_entry.R` | 30 min |
+| Extend dataset combo to reflect session list | `mod_entry.R`, `mod_menu.R` | 1 h |
+| Update `implementation_guide.md` | docs | 30 min |
+| Testing | — | 1 h |
+| **Total** | | **~8 h** |
 
 ### Block 6 – External Data Connectivity (ToR)
 **Goal:** Connect to real-time epidemiological and sociodemographic data sources via API.  
