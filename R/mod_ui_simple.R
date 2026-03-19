@@ -279,11 +279,11 @@ mod_ui_simple <- function(id) {
           "\u25BC  Settings \u2014 Alarm Thresholds"
         ),
 
-        # Settings panel — hidden by default
+        # Settings panel — rendered visible on load; hidden via shinyjs in mod_server_simple.R
         tags$div(
           id    = "simple_settings_panel",
           style = paste(
-            "display:none;",
+            
             "background:#FFFFFF;",
             "border:0.5px solid #D0D4CE;",
             "border-radius:12px;",

@@ -60,6 +60,17 @@ mod_server_simple <- function(id, dataset_selector) {
     log_message("INFO", "mod_server_simple started", .module = "SIMPLE")
 
     # --------------------------------------------------------
+    # Collapse the Settings panel on load.
+    # The panel is rendered visible in mod_ui_simple.R so that
+    # Shiny registers all numericInput values immediately (inputs
+    # inside display:none elements are not registered by Shiny).
+    # shinyjs::hide() collapses it after the session starts,
+    # giving the expected "closed by default" UX while keeping
+    # all threshold inputs reactive from the first render.
+    # --------------------------------------------------------
+    shinyjs::hide("simple_settings_panel")
+    
+    # --------------------------------------------------------
     # Isolated parameter store
     # Always initialised from global.R constants.
     # Sliders in the Simple View write ONLY to these values.
