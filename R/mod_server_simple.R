@@ -112,9 +112,6 @@ mod_server_simple <- function(id, dataset_selector) {
                   growth_crit = thresholds$growth_crit,
                   deaths_warn = thresholds$deaths_warn,
                   deaths_crit = thresholds$deaths_crit)
-      message("DEBUG kpi_icu_pct = ", kpi_icu_pct())
-      message("DEBUG thresholds$icu_crit = ", thresholds$icu_crit)
-      message("DEBUG alarm_icu = ", alarm_icu())
     }, ignoreInit = TRUE)
 
     # --------------------------------------------------------
