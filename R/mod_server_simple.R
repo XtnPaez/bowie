@@ -13,11 +13,16 @@
 #       Advanced-view observers.
 #     - The ODE solver is re-run when either slider changes
 #       (simple_r0, simple_compliance).
-#     - Alarm thresholds (six numeric inputs) do NOT re-run
-#       the ODE solver — they only update the indicators.
+#     - Alarm thresholds are committed via the "Apply thresholds"
+#       button (input$apply_thresholds) into a dedicated
+#       reactiveValues object (thresholds). The alarm state
+#       reactives depend on thresholds$*, not directly on
+#       input$thr_*. This pattern is robust against Shiny's
+#       known limitation where numericInputs inside hidden
+#       panels may not be reliably registered on keypress.
 #     - mod_data_server() and model_seir_server() are called
-#       internally under the "simple_data" and "simple_seir"
-#       namespace ids to avoid collisions with the Advanced View.
+#       internally under "simple_data" and "simple_seir"
+#       namespace ids to avoid collision with the Advanced View.
 #
 #   Shared helpers (alarm_shape_svg, state_label_ui,
 #   metric_value_ui, resolve_alarm_state, coalesce_num) are
@@ -32,6 +37,8 @@
 #
 # Author: Cristian Paez
 # Created: 2026-03-19
+# Updated: 2026-03-19 - Threshold logic moved to Apply button
+#   pattern to fix input registration issue with hidden panels.
 # ============================================================
 
 
@@ -40,14 +47,12 @@
 # Description:
 #   Server logic for the Simple View. Maintains isolated SEIR
 #   model state initialised from global.R. Runs the ODE solver
-#   when sliders change and updates KPI card alarm states
-#   reactively when thresholds change.
+#   when sliders change. Updates alarm indicators when the
+#   Apply Thresholds button is clicked.
 # Parameters:
-#   id               – Shiny module identifier.
-#   dataset_selector – reactiveVal(character); active source key
-#                      passed through for logging only — all
-#                      SEIR parameters are driven by the Simple
-#                      View sliders, not by the dataset selection.
+#   id               - Shiny module identifier.
+#   dataset_selector - reactiveVal(character); active source key
+#                      passed through for logging only.
 # Returns:
 #   None (side effects only: renderUI calls for the three cards).
 # ------------------------------------------------------------
@@ -60,16 +65,58 @@ mod_server_simple <- function(id, dataset_selector) {
     log_message("INFO", "mod_server_simple started", .module = "SIMPLE")
 
     # --------------------------------------------------------
-    # Collapse the Settings panel on load.
-    # The panel is rendered visible in mod_ui_simple.R so that
-    # Shiny registers all numericInput values immediately (inputs
-    # inside display:none elements are not registered by Shiny).
-    # shinyjs::hide() collapses it after the session starts,
-    # giving the expected "closed by default" UX while keeping
-    # all threshold inputs reactive from the first render.
+    # Toggle Settings panel via shinyjs
+    # Uses shinyjs::toggle() bound to the actionButton so the
+    # panel open/close state is managed by Shiny, not raw JS.
     # --------------------------------------------------------
-    shinyjs::hide("simple_settings_panel")
-    
+    observeEvent(input$toggle_settings, {
+      shinyjs::toggle(id = "settings_panel", anim = TRUE)
+    })
+
+    # --------------------------------------------------------
+    # Threshold store
+    # Holds the committed threshold values. Initialised to the
+    # same defaults shown in the numericInputs. Updated only
+    # when the user clicks "Apply thresholds". Alarm state
+    # reactives depend on this object, not on input$thr_* directly.
+    # --------------------------------------------------------
+    thresholds <- reactiveValues(
+      icu_warn     = 70,
+      icu_crit     = 100,
+      growth_warn  = 1,
+      growth_crit  = 20,
+      deaths_warn  = 0.05,
+      deaths_crit  = 0.20
+    )
+
+    # --------------------------------------------------------
+    # Apply Thresholds button
+    # Reads the six numericInput values and commits them to
+    # thresholds. coalesce_num() guards against NULL/NA if a
+    # field is empty when the button is clicked.
+    # ignoreInit = TRUE so the defaults in thresholds$* above
+    # are used on first load without requiring a button click.
+    # --------------------------------------------------------
+    observeEvent(input$apply_thresholds, {
+      thresholds$icu_warn    <- coalesce_num(input$thr_icu_warn,    70)
+      thresholds$icu_crit    <- coalesce_num(input$thr_icu_crit,   100)
+      thresholds$growth_warn <- coalesce_num(input$thr_growth_warn,  1)
+      thresholds$growth_crit <- coalesce_num(input$thr_growth_crit, 20)
+      thresholds$deaths_warn <- coalesce_num(input$thr_deaths_warn,  0.05)
+      thresholds$deaths_crit <- coalesce_num(input$thr_deaths_crit,  0.20)
+
+      log_message("INFO", "Alarm thresholds updated", .module = "SIMPLE",
+                  icu_warn    = thresholds$icu_warn,
+                  icu_crit    = thresholds$icu_crit,
+                  growth_warn = thresholds$growth_warn,
+                  growth_crit = thresholds$growth_crit,
+                  deaths_warn = thresholds$deaths_warn,
+                  deaths_crit = thresholds$deaths_crit)
+      message("DEBUG kpi_icu_pct = ", kpi_icu_pct())
+      message("DEBUG thresholds$icu_crit = ", thresholds$icu_crit)
+      message("DEBUG alarm_icu = ", alarm_icu())
+    }, ignoreInit = TRUE)
+
     # --------------------------------------------------------
     # Isolated parameter store
     # Always initialised from global.R constants.
@@ -80,7 +127,7 @@ mod_server_simple <- function(id, dataset_selector) {
       r0_value         = INITIAL_R0,
       compliance_level = 50,
 
-      # Fixed parameters — not exposed in Simple View sliders
+      # Fixed parameters -- not exposed in Simple View sliders
       incubation_period = INITIAL_INCUBATION_PERIOD,
       infectious_period = INITIAL_INFECTIOUS_PERIOD,
       ifr_value         = INITIAL_IFR * 100,    # percent [0, 100]
@@ -102,7 +149,7 @@ mod_server_simple <- function(id, dataset_selector) {
     )
 
     # --------------------------------------------------------
-    # Slider observers — update isolated params and trigger sim
+    # Slider observers -- update isolated params and trigger sim.
     # ignoreInit = FALSE so the initial slider value fires
     # immediately on load and the first simulation runs.
     # --------------------------------------------------------
@@ -122,7 +169,7 @@ mod_server_simple <- function(id, dataset_selector) {
     }, ignoreInit = FALSE)
 
     # --------------------------------------------------------
-    # Data module — generates raw initial state for the ODE.
+    # Data module -- generates raw initial state for the ODE.
     # Uses "simple_data" namespace to avoid collision with the
     # Advanced View data module ("data_sim").
     # --------------------------------------------------------
@@ -139,9 +186,8 @@ mod_server_simple <- function(id, dataset_selector) {
     )
 
     # --------------------------------------------------------
-    # SEIR model — runs under "simple_seir" namespace.
-    # Receives only the isolated simple_params; the Advanced
-    # View parameters are never referenced here.
+    # SEIR model -- runs under "simple_seir" namespace.
+    # Receives only the isolated simple_params.
     # --------------------------------------------------------
     simple_model_output <- model_seir_server(
       "simple_seir",
@@ -195,12 +241,9 @@ mod_server_simple <- function(id, dataset_selector) {
     })
 
     # --- KPI 2: ICU occupancy on the final simulation day as % of capacity ---
-    # Uses the last row of ICU_Occupancy_Sim rather than the historical
-    # peak. The rolling-sum nature of ICU_Occupancy_Sim means the peak
-    # can be orders of magnitude above capacity under high-transmission
-    # scenarios, producing misleading percentages for a decision-maker
-    # card. The final-day value reflects the current epidemic status,
-    # which is the intended signal of this view.
+    # Uses the last row of ICU_Occupancy_Sim rather than the
+    # historical peak, which can be orders of magnitude above
+    # capacity under high-transmission scenarios.
     kpi_icu_pct <- reactive({
       df <- simple_model_output()
       req(df)
@@ -212,7 +255,6 @@ mod_server_simple <- function(id, dataset_selector) {
     })
 
     # --- KPI 3: Cumulative deaths on the final simulation day as % of population ---
-    # Uses the last row of Cumulative_Deaths (the end-of-simulation total).
     kpi_deaths_pct <- reactive({
       df <- simple_model_output()
       req(df)
@@ -225,39 +267,38 @@ mod_server_simple <- function(id, dataset_selector) {
 
     # --------------------------------------------------------
     # Alarm state computations
-    # Each reactive calls resolve_alarm_state() (defined in
-    # mod_helpers_simple.R) using the current metric and the
-    # threshold numericInput values from the Settings panel.
-    # These do NOT depend on trigger_sim — they react only to
-    # kpi_* changes and threshold input changes.
+    # Each reactive reads from thresholds$* (committed values),
+    # not from input$thr_* directly. Updates fire when either
+    # the KPI value changes (slider moved) or the Apply button
+    # is clicked (thresholds$* updated).
     # --------------------------------------------------------
 
     alarm_trajectory <- reactive({
       resolve_alarm_state(
         value = kpi_growth_rate(),
-        warn  = coalesce_num(input$thr_growth_warn, 1),
-        crit  = coalesce_num(input$thr_growth_crit, 20)
+        warn  = thresholds$growth_warn,
+        crit  = thresholds$growth_crit
       )
     })
 
     alarm_icu <- reactive({
       resolve_alarm_state(
         value = kpi_icu_pct(),
-        warn  = coalesce_num(input$thr_icu_warn,  70),
-        crit  = coalesce_num(input$thr_icu_crit, 100)
+        warn  = thresholds$icu_warn,
+        crit  = thresholds$icu_crit
       )
     })
 
     alarm_deaths <- reactive({
       resolve_alarm_state(
         value = kpi_deaths_pct(),
-        warn  = coalesce_num(input$thr_deaths_warn, 0.05),
-        crit  = coalesce_num(input$thr_deaths_crit, 0.20)
+        warn  = thresholds$deaths_warn,
+        crit  = thresholds$deaths_crit
       )
     })
 
     # --------------------------------------------------------
-    # Rendered outputs — Card 1: Epidemic Trajectory
+    # Rendered outputs -- Card 1: Epidemic Trajectory
     # --------------------------------------------------------
     output$shape_trajectory <- renderUI({
       alarm_shape_svg(alarm_trajectory(), size = 64)
@@ -278,7 +319,7 @@ mod_server_simple <- function(id, dataset_selector) {
     })
 
     # --------------------------------------------------------
-    # Rendered outputs — Card 2: ICU Pressure
+    # Rendered outputs -- Card 2: ICU Pressure
     # --------------------------------------------------------
     output$shape_icu <- renderUI({
       alarm_shape_svg(alarm_icu(), size = 64)
@@ -299,7 +340,7 @@ mod_server_simple <- function(id, dataset_selector) {
     })
 
     # --------------------------------------------------------
-    # Rendered outputs — Card 3: Cumulative Impact
+    # Rendered outputs -- Card 3: Cumulative Impact
     # --------------------------------------------------------
     output$shape_deaths <- renderUI({
       alarm_shape_svg(alarm_deaths(), size = 64)

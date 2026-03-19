@@ -193,15 +193,21 @@ resolve_alarm_state <- function(value, warn, crit,
                                 direction = "above") {
   if (is.na(value) || !is.finite(value)) return("controlled")
 
+  # Sort thresholds so lo <= hi regardless of user input order.
+  # This makes the function robust when warn > crit (e.g. user
+  # sets critical to 0 while warning is still at 70).
+  lo <- min(warn, crit)
+  hi <- max(warn, crit)
+
   if (direction == "above") {
-    if (value <= warn) return("controlled")
-    if (value <= crit) return("warning")
+    if (value <= lo) return("controlled")
+    if (value <= hi) return("warning")
     return("critical")
   }
 
   # direction == "below"
-  if (value >= warn) return("controlled")
-  if (value >= crit) return("warning")
+  if (value >= hi) return("controlled")
+  if (value >= lo) return("warning")
   return("critical")
 }
 
