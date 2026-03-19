@@ -4,7 +4,6 @@
 .RData
 .Ruserdata
 *.Rproj
-*.txt
 
 # rsconnect deployment metadata (do not version)
 rsconnect/

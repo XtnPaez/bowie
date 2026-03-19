@@ -34,7 +34,7 @@ ui_seir_params <- function(ns) {
     tags$div(
       "Epidemiological parameters",
       style = paste(
-        "font-size:10px; font-weight:500;",
+        "font-size:16px; font-weight:500;",
         "color:#48553F;",
         "text-transform:uppercase;",
         "letter-spacing:0.06em;",
@@ -87,7 +87,7 @@ ui_policy_params <- function(ns) {
     tags$div(
       "Public policy",
       style = paste(
-        "font-size:10px; font-weight:500;",
+        "font-size:16px; font-weight:500;",
         "color:#48553F;",
         "text-transform:uppercase;",
         "letter-spacing:0.06em;",
@@ -144,7 +144,7 @@ ui_resource_params <- function(ns) {
     tags$div(
       "Healthcare resources",
       style = paste(
-        "font-size:10px; font-weight:500;",
+        "font-size:16px; font-weight:500;",
         "color:#48553F;",
         "text-transform:uppercase;",
         "letter-spacing:0.06em;",
@@ -269,7 +269,7 @@ ui_main <- function(viz_id) {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          font-size: 11px;
+          font-size: 14px;
         }
       "))
     ),

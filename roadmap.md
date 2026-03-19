@@ -132,11 +132,14 @@ Metric: weekly growth rate of I (mean of last 7 days vs. preceding 7 days).
 - Square: growth rate > critical threshold (default > 20%)
 
 **Card 2 — ICU pressure**  
-Metric: `ICU_Occupancy_Sim` on the final simulation day as a percentage of ICU capacity.  
-Uses the final-day value (not the historical peak) to represent current epidemic status.  
+Metric: peak `ICU_Daily_Demand` across the simulation as a percentage of ICU capacity.  
+`ICU_Daily_Demand[t] = I[t] * icu_admission_rate`. Represents the worst-case daily ICU  
+admission demand relative to total capacity. Display is capped at "> 100%" — under  
+high-transmission scenarios (e.g. R0=2.5) the raw value can reach ~7700%, which is  
+correct but not actionable; system collapse is the signal.  
 - Circle: < warning threshold (default 70%)  
 - Triangle: between warning and critical (default 70–100%)  
-- Square: > critical threshold (default > 100%)
+- Square: > critical threshold (default > 100%) — displayed as "> 100%"
 
 **Card 3 — Cumulative impact**  
 Metric: `Cumulative_Deaths` on the final simulation day as a percentage of total population.  

@@ -47,12 +47,12 @@ mod_entry_ui <- function(id) {
         "border-bottom:1px solid #1E2A16;"
       ),
       tags$span(
-        style = "font-size:14px; font-weight:500; color:#F4F6F5;",
+        style = "font-size:18px; font-weight:500; color:#F4F6F5;",
         "SEIR Dashboard"
       ),
       tags$span(
         style = paste(
-          "font-size:11px;",
+          "font-size:18px;",
           "color:rgba(244,246,245,0.55);",
           "font-style:italic;"
         ),
@@ -110,7 +110,7 @@ mod_entry_ui <- function(id) {
           tags$div(
             "Dataset source",
             style = paste(
-              "font-size:11px;",
+              "font-size:18px;",
               "font-weight:500;",
               "color:#48553F;",
               "text-transform:uppercase;",
@@ -147,7 +147,7 @@ mod_entry_ui <- function(id) {
         tags$div(
           "View mode",
           style = paste(
-            "font-size:11px;",
+            "font-size:18px;",
             "font-weight:500;",
             "color:#48553F;",
             "text-transform:uppercase;",
@@ -201,12 +201,12 @@ mod_entry_ui <- function(id) {
         ),
         tags$span(
           "Pandemic Preparedness Toolkit \u00b7 Argentina Unit \u00b7 WP5",
-          style = "font-size:11px; color:#7A8A72;"
+          style = "font-size:18px; color:#7A8A72;"
         )
       ),
       tags$span(
         "Funded by Wellcome \u00b7 CEMIC",
-        style = "font-size:11px; color:#A8B09F;"
+        style = "font-size:18px; color:#A8B09F;"
       )
     )
   )
@@ -323,7 +323,7 @@ mod_entry_server <- function(id, screen, dataset_selector,
             ),
             tags$span(
               "Dataset loaded successfully.",
-              style = "font-size:13px; color:#27500A; font-weight:500;"
+              style = "font-size:16px; color:#27500A; font-weight:500;"
             )
           )
         })
@@ -357,7 +357,7 @@ mod_entry_server <- function(id, screen, dataset_selector,
             ),
             tags$span(
               paste("Error loading dataset:", e$message),
-              style = "font-size:13px; color:#752111;"
+              style = "font-size:16px; color:#752111;"
             )
           )
         })

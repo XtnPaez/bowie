@@ -44,7 +44,7 @@ mod_menu_ui <- function(id) {
 
       # Left: brand name
       tags$span(
-        style = "font-size:14px; font-weight:500; color:#F4F6F5;",
+        style = "font-size:18px; font-weight:500; color:#F4F6F5;",
         "SEIR Dashboard"
       ),
 
@@ -52,7 +52,7 @@ mod_menu_ui <- function(id) {
       tags$span(
         textOutput(ns("active_dataset"), inline = TRUE),
         style = paste(
-          "font-size:11px;",
+          "font-size:18px;",
           "color:rgba(244,246,245,0.55);",
           "font-style:italic;"
         )
@@ -66,7 +66,7 @@ mod_menu_ui <- function(id) {
         actionButton(
           ns("btn_home"), "Home",
           style = paste(
-            "font-size:11px;",
+            "font-size:18px;",
             "padding:4px 12px;",
             "border-radius:5px;",
             "background:transparent;",
@@ -122,7 +122,7 @@ mod_menu_server <- function(id, screen, dataset_selector) {
       actionButton(
         session$ns("btn_simple"), "Simple",
         style = paste0(
-          "font-size:11px;",
+          "font-size:18px;",
           "padding:4px 12px;",
           "border-radius:5px;",
           "background:transparent;",
@@ -144,7 +144,7 @@ mod_menu_server <- function(id, screen, dataset_selector) {
       actionButton(
         session$ns("btn_advanced"), "Advanced",
         style = paste0(
-          "font-size:11px;",
+          "font-size:18px;",
           "padding:4px 12px;",
           "border-radius:5px;",
           "background:transparent;",

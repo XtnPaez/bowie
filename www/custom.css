@@ -22,7 +22,7 @@
 
 /* --- Reset bslib/flatly body defaults --- */
 body {
-  font-size: 1rem;
+  font-size: 1.25rem;
   line-height: 1.6;
   color: #1E2A16;
   background-color: #F4F6F5;
@@ -42,7 +42,7 @@ h2, h3, h4, h5, h6 {
 }
 
 p {
-  font-size: 1rem;
+  font-size: 1.25rem;
   color: #48553F;
 }
 
@@ -72,7 +72,7 @@ select.form-select option {
   color: #1E2A16 !important;
   border-radius: 6px !important;
   box-shadow: none !important;
-  font-size: 0.95rem !important;
+  font-size: 1.19rem !important;
 }
 
 .selectize-input.focus,
@@ -95,7 +95,7 @@ select.form-select option {
 .selectize-dropdown-content .option {
   color: #1E2A16 !important;
   padding: 8px 12px !important;
-  font-size: 0.95rem !important;
+  font-size: 1.19rem !important;
 }
 
 /* Hovered option */
@@ -122,7 +122,7 @@ select.form-select option {
    ============================================================ */
 
 .btn {
-  font-size: 0.95rem !important;
+  font-size: 1.19rem !important;
   font-weight: 500 !important;
   padding: 8px 20px !important;
   border-radius: 6px !important;
@@ -183,7 +183,7 @@ select.form-select option {
 .alert {
   width: 100%;
   margin: 0 0 12px 0;
-  font-size: 0.9rem;
+  font-size: 1.13rem;
   border-radius: 6px;
 }
 
@@ -213,7 +213,7 @@ select.form-select option {
 }
 
 .sidebar-panel {
-  font-size: 0.95rem;
+  font-size: 1.19rem;
 }
 
 
@@ -251,7 +251,7 @@ body .tabbable ul.nav.nav-tabs {
 body ul.nav.nav-tabs > li > a,
 body ul.nav.nav-tabs .nav-item > .nav-link,
 body ul.nav.nav-tabs a.nav-link {
-  font-size: 0.9rem !important;
+  font-size: 1.13rem !important;
   font-weight: 500 !important;
   color: #48553F !important;
   background-color: transparent !important;
@@ -294,7 +294,7 @@ body ul.nav.nav-tabs a.nav-link:not(.active):hover {
    Table — PPT dark green header
    ============================================================ */
 table.table {
-  font-size: 0.88rem;
+  font-size: 1.1rem;
 }
 
 table.table thead th {

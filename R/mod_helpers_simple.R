@@ -125,7 +125,7 @@ state_label_ui <- function(state) {
   tags$p(
     cfg$text,
     style = paste0(
-      "font-size:0.7rem;",
+      "font-size:0.88rem;",
       "font-weight:700;",
       "letter-spacing:0.08em;",
       "text-transform:uppercase;",
@@ -152,7 +152,7 @@ metric_value_ui <- function(formatted_value, unit_label) {
     tags$span(
       formatted_value,
       style = paste(
-        "font-size:2rem;",
+        "font-size:2.5rem;",
         "font-weight:700;",
         "color:#1E2A16;",
         "line-height:1;"
@@ -161,7 +161,7 @@ metric_value_ui <- function(formatted_value, unit_label) {
     tags$br(),
     tags$span(
       unit_label,
-      style = "font-size:0.7rem; color:#7A8A72;"
+      style = "font-size:0.88rem; color:#7A8A72;"
     )
   )
 }

@@ -237,18 +237,33 @@ mod_server_simple <- function(id, dataset_selector) {
       ((last7 - prev7) / prev7) * 100
     })
 
-    # --- KPI 2: ICU occupancy on the final simulation day as % of capacity ---
-    # Uses the last row of ICU_Occupancy_Sim rather than the
-    # historical peak, which can be orders of magnitude above
-    # capacity under high-transmission scenarios.
+    # --- KPI 2: Peak daily ICU admissions as % of capacity ---
+    # Uses the maximum value of ICU_Daily_Demand across the full
+    # simulation horizon:
+    #   ICU_Daily_Demand[t] = I[t] * icu_admission_rate
+    #
+    # Display logic (capped scale):
+    #   - If peak demand <= capacity (<=100%): show exact percentage.
+    #   - If peak demand > capacity (>100%):   show "> 100%" and
+    #     force "critical" state regardless of threshold settings.
+    #
+    # Rationale: under high-transmission scenarios the peak of
+    # ICU_Daily_Demand can reach millions of admissions (e.g.
+    # R0=2.5 produces I_peak ~3.4M → ICU_peak ~466K vs 6K capacity
+    # = 7772%). The difference between 500% and 7000% does not
+    # change any decision — the system has collapsed in both cases.
+    # Capping at "> 100%" keeps the card readable and honest.
+    #
+    # The reactive returns the raw numeric value for alarm
+    # classification. The renderUI applies the display cap.
     kpi_icu_pct <- reactive({
       df <- simple_model_output()
       req(df)
 
-      last_icu <- df$ICU_Occupancy_Sim[nrow(df)]
-      cap      <- simple_params$icu_capacity
+      peak_daily_demand <- max(df$ICU_Daily_Demand, na.rm = TRUE)
+      cap               <- simple_params$icu_capacity
       if (is.na(cap) || cap == 0) return(NA_real_)
-      (last_icu / cap) * 100
+      (peak_daily_demand / cap) * 100
     })
 
     # --- KPI 3: Cumulative deaths on the final simulation day as % of population ---
@@ -329,10 +344,14 @@ mod_server_simple <- function(id, dataset_selector) {
     output$value_icu <- renderUI({
       val <- kpi_icu_pct()
       if (is.na(val) || !is.finite(val)) {
-        metric_value_ui("N/A", "ICU occupancy vs capacity (final day)")
+        metric_value_ui("N/A", "peak daily ICU admissions as % of capacity")
+      } else if (val > 100) {
+        # Cap display at "> 100%" -- exact values above capacity are not
+        # actionable for a decision-maker; "collapsed" is the signal.
+        metric_value_ui("> 100%", "peak daily ICU admissions as % of capacity")
       } else {
         metric_value_ui(paste0(round(val, 2), "%"),
-                        "ICU occupancy vs capacity (final day)")
+                        "peak daily ICU admissions as % of capacity")
       }
     })
 

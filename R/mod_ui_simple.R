@@ -85,7 +85,7 @@ kpi_card_ui <- function(card_id, title, subtitle, shape_id,
     tags$h3(
       title,
       style = paste(
-        "font-size:1rem;",
+        "font-size:1.25rem;",
         "font-weight:600;",
         "color:#1E2A16;",
         "margin:10px 0 4px;"
@@ -96,7 +96,7 @@ kpi_card_ui <- function(card_id, title, subtitle, shape_id,
     tags$p(
       subtitle,
       style = paste(
-        "font-size:0.75rem;",
+        "font-size:0.94rem;",
         "color:#7A8A72;",
         "margin-bottom:14px;",
         "line-height:1.4;"
@@ -146,7 +146,7 @@ mod_ui_simple <- function(id) {
         tags$h2(
           "Epidemic Status \u2014 Simplified View",
           style = paste(
-            "font-size:1.6rem;",
+            "font-size:2rem;",
             "font-weight:600;",
             "color:#1E2A16;",
             "margin-bottom:6px;"
@@ -157,7 +157,7 @@ mod_ui_simple <- function(id) {
             "Key indicators are computed from the current simulation.",
             "Adjust R\u2080 and compliance below to explore scenarios."
           ),
-          style = "font-size:0.875rem; color:#48553F; max-width:520px; margin:0 auto;"
+          style = "font-size:1.09rem; color:#48553F; max-width:520px; margin:0 auto;"
         )
       ),
 
@@ -187,7 +187,7 @@ mod_ui_simple <- function(id) {
         kpi_card_ui(
           card_id  = "card_icu",
           title    = "ICU Pressure",
-          subtitle = "ICU occupancy on the final simulation day as % of capacity",
+          subtitle = "Peak daily ICU admissions across the simulation as % of total ICU capacity",
           shape_id = ns("shape_icu"),
           value_id = ns("value_icu"),
           label_id = ns("label_icu")
@@ -221,7 +221,7 @@ mod_ui_simple <- function(id) {
 
         tags$div(
           style = paste(
-            "font-size:11px;",
+            "font-size:18px;",
             "font-weight:500;",
             "color:#48553F;",
             "text-transform:uppercase;",
@@ -279,7 +279,7 @@ mod_ui_simple <- function(id) {
             "border:0.5px solid #A8B09F;",
             "border-radius:8px;",
             "padding:10px 16px;",
-            "font-size:0.875rem;",
+            "font-size:1.09rem;",
             "color:#48553F;",
             "text-align:left;",
             "margin-bottom:8px;",
@@ -302,7 +302,7 @@ mod_ui_simple <- function(id) {
 
               tags$div(
                 style = paste(
-                  "font-size:11px;",
+                  "font-size:18px;",
                   "font-weight:500;",
                   "color:#48553F;",
                   "text-transform:uppercase;",
@@ -315,7 +315,7 @@ mod_ui_simple <- function(id) {
               # --- ICU thresholds ---
               tags$p(
                 tags$strong("ICU Pressure",
-                            style = "color:#324027; font-size:0.85rem;"),
+                            style = "color:#324027; font-size:1.06rem;"),
                 style = "margin-bottom:4px;"
               ),
               tags$div(
@@ -343,7 +343,7 @@ mod_ui_simple <- function(id) {
               # --- Epidemic Trajectory thresholds ---
               tags$p(
                 tags$strong("Epidemic Trajectory",
-                            style = "color:#324027; font-size:0.85rem;"),
+                            style = "color:#324027; font-size:1.06rem;"),
                 style = "margin-bottom:4px;"
               ),
               tags$div(
@@ -371,7 +371,7 @@ mod_ui_simple <- function(id) {
               # --- Cumulative Impact thresholds ---
               tags$p(
                 tags$strong("Cumulative Impact",
-                            style = "color:#324027; font-size:0.85rem;"),
+                            style = "color:#324027; font-size:1.06rem;"),
                 style = "margin-bottom:4px;"
               ),
               tags$div(
@@ -423,11 +423,11 @@ mod_ui_simple <- function(id) {
         ),
         tags$span(
           "Pandemic Preparedness Toolkit \u00b7 Argentina Unit \u00b7 WP5",
-          style = "font-size:11px; color:#7A8A72;"
+          style = "font-size:18px; color:#7A8A72;"
         ),
         tags$span(
           "Funded by Wellcome \u00b7 CEMIC",
-          style = "font-size:11px; color:#A8B09F;"
+          style = "font-size:18px; color:#A8B09F;"
         )
       )
     )

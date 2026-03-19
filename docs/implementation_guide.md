@@ -407,7 +407,7 @@ Server logic for the Simplified View. Key design properties:
 | Reactive | Metric | Method |
 |---|---|---|
 | `kpi_growth_rate` | Weekly growth rate of I | Mean of last 7 days vs. preceding 7 days |
-| `kpi_icu_pct` | ICU occupancy as % of capacity | `ICU_Occupancy_Sim` on the final simulation day |
+| `kpi_icu_pct` | Peak daily ICU admissions as % of capacity | Maximum `ICU_Daily_Demand` across the simulation divided by `INITIAL_ICU_CAPACITY`. Display is capped at `"> 100%"` — values above capacity are shown as collapsed rather than as an exact percentage. |
 | `kpi_deaths_pct` | Deaths as % of population | `Cumulative_Deaths` on the final simulation day |
 
 - Three alarm state reactives call `resolve_alarm_state()` using the KPI value and the
@@ -676,7 +676,7 @@ LOG_LEVEL=WARN   # suppress DEBUG and INFO output in production
 | Interactive presentation with practical exercises | Pending — Block 7 |
 | ICU / ventilator occupancy uses a rolling sum approximation | By design — a queueing model would require individual-level data not available at this stage |
 | IFR is applied as a global value | By design — age-stratified IFR is outside the current ToR scope |
-| Simplified View ICU KPI uses the final simulation day, not the historical peak | By design — the final-day value reflects current epidemic status, which is the intended signal for a decision-maker interface |
+| Simplified View ICU KPI uses peak daily admissions, capped at > 100% | By design — peak `ICU_Daily_Demand` as % of capacity can reach thousands of percent under high-transmission scenarios (e.g. R0=2.5 → ~7772%). Values above 100% are displayed as "> 100%" because the difference between 500% and 7000% does not change any decision; system collapse is the signal. |
 
 ---
 
