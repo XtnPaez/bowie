@@ -2,14 +2,13 @@
 # File: mod_entry.R
 # ------------------------------------------------------------
 # Description: Entry screen module for dataset selection and
-#              navigation to the Advanced view.
+#              navigation to the Advanced or Simple views.
 #              Layout aligned with PPT brand guidelines:
 #              dark green navbar, card-centred layout, PPT
 #              colour palette throughout.
-#              Simple View is currently disabled pending
-#              implementation (shown as "Coming soon").
 # Author: Cristian Paez
 # Created: 2025-11-07
+# Updated: 2026-03-19 — Block 5: Simple View button enabled.
 # ============================================================
 
 
@@ -120,10 +119,10 @@ mod_entry_ui <- function(id) {
             )
           ),
           selectInput(
-            inputId = ns("dataset_selector"),
-            label   = NULL,
-            choices = c(
-              "Simulated (mock)"         = "mock",
+            inputId  = ns("dataset_selector"),
+            label    = NULL,
+            choices  = c(
+              "Simulated (mock)"          = "mock",
               "IECS \u2013 Santoro model" = "iecs"
             ),
             selected = "mock",
@@ -158,38 +157,20 @@ mod_entry_ui <- function(id) {
         ),
 
         # --- View buttons row ---
+        # Both buttons active — Simple View enabled in Block 5.
         tags$div(
           style = "display:flex; gap:10px;",
 
-          # Advanced View — primary action
           actionButton(
             ns("go_advanced"),
             "Advanced view",
             class = "btn btn-primary flex-fill"
           ),
 
-          # Simple View — disabled, Coming soon tooltip
-          tags$span(
-            title = "Coming soon",
-            style = "flex:1; cursor:not-allowed;",
-            tags$button(
-              "Simple view",
-              class    = "btn btn-outline-secondary w-100",
-              disabled = "disabled",
-              style    = "opacity:0.45; pointer-events:none;"
-            )
-          )
-        ),
-
-        # Hint below the buttons
-        tags$p(
-          "Simple view is currently unavailable \u2014 coming in the next release.",
-          style = paste(
-            "font-size:12px;",
-            "color:#7A8A72;",
-            "text-align:center;",
-            "margin-top:12px;",
-            "margin-bottom:0;"
+          actionButton(
+            ns("go_simple"),
+            "Simple view",
+            class = "btn btn-outline-secondary flex-fill"
           )
         )
       )
@@ -236,14 +217,15 @@ mod_entry_ui <- function(id) {
 # Function: mod_entry_server()
 # Description:
 #   Server logic for the entry screen. Handles dataset loading,
-#   status feedback, and navigation to the Advanced view.
-#   Resets state when the user returns to the entry screen.
+#   status feedback, and navigation to the Advanced or Simple
+#   views. Resets state when the user returns to the entry
+#   screen.
 # Parameters:
-#   id              – Shiny module identifier.
-#   screen          – reactiveVal(character); controls active view.
+#   id               – Shiny module identifier.
+#   screen           – reactiveVal(character); controls active view.
 #   dataset_selector – reactiveVal(character); active source key.
-#   dataset_loaded  – reactiveVal(data.frame); loaded dataset.
-#   trigger_sim     – reactiveVal(integer); simulation trigger.
+#   dataset_loaded   – reactiveVal(data.frame); loaded dataset.
+#   trigger_sim      – reactiveVal(integer); simulation trigger.
 # Returns:
 #   None (side effects only).
 # ------------------------------------------------------------
@@ -397,6 +379,16 @@ mod_entry_server <- function(id, screen, dataset_selector,
       req(dataset_loaded())
       screen("advanced")
       log_message("INFO", "User navigated to Advanced View",
+                  .module = "ENTRY")
+    })
+
+    # --------------------------------------------------------
+    # Navigation to Simple view — Block 5
+    # --------------------------------------------------------
+    observeEvent(input$go_simple, {
+      req(dataset_loaded())
+      screen("simple")
+      log_message("INFO", "User navigated to Simple View",
                   .module = "ENTRY")
     })
   })

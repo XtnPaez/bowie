@@ -18,18 +18,21 @@ Package 5, funded by Wellcome.
 
 - Modular workflow `data → model → viz → ui → server` — fully implemented and stable.
 - SEIR ODE model running with `deSolve`, validated against known parameters.
-- Open-source codebase — easily modifiable to incorporate SIR, SEIRD, or custom models per ToR specification.
+- Open-source codebase — easily modifiable to incorporate SIR, SEIRD, or custom models per ToR
+  specification.
 - Data Hub Interface (`data_interface.R`) — loading, validation, schema checks, and caching.
 - Entry screen with dataset selection (mock and IECS/Santoro datasets).
 - Advanced View with sticky parameter panel, real-time curve updates, and resource pressure plots.
-- Top navigation menu with dataset indicator.
+- Top navigation menu with dataset indicator and dynamic active-state highlighting.
 - CSV export of simulation results with European locale formatting.
 - Public deployment on shinyapps.io.
 - Full repository documentation: `CODESTYLE.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`.
-- UI and chart colours fully aligned with PPT brand guidelines (Wellcome / CEMIC).
+- UI and chart colours fully aligned with PPT brand guidelines (Wellcome / CEMIC style template).
 - Implementation Guide (`docs/implementation_guide.md`) — complete technical documentation
   covering module architecture, SEIR equations, parameters with bibliographic sources,
   dataset specification, visual design system, and deployment instructions.
+- **Simplified View (Block 5)** — KPI card interface with geometric alarm indicators, reactive
+  thresholds, isolated SEIR state, and collapsible Settings panel. Completed March 2026.
 
 ---
 
@@ -37,13 +40,14 @@ Package 5, funded by Wellcome.
 
 The following ToR requirements for Product 2 are pending:
 
-- **Simplified View** — decision-maker interface with KPI indicators and alarm system
-  (button visible but disabled; design fully specified — ready to implement).
 - **User CSV upload** — ability to load a custom dataset from a local `.csv` file
-  (design session pending; scoped for post-review phase).
-- **External data connectivity** — API integration with WHO, OWID, and national surveillance repositories.
-- **Sociodemographic data layer** — population demographics, mobility patterns, and socioeconomic factors.
-- **Interactive presentation with practical exercises** — visualisation principles infographic and guided exercises.
+  (design complete — scoped for post-review phase, Block 5b).
+- **External data connectivity** — API integration with WHO, OWID, and national surveillance
+  repositories (Block 6).
+- **Sociodemographic data layer** — population demographics, mobility patterns, and socioeconomic
+  factors (Block 6).
+- **Interactive presentation with practical exercises** — visualisation principles infographic and
+  guided exercises (Block 7).
 
 ---
 
@@ -89,78 +93,78 @@ The following ToR requirements for Product 2 are pending:
 ### Block 5 – Simplified Visualisation Mode (ToR)
 **Goal:** A decision-maker interface that communicates epidemic status through KPI indicators
 and a geometric alarm system, without requiring interpretation of compartmental curves.  
-**Status:** In progress — UI placeholder in place. Design fully specified (March 2026).
-Target completion: 23 March 2026 (ahead of first partial delivery).
+**Status:** Complete. Delivered March 2026.
 
-#### Design specification
+#### What was delivered
+
+**New files added to `R/`:**
+
+| File | Description |
+|---|---|
+| `mod_helpers_simple.R` | Shared helper functions: `alarm_shape_svg()`, `state_label_ui()`, `metric_value_ui()`, `resolve_alarm_state()`, `coalesce_num()`. Placed in a dedicated file to guarantee correct load order under `loadSupport()` (alphabetical: `h` < `s` < `u`). |
+| `mod_server_simple.R` | Simple View server: isolated `reactiveValues` from `global.R` defaults; calls `mod_data_server("simple_data")` and `model_seir_server("simple_seir")` under distinct namespace ids; KPI computations and alarm state rendering. |
+| `mod_ui_simple.R` | Simple View UI: three KPI cards, two parameter sliders, collapsible Settings panel with six threshold inputs. |
+
+**Modified files:**
+
+| File | Change |
+|---|---|
+| `R/mod_entry.R` | Disabled `<button>` replaced with `actionButton(ns("go_simple"))`; `observeEvent(input$go_simple)` added. |
+| `R/mod_menu.R` | Simple button enabled; both Simple and Advanced buttons rendered via `uiOutput` for dynamic active-state border highlighting. |
+| `app.R` | Simple View routing wired to `mod_ui_simple("viz_simple")` and `mod_server_simple("viz_simple")`; `viz_plot_server()` not called for Simple View (KPI cards rendered via `renderUI` internally). |
+
+#### Design specification (as implemented)
 
 **Layout:** Single-page view. No tabs, no sidebar, no curves.
 
 **Top section — three independent KPI cards**, each with its own alarm indicator.
-Each alarm indicator uses a geometric shape and PPT palette colour:
 
 | State | Shape | Colour | Meaning |
-|-------|-------|--------|---------|
-| Controlled | Circle | PPT sea green `#3EA27F` | Situation under control |
-| Warning | Triangle | PPT orange `#F59342` | Attention required |
-| Critical | Square | PPT dark red `#752111` | Situation out of control |
+|---|---|---|---|
+| Controlled | Circle | `#3EA27F` PPT sea green | Situation under control |
+| Warning | Triangle | `#F59342` PPT orange | Attention required |
+| Critical | Square | `#752111` PPT dark red | Situation out of control |
 
-**Card 1 — Epidemic trajectory**
-Metric: weekly growth rate of the infectious compartment (I).  
-Logic:
-- Circle: I is decreasing or stable (growth rate <= 0%)
-- Triangle: I is growing moderately (growth rate 1–20% weekly)
-- Square: I is growing rapidly (growth rate > 20% weekly)
+**Card 1 — Epidemic trajectory**  
+Metric: weekly growth rate of I (mean of last 7 days vs. preceding 7 days).  
+- Circle: growth rate ≤ warning threshold (default 1%)  
+- Triangle: growth rate between warning and critical threshold (default 1–20%)  
+- Square: growth rate > critical threshold (default > 20%)
 
-**Card 2 — ICU pressure**
-Metric: `ICU_Occupancy_Sim` as a percentage of ICU capacity.  
-Logic:
-- Circle: occupancy < 70% of capacity
-- Triangle: occupancy 70–100% of capacity
-- Square: occupancy > 100% of capacity (capacity exceeded)
+**Card 2 — ICU pressure**  
+Metric: `ICU_Occupancy_Sim` on the final simulation day as a percentage of ICU capacity.  
+Uses the final-day value (not the historical peak) to represent current epidemic status.  
+- Circle: < warning threshold (default 70%)  
+- Triangle: between warning and critical (default 70–100%)  
+- Square: > critical threshold (default > 100%)
 
-**Card 3 — Cumulative impact**
-Metric: `Cumulative_Deaths` as a percentage of total population.  
-Logic:
-- Circle: below low threshold (default: 0.05% of population)
-- Triangle: between low and high threshold (default: 0.05–0.20%)
-- Square: above high threshold (default: > 0.20%)
+**Card 3 — Cumulative impact**  
+Metric: `Cumulative_Deaths` on the final simulation day as a percentage of total population.  
+- Circle: below warning threshold (default 0.05%)  
+- Triangle: between warning and critical (default 0.05–0.20%)  
+- Square: above critical threshold (default > 0.20%)
 
-**Bottom section — two parameter sliders only:**
-- R₀ (Basic Reproduction Number) — range and default from `global.R`
+**Parameter sliders (two only):**
+- R₀ — range 0.5–6.0, default from `global.R` (`INITIAL_R0`)
 - Compliance Level (%) — range 0–100, default 50
 
-Sliders are **fully isolated from the Advanced View state** and always initialise
-from `global.R` defaults. This ensures the Simple View works correctly whether the
-user enters directly from the entry screen or navigates from the Advanced View.
+State is **fully isolated** from the Advanced View and always initialised from `global.R` defaults.
 
-**Settings panel — threshold configuration:**
-A collapsible "Settings" panel (not a separate route) exposes six numeric inputs
-for overriding the default alarm thresholds:
+**Settings panel — threshold configuration (collapsible):**
 
-| Input | Default | Description |
-|-------|---------|-------------|
-| ICU warning threshold (%) | 70 | % of capacity triggering triangle |
-| ICU critical threshold (%) | 100 | % of capacity triggering square |
-| Growth warning threshold (%) | 1 | Weekly I growth rate triggering triangle |
-| Growth critical threshold (%) | 20 | Weekly I growth rate triggering square |
-| Deaths warning threshold (%) | 0.05 | % of population triggering triangle |
-| Deaths critical threshold (%) | 0.20 | % of population triggering square |
+| Input | Default |
+|---|---|
+| ICU warning threshold (% of capacity) | 70 |
+| ICU critical threshold (% of capacity) | 100 |
+| Growth warning threshold (% weekly) | 1 |
+| Growth critical threshold (% weekly) | 20 |
+| Deaths warning threshold (% of population) | 0.05 |
+| Deaths critical threshold (% of population) | 0.20 |
 
-All thresholds are reactive — changing them updates the alarm indicators immediately
-without re-running the ODE solver.
+All thresholds are reactive — changing them updates alarm indicators immediately without
+re-running the ODE solver.
 
-#### Implementation plan
-
-| Task | File(s) | Estimated effort |
-|------|---------|-----------------|
-| Create Simple View UI with KPI cards and alarm shapes | `mod_ui_simple.R` (new) | 2 h |
-| Create Simple View server with isolated state and alarm logic | `mod_server_simple.R` (new) | 2 h |
-| Enable Simple button in entry and menu | `mod_entry.R`, `mod_menu.R` | 30 min |
-| Wire Simple View routing in `app.R` | `app.R` | 30 min |
-| Update `implementation_guide.md` and `proj_evolution.md` | docs | 1 h |
-| Testing and deploy | — | 1 h |
-| **Total** | | **~7 h** |
+---
 
 ### Block 5b – User CSV Upload
 **Goal:** Allow users to load one or more custom `.csv` datasets from their local machine
@@ -189,7 +193,7 @@ as additional sources alongside mock and IECS/Santoro.
 **Schema validation — minimum required columns:**
 
 | Column | Type | Description |
-|--------|------|-------------|
+|---|---|---|
 | `time` | Integer | Day index starting at 0 |
 | `S` | Numeric | Susceptible individuals |
 | `E` | Numeric | Exposed individuals |
@@ -197,7 +201,7 @@ as additional sources alongside mock and IECS/Santoro.
 | `R` | Numeric | Recovered individuals |
 
 Validation is performed server-side by the existing `validate_schema()` function
-in `data_interface.R`. No column-level error detail is shown to the user.
+in `data_interface.R`.
 
 **Upload outcome:**
 - Valid file → added to the accumulated list, form refreshes ready for another upload.
@@ -216,14 +220,13 @@ the existing `data/cache/` mechanism.
 #### Files affected
 
 | Task | File(s) | Estimated effort |
-|------|---------|-----------------|
-| Upload screen UI | `mod_upload.R` (new) | 2 h |
-| Upload screen server: validation, list management | `mod_upload.R` (new) | 2 h |
+|---|---|---|
+| Upload screen UI and server | `mod_upload.R` (new) | 4 h |
 | Empty CSV template for download | `www/seir_template.csv` (new) | 15 min |
 | Wire upload routing in `app.R` | `app.R` | 30 min |
 | Add upload link to entry screen | `mod_entry.R` | 30 min |
 | Extend dataset combo to reflect session list | `mod_entry.R`, `mod_menu.R` | 1 h |
-| Update `implementation_guide.md` | docs | 30 min |
+| Update `implementation_guide.md` | `docs/` | 30 min |
 | Testing | — | 1 h |
 | **Total** | | **~8 h** |
 
@@ -239,7 +242,8 @@ the existing `data/cache/` mechanism.
 **Goal:** Educational component illustrating effective dashboard use and visualisation principles.  
 **Status:** Pending.  
 **Subtasks:**
-- Design infographic covering visualisation principles (clarity, graph selection, colour, common errors).
+- Design infographic covering visualisation principles (clarity, graph selection, colour, common
+  errors).
 - Develop practical exercises using real-life dashboard examples.
 - Integrate or link from the platform.
 
@@ -248,13 +252,13 @@ the existing `data/cache/` mechanism.
 ## Dependencies and Execution
 
 | Block | Depends On | Status |
-|-------|------------|--------|
+|---|---|---|
 | **1. Core Refactor** | – | Complete |
 | **2. Internationalisation** | 1 | Complete |
 | **3. Data Hub Interface** | 1 | Complete |
 | **4. UX Redesign** | 3 | Complete |
 | **4b. UI Polish and Bug Fixes** | 4 | Complete |
-| **5. Simplified Visualisation** | 3, 4, 4b | In progress — target 23 Mar 2026 |
+| **5. Simplified Visualisation** | 3, 4, 4b | Complete — March 2026 |
 | **5b. User CSV Upload** | 3, 5 | Scoped — post-review |
 | **6. External Data + Sociodemographic** | 3 | Pending |
 | **7. Interactive Presentation** | 4, 5 | Pending |
@@ -264,8 +268,8 @@ the existing `data/cache/` mechanism.
 ## Delivery Timeline
 
 | Milestone | Date | Contents |
-|-----------|------|----------|
-| First partial delivery | 26 March 2026 | Blocks 1–4b complete + Block 5 complete |
+|---|---|---|
+| First partial delivery | 26 March 2026 | Blocks 1–5 complete |
 | Review feedback incorporated | TBD | Corrections from Wellcome / CEMIC review |
 | Post-review phase | TBD | Blocks 5b, 6, 7 |
 
@@ -274,11 +278,12 @@ the existing `data/cache/` mechanism.
 ## Summary
 
 The SEIR dashboard has successfully transitioned from a prototype into a **deployed, functional
-modelling platform** with a UI fully aligned with PPT brand guidelines. The technical and UX
-foundations are stable. The Simplified View (Block 5) is fully designed and ready to implement,
-with a target completion of 23 March 2026 ahead of the first partial delivery. Remaining work
-after delivery focuses on user CSV upload, external data connectivity, sociodemographic layer,
-and the interactive presentation with practical exercises.
+modelling platform** with a UI fully aligned with PPT brand guidelines. Both the Advanced View
+(full parameter control, three plot panels, CSV export) and the Simplified View (KPI cards with
+geometric alarm indicators, isolated state, configurable thresholds) are operational and deployed.
+The first partial delivery to Wellcome / CEMIC is on track for 26 March 2026, covering Blocks 1–5.
+Remaining work after delivery focuses on user CSV upload, external data connectivity,
+sociodemographic layer, and the interactive presentation with practical exercises.
 
 **Maintainer:** Cristian Paez  
 **Date:** March 2026  

@@ -6,28 +6,28 @@
 #              module wiring for data, model and visualisation.
 #
 # NOTE: global.R and all R/ modules are loaded automatically
-# by Shiny's loadSupport() mechanism because the project
-# contains a DESCRIPTION file (R package structure).
-# Manual source() calls are therefore NOT required here.
+# by Shiny's loadSupport() mechanism (DESCRIPTION file present).
+# Manual source() calls are NOT required here.
 #
-# Namespace contract for plot outputs:
+# Namespace contract — Advanced View plot outputs:
 #   ui_main("viz_advanced") generates plotOutput ids of the
-#   form "viz_advanced-seir_plot", "viz_advanced-cases_deaths_plot",
-#   and "viz_advanced-resource_pressure_plot".
+#   form "viz_advanced-seir_plot", etc.
+#   viz_plot_server() must be called with id = "viz_advanced"
+#   from the TOP-LEVEL server — never from inside another
+#   moduleServer() call — to prevent double-prefixed ids.
+#   See Block 4b notes for full explanation.
 #
-#   For output$seir_plot registered inside viz_plot_server() to
-#   resolve to "viz_advanced-seir_plot", viz_plot_server() must
-#   be called with id = "viz_advanced" from the TOP-LEVEL server
-#   function — never from inside another moduleServer() call.
+# Namespace contract — Simple View:
+#   mod_ui_simple("viz_simple") / mod_server_simple("viz_simple").
+#   The Simple View does NOT use viz_plot_server() — it renders
+#   KPI cards via renderUI inside mod_server_simple().
+#   State is fully isolated: mod_server_simple() maintains its
+#   own reactiveValues always initialised from global.R defaults.
+#   Internal sub-modules use "simple_data" and "simple_seir"
+#   namespace ids to avoid collision with "data_sim"/"seir_model"
+#   used by the Advanced View.
 #
-#   If viz_plot_server() were called from inside mod_server()
-#   (which itself runs under the "viz_advanced" namespace), the
-#   resulting output id would be "viz_advanced-viz_advanced-seir_plot",
-#   which does not match any plotOutput in the UI.
-#
-#   mod_server() therefore does NOT call viz_plot_server().
-#   It returns model_data, icu_capacity, and
-#   ventilator_availability for app.R to pass through.
+# Block 5 — Simplified View implemented: 2026-03-19
 # ============================================================
 
 library(shiny)
@@ -58,18 +58,18 @@ server <- function(input, output, session) {
   trigger_sim      <- reactiveVal(0)
 
   # --------------------------------------------------------
-  # Dynamic UI
+  # Dynamic UI routing
+  # Menu bar shown on all views except entry.
   # --------------------------------------------------------
   output$main_ui <- renderUI({
     current <- screen()
 
-    # Menu bar is shown on all views except the entry screen
     menu_ui <- if (current != "entry") mod_menu_ui("menu") else NULL
 
     main_content <- switch(
       current,
       "entry"    = mod_entry_ui("entry"),
-      "simple"   = ui_main("viz_simple"),
+      "simple"   = mod_ui_simple("viz_simple"),
       "advanced" = ui_main("viz_advanced"),
       div(h3("Unknown view"))
     )
@@ -78,21 +78,21 @@ server <- function(input, output, session) {
   })
 
   # --------------------------------------------------------
-  # Entry and menu servers
+  # Entry and menu servers — always active
   # --------------------------------------------------------
-  mod_entry_server("entry", screen, dataset_selector, dataset_loaded, trigger_sim)
+  mod_entry_server("entry", screen, dataset_selector,
+                   dataset_loaded, trigger_sim)
   mod_menu_server("menu", screen, dataset_selector)
 
   # --------------------------------------------------------
   # Advanced view
   # --------------------------------------------------------
-  # Guard flag prevents duplicate module registration if the
-  # user navigates away and back to this view.
+  # Guard flag prevents duplicate module registration when
+  # the user navigates away and back to this view.
   #
-  # mod_server() runs under the "viz_advanced" namespace.
-  # viz_plot_server() is called here at the top level so that
-  # output ids resolve to "viz_advanced-*" — matching the
-  # plotOutput calls in ui_main("viz_advanced").
+  # viz_plot_server() is called at the top level so output ids
+  # resolve to "viz_advanced-*", matching the plotOutput calls
+  # inside ui_main("viz_advanced").
   # --------------------------------------------------------
   advanced_initialised <- reactiveVal(FALSE)
 
@@ -103,8 +103,6 @@ server <- function(input, output, session) {
 
     out <- mod_server("viz_advanced", reactive({ dataset_selector() }))
 
-    # Called at top level — output$seir_plot resolves to
-    # "viz_advanced-seir_plot", matching plotOutput in ui_main()
     viz_plot_server(
       id                            = "viz_advanced",
       model_data                    = out$model_data,
@@ -114,11 +112,16 @@ server <- function(input, output, session) {
   })
 
   # --------------------------------------------------------
-  # Simple view
+  # Simple view — Block 5
   # --------------------------------------------------------
-  # Same namespace contract as the Advanced view.
-  # viz_plot_server() called at top level so output ids
-  # resolve to "viz_simple-*".
+  # mod_server_simple() is self-contained: it calls
+  # mod_data_server() and model_seir_server() internally.
+  # It does NOT use viz_plot_server() — KPI cards are rendered
+  # via renderUI inside the module itself.
+  #
+  # dataset_selector is passed through for logging only.
+  # All SEIR parameters are driven exclusively by the Simple
+  # View sliders, always initialised from global.R defaults.
   # --------------------------------------------------------
   simple_initialised <- reactiveVal(FALSE)
 
@@ -127,14 +130,9 @@ server <- function(input, output, session) {
     if (simple_initialised()) return()
     simple_initialised(TRUE)
 
-    out <- mod_server("viz_simple", reactive({ dataset_selector() }))
+    mod_server_simple("viz_simple", reactive({ dataset_selector() }))
 
-    viz_plot_server(
-      id                            = "viz_simple",
-      model_data                    = out$model_data,
-      icu_capacity_input            = out$icu_capacity,
-      ventilator_availability_input = out$ventilator_availability
-    )
+    log_message("INFO", "Simple View server initialised", .module = "APP")
   })
 }
 

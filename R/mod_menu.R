@@ -4,13 +4,16 @@
 # Description: Top navigation menu module. Renders a PPT-branded
 #   dark green navbar that persists across all non-entry views.
 #   Provides:
-#     - Brand name with orange accent slash.
+#     - Brand name.
 #     - Active dataset indicator (italic, muted).
-#     - Three view buttons: Home, Simple (disabled), Advanced.
-#   Simple View button renders as a plain HTML <button> so
-#   the disabled state and native tooltip work correctly.
+#     - Three view buttons: Home, Simple, Advanced.
+#   Simple and Advanced buttons use uiOutput so the server can
+#   apply the correct active-state border colour depending on
+#   the current screen.
 # Author: Cristian Paez
 # Created: 2025-11-07
+# Updated: 2026-03-19 — Block 5: Simple View button enabled;
+#   dynamic active-state highlight added for both view buttons.
 # ============================================================
 
 
@@ -59,7 +62,7 @@ mod_menu_ui <- function(id) {
       tags$div(
         style = "display:flex; gap:6px; align-items:center;",
 
-        # Home button — neutral outline on dark background
+        # Home — static, no active-state needed
         actionButton(
           ns("btn_home"), "Home",
           style = paste(
@@ -72,35 +75,11 @@ mod_menu_ui <- function(id) {
           )
         ),
 
-        # Simple View — disabled, Coming soon tooltip
-        # Raw <button> so disabled + title work in all browsers
-        tags$button(
-          "Simple",
-          disabled = "disabled",
-          title    = "Coming soon",
-          style    = paste(
-            "font-size:11px;",
-            "padding:4px 12px;",
-            "border-radius:5px;",
-            "background:transparent;",
-            "border:0.5px solid rgba(244,246,245,0.15);",
-            "color:rgba(244,246,245,0.3);",
-            "cursor:not-allowed;"
-          )
-        ),
+        # Simple — dynamic active-state via uiOutput
+        uiOutput(ns("btn_simple_ui"), inline = TRUE),
 
-        # Advanced button — orange accent outline (active state)
-        actionButton(
-          ns("btn_advanced"), "Advanced",
-          style = paste(
-            "font-size:11px;",
-            "padding:4px 12px;",
-            "border-radius:5px;",
-            "background:transparent;",
-            "border:0.5px solid #F59342;",
-            "color:#F59342;"
-          )
-        )
+        # Advanced — dynamic active-state via uiOutput
+        uiOutput(ns("btn_advanced_ui"), inline = TRUE)
       )
     )
   )
@@ -111,7 +90,8 @@ mod_menu_ui <- function(id) {
 # Function: mod_menu_server()
 # Description:
 #   Server logic for the navigation menu. Renders the active
-#   dataset label and wires navigation buttons to screen().
+#   dataset label, applies the correct active-state highlight
+#   to the current view button, and wires navigation.
 # Parameters:
 #   id               – Shiny module identifier.
 #   screen           – reactiveVal(character); active view.
@@ -130,13 +110,63 @@ mod_menu_server <- function(id, screen, dataset_selector) {
     })
     # --- End of reactive block ---
 
+    # --------------------------------------------------------
+    # Dynamic Simple button
+    # Orange accent border when active, muted otherwise.
+    # --------------------------------------------------------
+    output$btn_simple_ui <- renderUI({
+      is_active  <- isTRUE(screen() == "simple")
+      border_col <- if (is_active) "#F59342" else "rgba(244,246,245,0.3)"
+      text_col   <- if (is_active) "#F59342" else "#F4F6F5"
+
+      actionButton(
+        session$ns("btn_simple"), "Simple",
+        style = paste0(
+          "font-size:11px;",
+          "padding:4px 12px;",
+          "border-radius:5px;",
+          "background:transparent;",
+          "border:0.5px solid ", border_col, ";",
+          "color:", text_col, ";"
+        )
+      )
+    })
+
+    # --------------------------------------------------------
+    # Dynamic Advanced button
+    # Orange accent border when active, muted otherwise.
+    # --------------------------------------------------------
+    output$btn_advanced_ui <- renderUI({
+      is_active  <- isTRUE(screen() == "advanced")
+      border_col <- if (is_active) "#F59342" else "rgba(244,246,245,0.3)"
+      text_col   <- if (is_active) "#F59342" else "#F4F6F5"
+
+      actionButton(
+        session$ns("btn_advanced"), "Advanced",
+        style = paste0(
+          "font-size:11px;",
+          "padding:4px 12px;",
+          "border-radius:5px;",
+          "background:transparent;",
+          "border:0.5px solid ", border_col, ";",
+          "color:", text_col, ";"
+        )
+      )
+    })
+
     # --- Reactive block: Home button ---
     observeEvent(input$btn_home, {
       screen("entry")
     })
     # --- End of reactive block ---
 
-    # btn_simple intentionally omitted — button is disabled in UI
+    # --- Reactive block: Simple button — Block 5 ---
+    observeEvent(input$btn_simple, {
+      screen("simple")
+      log_message("INFO", "User navigated to Simple View via menu",
+                  .module = "MENU")
+    })
+    # --- End of reactive block ---
 
     # --- Reactive block: Advanced button ---
     observeEvent(input$btn_advanced, {

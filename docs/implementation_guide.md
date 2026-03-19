@@ -8,7 +8,7 @@
 | **Author** | Cristian Paez |
 | **Organisation** | CEMIC |
 | **Funded by** | Wellcome |
-| **Version** | 1.0 |
+| **Version** | 1.1 |
 | **Date** | March 2026 |
 | **Related documents** | ToR WP5, `README.md`, `roadmap.md`, `proj_evolution.md` |
 
@@ -42,6 +42,14 @@ The platform is delivered as **Product 2** of the Pandemic Preparedness Toolkit 
 Unit, Work Package 5. This document constitutes part of **Product 3** (Implementation and User
 Guides) and is directed at system administrators, developers, and researchers responsible for
 deploying and maintaining the platform.
+
+The application provides two independent views:
+
+- **Advanced View** — full parameter control with three interactive plot panels, a sticky
+  sidebar, and CSV export of simulation results.
+- **Simplified View** — a decision-maker interface with three KPI cards, each displaying a
+  metric and a geometric alarm indicator (circle / triangle / square) in the PPT palette.
+  Alarm thresholds are configurable. State is fully isolated from the Advanced View.
 
 The application is deployed as a public web application at:
 <https://cpaez.shinyapps.io/bowie-seir/>
@@ -85,7 +93,7 @@ for line width; the codebase uses `linewidth` throughout.
 
 ### Software infrastructure
 
-- Web server: shinyapps.io (current) or self-hosted Shiny Server
+- Web server: shinyapps.io (current) or self-hosted Shiny Server.
 - No database management system is required. Datasets are stored as `.rds` and `.RData`
   files in the `data/` directory.
 - API integration capabilities are reserved for a future release (Block 6).
@@ -95,43 +103,48 @@ for line width; the codebase uses `linewidth` throughout.
 ## 3. Repository Structure
 
 ```
-seir-dashboard/
-├── app.R                        # Application entry point
-├── DESCRIPTION                  # R package metadata and dependencies
-├── LICENSE                      # MIT licence
-├── NAMESPACE                    # R package namespace
-├── README.md                    # Project overview
-├── CODESTYLE.md                 # Coding and commenting standards
-├── roadmap.md                   # Strategic roadmap and block status
-├── proj_evolution.md            # ToR alignment and progress report
+bowie/
+├── app.R                          # Application entry point and routing
+├── DESCRIPTION                    # R package metadata and dependencies
+├── LICENSE                        # MIT licence
+├── NAMESPACE                      # R package namespace
+├── README.md                      # Project overview
+├── CODESTYLE.md                   # Coding and commenting standards
+├── roadmap.md                     # Strategic roadmap and block status
+├── proj_evolution.md              # ToR alignment and progress report
+├── structure.txt                  # Auto-generated project file tree
+├── write_structure.R              # Script to regenerate structure.txt
 │
 ├── R/
-│   ├── global.R                 # Global constants and library loading
-│   ├── data_interface.R         # Data Hub: loading, validation, caching
-│   ├── mod_entry.R              # Entry screen module
-│   ├── mod_menu.R               # Top navigation menu module
-│   ├── mod_ui.R                 # Advanced View UI layout and panels
-│   ├── mod_server.R             # Main server: parameter wiring, model orchestration
-│   ├── mod_server_reactivity.R  # Cross-module reactivity scaffold (planned)
-│   ├── mod_model.R              # SEIR ODE model logic
-│   ├── mod_viz.R                # Visualisation module
-│   ├── mod_data.R               # Data simulation module
+│   ├── global.R                   # Global constants and library loading
+│   ├── data_interface.R           # Data Hub: loading, validation, caching
+│   ├── mod_entry.R                # Entry screen module
+│   ├── mod_menu.R                 # Top navigation menu module
+│   ├── mod_ui.R                   # Advanced View UI layout and panels
+│   ├── mod_server.R               # Advanced View server: parameter wiring, model orchestration
+│   ├── mod_model.R                # SEIR ODE model logic
+│   ├── mod_viz.R                  # Visualisation module (ggplot2)
+│   ├── mod_data.R                 # Data simulation module
+│   ├── mod_helpers_simple.R       # Shared helpers for the Simplified View
+│   ├── mod_ui_simple.R            # Simplified View UI: KPI cards and sliders
+│   ├── mod_server_simple.R        # Simplified View server: isolated state and alarm logic
+│   ├── mod_server_reactivity.R    # Cross-module reactivity scaffold (reserved)
 │   └── utils/
-│       ├── utils_logging.R      # Structured logging utilities
-│       ├── utils_validation.R   # Parameter and schema validation
-│       ├── utils_helpers.R      # Numeric helpers and safe ODE wrapper
-│       └── utils_dependencies.R # Automatic dependency detection and loading
+│       ├── utils_logging.R        # Structured logging utilities
+│       ├── utils_validation.R     # Parameter and schema validation
+│       ├── utils_helpers.R        # Numeric helpers and safe ODE wrapper
+│       └── utils_dependencies.R   # Automatic dependency detection and loading
 │
 ├── data/
-│   ├── mock_dataset.rds         # Simulated default dataset
-│   ├── iecs_data.RData          # IECS / Santoro — real COVID-19 Argentina data
-│   └── cache/                   # Auto-generated: cached datasets (save_dataset())
+│   ├── mock_dataset.rds           # Simulated default dataset
+│   ├── iecs_data.RData            # IECS / Santoro — real COVID-19 Argentina data
+│   └── cache/                     # Auto-generated: cached datasets (save_dataset())
 │
 ├── docs/
-│   └── implementation_guide.md  # This document
+│   └── implementation_guide.md    # This document
 │
 └── www/
-    └── custom.css               # Visual overrides — PPT brand palette
+    └── custom.css                 # Visual overrides — PPT brand palette
 ```
 
 ---
@@ -142,13 +155,12 @@ seir-dashboard/
 
 ```bash
 git clone https://github.com/XtnPaez/bowie.git
-cd bowie  # repository folder name
+cd bowie
 ```
 
 ### Install dependencies
 
 ```r
-# From an R or RStudio session
 install.packages(c(
   "shiny", "shinyjs", "bslib", "ggplot2", "dplyr", "tidyr",
   "purrr", "scales", "lubridate", "deSolve", "RcppRoll",
@@ -156,11 +168,10 @@ install.packages(c(
 ))
 ```
 
-Alternatively, if a `DESCRIPTION` file is present, `renv` or `pak` can resolve
-all dependencies automatically:
+Alternatively, if `pak` is available, it can resolve all dependencies from `DESCRIPTION`:
 
 ```r
-pak::pak()  # resolves from DESCRIPTION
+pak::pak()
 ```
 
 ### Run locally
@@ -180,15 +191,15 @@ at startup. It applies two filters to avoid false positives:
 - A curated blocklist of known non-package tokens (e.g., `col`, `pkg`, `base`).
 - A CRAN name format check: only tokens matching `^[A-Za-z][A-Za-z0-9\\.]*$` are
   treated as package names. This prevents CSS pseudo-selectors embedded in inline
-  style strings (e.g., `#controls-col::-webkit-scrollbar`) from being parsed as
-  package names.
+  style strings from being parsed as package names.
 
 ---
 
 ## 5. Configuration
 
 All global constants are defined in `R/global.R`. Modifying this file is the single
-point of change for default simulation parameters.
+point of change for default simulation parameters. The Simplified View initialises its
+own isolated `reactiveValues` directly from these constants.
 
 ### Epidemiological parameters
 
@@ -232,40 +243,63 @@ Sys.setenv(LOG_LEVEL = "WARN")   # minimal output in production
 
 ## 6. Module Architecture
 
-The application follows a strict modular pipeline:
+The application follows a strict modular pipeline. There are two independent simulation
+paths — Advanced View and Simplified View — that share the ODE solver infrastructure but
+maintain entirely separate reactive state.
 
 ```
-data_interface  →  mod_data  →  mod_model  →  mod_viz
-                                    ↑
-                              mod_server
-                             ↗          ↖
-                        mod_entry      mod_menu
-                             ↖          ↗
-                                app.R
-                                  ↑
-                               mod_ui
+                              app.R
+                             /     \
+              ┌─────────────┐       ┌──────────────────┐
+              │ ADVANCED     │       │ SIMPLIFIED        │
+              │ VIEW         │       │ VIEW              │
+              │              │       │                   │
+         mod_server       mod_server_simple
+              │                   │
+         mod_model            mod_model
+         (seir_model)         (simple_seir)
+              │                   │
+         mod_data             mod_data
+         (data_sim)           (simple_data)
+              │
+         mod_viz
+         (viz_plot_server)
+              │
+         mod_ui              mod_ui_simple
+              │                   │
+         mod_menu ─────────────────┘
+              │
+         mod_entry
 ```
 
 All modules are loaded automatically by Shiny's `loadSupport()` mechanism because
-the project contains a `DESCRIPTION` file. Manual `source()` calls in `app.R` are
-not required.
+the project contains a `DESCRIPTION` file. Files in `R/` are loaded in alphabetical
+order. The load order is significant for the Simplified View: `mod_helpers_simple.R`
+(h) is guaranteed to load before `mod_server_simple.R` (s) and `mod_ui_simple.R` (u),
+ensuring that shared helper functions are available when both modules are sourced.
 
 ### app.R — Application entry point
 
 Defines the root UI and server. Manages top-level reactive state (`screen`,
 `dataset_selector`, `dataset_loaded`, `trigger_sim`) and wires all modules together.
 
-**Namespace contract (critical):** `viz_plot_server()` must be called from the
-top-level server function in `app.R`, not from inside `mod_server()`. If called from
-within `mod_server()` (which itself runs under the `"viz_advanced"` namespace),
-output ids accumulate as `"viz_advanced-viz_advanced-seir_plot"`, which does not
-match the `plotOutput` ids generated by `ui_main()`. The correct call site is `app.R`.
+**Namespace contract — Advanced View (critical):** `viz_plot_server()` must be called from
+the top-level server function in `app.R`, not from inside `mod_server()`. If called from
+within `mod_server()` (which itself runs under the `"viz_advanced"` namespace), output ids
+accumulate as `"viz_advanced-viz_advanced-seir_plot"`, which does not match the `plotOutput`
+ids generated by `ui_main()`. The correct call site is `app.R`.
+
+**Namespace contract — Simplified View:** `mod_server_simple()` does not use
+`viz_plot_server()`. KPI cards are rendered via `renderUI` calls inside the module itself.
+Internal sub-modules use `"simple_data"` and `"simple_seir"` as namespace ids, distinct from
+the Advanced View ids `"data_sim"` and `"seir_model"`.
 
 ### global.R — Global constants and library loading
 
 Loads all required libraries, defines all model constants, and dynamically sources
 utility functions from `R/utils/`. Any constant used across more than one module is
-defined here.
+defined here. The Simplified View reads constants directly from this file to initialise
+its isolated `reactiveValues`.
 
 ### data_interface.R — Data Hub
 
@@ -280,22 +314,21 @@ Exposes five public functions:
 | `save_dataset(data, name)` | Saves a validated dataset to `data/cache/` |
 | `list_datasets()` | Lists all cached datasets with name, path, and size |
 
-The IECS dataset is a named list with three elements whose names originate from the
-source `.RData` file and must not be renamed: `parametros` (model parameters),
-`recursos` (resource parameters), and `poblacion` (population size).
-
 ### mod_entry.R — Entry screen
 
 Renders the entry screen with a PPT-branded navbar, a centred card containing the
 dataset selector, load button, and status badge, and a footer attribution strip.
 Server logic handles dataset loading, success and error feedback, and navigation to
-the Advanced View.
+both the Advanced View and the Simplified View via `actionButton` inputs `go_advanced`
+and `go_simple`.
 
 ### mod_menu.R — Top navigation menu
 
 Renders a persistent dark green navbar injected above all non-entry views. Provides
-the dataset indicator and three navigation buttons: Home, Simple (disabled pending
-Block 5 implementation), and Advanced.
+the dataset indicator and three navigation buttons: Home, Simple, and Advanced. The
+Simple and Advanced buttons are rendered via `uiOutput` so the server can apply a
+dynamic active-state border highlight (PPT orange `#F59342`) to the currently active
+view button.
 
 ### mod_ui.R — Advanced View layout
 
@@ -308,12 +341,9 @@ Defines all UI layout functions for the Advanced View. Exposes four composable h
 | `ui_resource_params(ns)` | Healthcare resource panel (capacity inputs and rate sliders) |
 | `ui_main(viz_id)` | Full page layout: sticky sidebar + tabbed output area + footer |
 
-`ui_main()` uses a `tagList` wrapper (not `fluidPage`) to avoid Bootstrap container
-padding that would prevent the navbar from sitting flush at the top.
+### mod_server.R — Advanced View server
 
-### mod_server.R — Main server
-
-Orchestrates the full simulation pipeline. Responsibilities:
+Orchestrates the full Advanced View simulation pipeline. Responsibilities:
 
 - Initialises `reactiveValues` (`app_params`) with defaults from `global.R`.
 - Loads dataset parameters when an IECS source is selected.
@@ -333,6 +363,58 @@ because they affect demand calculations in `mod_model.R`.
 inside `app_params` and all UI inputs. Conversion to proportion (÷ 100) is performed
 inside `mod_model.R` via `percent_to_prop()` immediately before ODE integration.
 
+### mod_helpers_simple.R — Simplified View shared helpers
+
+Contains all pure functions shared between `mod_ui_simple.R` and `mod_server_simple.R`.
+Defined in a separate file to guarantee correct load order under `loadSupport()`.
+
+| Function | Description |
+|---|---|
+| `alarm_shape_svg(state, size)` | Returns an inline SVG element (circle / triangle / square) coloured with the matching PPT alarm palette colour |
+| `state_label_ui(state)` | Returns a styled `tags$p()` with the alarm state label |
+| `metric_value_ui(formatted_value, unit_label)` | Returns a styled `tags$div()` with the KPI value and unit |
+| `resolve_alarm_state(value, warn, crit, direction)` | Classifies a numeric value as `"controlled"`, `"warning"`, or `"critical"` using two monotone thresholds |
+| `coalesce_num(value, default)` | Returns `value` if it is a non-NA numeric scalar, otherwise returns `default`; guards against `NULL`/`NA` while a threshold field is being edited |
+
+### mod_ui_simple.R — Simplified View UI
+
+Defines the full Simplified View layout. Contains one local helper (`kpi_card_ui()`)
+and the main function `mod_ui_simple(id)`. Layout (top to bottom):
+
+1. Page heading.
+2. Three KPI cards in a responsive flex row. Each card contains a `uiOutput` for the
+   alarm shape, a `uiOutput` for the state label, a static title and subtitle, and a
+   `uiOutput` for the metric value. All reactive elements are server-rendered.
+3. A parameter card with two sliders: R₀ (range 0.5–6.0, default `INITIAL_R0`) and
+   Compliance Level (range 0–100, default 50). Both initialise from `global.R`.
+4. A collapsible Settings panel (toggled via inline JavaScript) containing six
+   `numericInput` controls for alarm threshold overrides.
+5. Footer attribution strip.
+
+### mod_server_simple.R — Simplified View server
+
+Server logic for the Simplified View. Key design properties:
+
+- Maintains its own `reactiveValues` (`simple_params`) always initialised from `global.R`
+  constants. These are never read or written by the Advanced View.
+- Calls `mod_data_server("simple_data", ...)` and `model_seir_server("simple_seir", ...)`
+  under distinct namespace ids to avoid collision with the Advanced View.
+- Slider observers (`input$simple_r0`, `input$simple_compliance`) update `simple_params`
+  and increment `trigger_sim` to re-run the ODE solver. `ignoreInit = FALSE` ensures the
+  first simulation fires immediately on load.
+- Three KPI reactive expressions compute metrics from the model output:
+
+| Reactive | Metric | Method |
+|---|---|---|
+| `kpi_growth_rate` | Weekly growth rate of I | Mean of last 7 days vs. preceding 7 days |
+| `kpi_icu_pct` | ICU occupancy as % of capacity | `ICU_Occupancy_Sim` on the final simulation day |
+| `kpi_deaths_pct` | Deaths as % of population | `Cumulative_Deaths` on the final simulation day |
+
+- Three alarm state reactives call `resolve_alarm_state()` using the KPI value and the
+  current threshold inputs. These do not depend on `trigger_sim` — they react only to
+  KPI changes and threshold input changes, so modifying a threshold does not re-run
+  the ODE solver.
+
 ### mod_server_reactivity.R — Cross-module reactivity scaffold
 
 Reserved for future cross-module reactive bindings. Currently a scaffold with no
@@ -340,42 +422,32 @@ active wiring. Not called from `app.R` or any other module.
 
 ### mod_model.R — SEIR ODE model
 
-Implements the SEIR differential equations and post-processing pipeline. Two functions:
-
-`seir_equations(time, state, parameters)` — defines the ODE system. Returns derivatives
-and new daily infections at each time step.
-
-`model_seir_server(id, input_params, raw_data_df)` — Shiny module server. Observes
-`trigger_sim`, validates parameters, applies effective R₀ under the selected policy,
-solves the ODE system via `safe_ode()`, and post-processes results into a data frame
-containing compartment values, cumulative cases and deaths, and ICU and ventilator
-occupancy via rolling window sums. See Section 7 for the full mathematical specification.
+Implements the SEIR differential equations and post-processing pipeline. Used by both
+the Advanced View and the Simplified View via `model_seir_server()`. See Section 7 for
+the full mathematical specification.
 
 ### mod_viz.R — Visualisation module
 
-Renders three plots from SEIR model output via `viz_plot_server()`. All plots share
-a common `ppt_theme()` function that applies the PPT brand palette and X-axis guide
-lines consistently. See Section 9 for colour specifications.
+Renders three plots from SEIR model output via `viz_plot_server()`. Used exclusively
+by the Advanced View. All plots share a common `ppt_theme()` function. See Section 9
+for colour specifications.
 
 | Output | Description |
 |---|---|
 | `seir_plot` | SEIR compartment dynamics over time |
 | `cases_deaths_plot` | Cumulative cases and deaths |
-| `resource_pressure_plot` | ICU and ventilator demand vs. capacity, with ribbon shading for excess demand periods |
+| `resource_pressure_plot` | ICU and ventilator demand vs. capacity, with ribbon shading |
 
 ### mod_data.R — Data simulation module
 
 Generates the initial time-series structure passed to `model_seir_server()` as
-`raw_data_df`. Produces a data frame with columns `time`, `date`, `S`, `E`, `I`, `R`,
-and auxiliary resource columns, initialised with a population of `N - 10,000`
-susceptibles and `10,000` infected at `time = 0`. The ODE solver overwrites all
-compartment values during integration.
+`raw_data_df`. The ODE solver overwrites all compartment values during integration.
 
 ### utils/utils_logging.R — Logging utilities
 
 | Function | Description |
 |---|---|
-| `log_message(level, msg, .module, ...)` | Prints structured log lines with timestamp, level, module, and optional context key-value pairs |
+| `log_message(level, msg, .module, ...)` | Prints structured log lines with timestamp, level, module, and optional key-value pairs |
 | `set_log_level(level)` | Sets global log verbosity via `LOG_LEVEL` environment variable |
 | `with_timing(expr, .module, .label)` | Wraps an expression and logs elapsed execution time |
 
@@ -390,8 +462,7 @@ before ODE integration to enforce parameter ranges and compartment consistency.
 |---|---|
 | `clamp(x, minv, maxv)` | Restricts a value to a given interval |
 | `percent_to_prop(x_pct)` | Converts percentage to proportion (÷ 100) |
-| `coalesce_num(x, y)` | Replaces NA values with a fallback numeric |
-| `not_null(x)` | Returns TRUE if object is not NULL |
+| `not_null(x)` | Returns `TRUE` if object is not `NULL` |
 | `safe_ode(...)` | Error-safe wrapper around `deSolve::ode()`; logs failures and re-throws with a clean message |
 
 ### utils/utils_dependencies.R — Automatic dependency loading
@@ -404,8 +475,6 @@ installs and loads any missing packages at startup. See Section 4 for filter det
 ## 7. SEIR Model — Equations and Parameters
 
 ### Compartmental structure
-
-The model divides the population into four mutually exclusive compartments:
 
 | Compartment | Symbol | Description |
 |---|---|---|
@@ -453,8 +522,9 @@ R_0^{\text{eff}} = R_0 \cdot \left(1 - 0.5 \cdot c\right)
 $$
 
 Where $c$ is the compliance level as a proportion in [0, 1]. At full compliance ($c = 1$),
-$R_0$ is reduced by 50%. The effective value is clamped to a minimum of 0.5 to
-prevent biologically implausible results.
+R₀ is reduced by 50%. The effective value is clamped to a minimum of 0.5 to prevent
+biologically implausible results. The Simplified View uses `policy_type = "phased_mitigation"`
+so that the Compliance Level slider has a meaningful effect on the simulation.
 
 ### Post-processing: healthcare resource demand
 
@@ -475,9 +545,7 @@ $$
 \text{ICU\_Occupancy\_Sim}_t = \sum_{k=t-h+1}^{t} \text{ICU\_Daily\_Demand}_k
 $$
 
-Where $h$ = `INITIAL_HOSPITAL_STAY_DAYS` (default: 10 days). The same formula
-applies to `Vent_Usage_Sim`. For time points where fewer than $h$ days are available
-(i.e., the start of the simulation), a cumulative sum is used as a fallback.
+Where $h$ = `INITIAL_HOSPITAL_STAY_DAYS` (default: 10 days).
 
 ### Output data frame columns
 
@@ -489,8 +557,8 @@ applies to `Vent_Usage_Sim`. For time points where fewer than $h$ days are avail
 | `Cumulative_Cases` | Running total of new infections |
 | `Daily_Deaths` | Daily deaths ($\text{Daily\_New\_Infections} \cdot \text{IFR}$) |
 | `Cumulative_Deaths` | Running total of deaths |
-| `ICU_Occupancy_Sim` | Estimated ICU bed occupancy |
-| `Vent_Usage_Sim` | Estimated ventilator usage |
+| `ICU_Occupancy_Sim` | Estimated ICU bed occupancy (rolling sum) |
+| `Vent_Usage_Sim` | Estimated ventilator usage (rolling sum) |
 
 ---
 
@@ -499,8 +567,7 @@ applies to `Vent_Usage_Sim`. For time points where fewer than $h$ days are avail
 ### Simulated dataset (mock)
 
 Loaded from `data/mock_dataset.rds`. Provides a SEIR-compatible time-series
-structure for parameter exploration without requiring real data. The initial state
-is `S = N - 10,000`, `I = 10,000`, `E = 0`, `R = 0`.
+structure for parameter exploration without requiring real data.
 
 ### IECS / Santoro dataset
 
@@ -516,11 +583,8 @@ The file exposes a named list with three elements:
 | `recursos` | List | ICU rate, ventilator rate, hospital stay days, ICU capacity, ventilator availability, healthcare staff |
 | `poblacion` | Numeric | Total population |
 
-Note: field names within this list (`parametros`, `recursos`, `poblacion`) originate
-from the source dataset and must not be renamed in the codebase.
-
-A legacy field name normalisation is applied automatically by `load_iecs_data()`:
-the older prefix `INICIAL_` is converted to `INITIAL_` where present.
+Note: field names (`parametros`, `recursos`, `poblacion`) originate from the source
+dataset and must not be renamed in the codebase.
 
 ### Adding a new dataset source
 
@@ -532,8 +596,7 @@ the corresponding option to the `selectInput` in `mod_entry.R`.
 
 ## 9. Visual Design System
 
-The interface follows the PPT (Pandemic Preparedness Toolkit) brand guidelines
-defined in the Wellcome / CEMIC style template.
+The interface follows the PPT brand guidelines defined in the Wellcome / CEMIC style template.
 
 ### Colour palette
 
@@ -547,9 +610,15 @@ defined in the Wellcome / CEMIC style template.
 | Panel / input background | Earthy tint | `#F8F5F1` |
 | Border | Grey | `#D0D4CE` |
 
-### Chart colours — categorical data
+### Simplified View alarm palette
 
-Applied in order for SEIR compartment plots:
+| State | Shape | Hex |
+|---|---|---|
+| Controlled | Circle | `#3EA27F` PPT sea green |
+| Warning | Triangle | `#F59342` PPT orange |
+| Critical | Square | `#752111` PPT dark red |
+
+### Chart colours — categorical data
 
 | Series | Colour name | Hex |
 |---|---|---|
@@ -567,8 +636,6 @@ Applied in order for SEIR compartment plots:
 | Excess demand ribbon | `#F0D9C8` |
 
 All chart styling is centralised in the `ppt_theme()` function inside `mod_viz.R`.
-This function also adds X-axis major and minor grid lines (`panel.grid.major.x`,
-`panel.grid.minor.x`) to all three plots for readability.
 
 ---
 
@@ -580,21 +647,16 @@ This function also adds X-axis major and minor grid lines (`panel.grid.major.x`,
 library(rsconnect)
 
 rsconnect::deployApp(
-  appDir     = ".",
-  appName    = "bowie-seir",
+  appDir      = ".",
+  appName     = "bowie-seir",
   forceUpdate = TRUE
 )
 ```
 
-Ensure `rsconnect` is configured with a valid shinyapps.io account token before
-deploying. See the rsconnect documentation for authentication setup.
-
 ### Self-hosted Shiny Server
 
-Copy the repository to the Shiny Server apps directory (typically
-`/srv/shiny-server/`) and ensure all R package dependencies are installed in the
-server's R library path. No additional configuration is required beyond standard
-Shiny Server setup.
+Copy the repository to the Shiny Server apps directory (typically `/srv/shiny-server/`)
+and ensure all R package dependencies are installed in the server's R library path.
 
 ### Environment variables for production
 
@@ -606,18 +668,15 @@ LOG_LEVEL=WARN   # suppress DEBUG and INFO output in production
 
 ## 11. Known Limitations
 
-The following limitations reflect the current implementation scope as defined by
-the ToR Product 2 requirements. Items not covered by the ToR are outside the
-scope of this implementation.
-
 | Limitation | Status |
 |---|---|
-| Simplified View (decision-maker interface with KPIs) | Pending — Block 5 |
+| User CSV upload | Pending — Block 5b (post-review) |
 | External data connectivity (WHO, OWID APIs) | Pending — Block 6 |
 | Sociodemographic data layer | Pending — Block 6 |
 | Interactive presentation with practical exercises | Pending — Block 7 |
 | ICU / ventilator occupancy uses a rolling sum approximation | By design — a queueing model would require individual-level data not available at this stage |
 | IFR is applied as a global value | By design — age-stratified IFR is outside the current ToR scope |
+| Simplified View ICU KPI uses the final simulation day, not the historical peak | By design — the final-day value reflects current epidemic status, which is the intended signal for a decision-maker interface |
 
 ---
 
@@ -636,5 +695,6 @@ scope of this implementation.
 ---
 
 **Maintainer:** Cristian Paez  
+**Version:** 1.1 — March 2026  
 **Project:** Pandemic Preparedness Toolkit (Argentina Unit)  
 **Funded by:** Wellcome
