@@ -1,5 +1,5 @@
 # CODESTYLE.md  
-**Bowie / SEIR Shiny – Coding and Commenting Standards**
+**SEIR Epidemiological Dashboard – Coding and Commenting Standards**
 
 ## 1. Language and General Rules
 - All code **and comments** must be written in **English (UK)**.  
@@ -193,6 +193,6 @@ mod_data_server <- function(id, params) {
 ---
 
 **Maintainer:** Cristian Paez  
-**Project:** Bowie / SEIR Shiny  
+**Project:** SEIR Epidemiological Dashboard  
 **Version:** 1.0 (November 2025)
 

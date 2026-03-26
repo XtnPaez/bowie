@@ -1,0 +1,171 @@
+SIMPLE VIEW — QUÉ CALCULA CADA CARD Y POR QUÉ
+Nota personal — marzo 2026
+================================================
+
+
+ANTES DE EMPEZAR: DE DÓNDE VIENEN LOS DATOS
+--------------------------------------------
+La Simple View corre su propia simulación SEIR independiente.
+Cuando el usuario mueve los sliders de R₀ y Compliance, el modelo
+resuelve las ecuaciones diferenciales y produce un data frame con
+una fila por día (366 días, del 01/03/2020 al 01/03/2021).
+
+Cada fila tiene, entre otras columnas:
+  I                  → infectados ese día
+  ICU_Daily_Demand   → I * 0.136  (13.6% de infectados necesitan UCI)
+  Cumulative_Deaths  → muertes acumuladas hasta ese día
+
+Los parámetros fijos (no son sliders):
+  Incubation period:   5 días
+  Infectious period:   7 días
+  IFR:                 1%
+  ICU admission rate:  13.6%
+  ICU capacity:        6.000 camas
+  Population:          45.000.000
+  Policy:              phased_mitigation (compliance tiene efecto)
+
+
+CARD 1 — EPIDEMIC TRAJECTORY
+"Weekly growth rate of I"
+--------------------------------------------
+Pregunta: ¿la epidemia está creciendo o frenando al final del período?
+
+Cálculo:
+  last7  = promedio de I en los últimos 7 días de la simulación
+  prev7  = promedio de I en los 7 días anteriores a esos
+  resultado = ((last7 - prev7) / prev7) * 100
+
+Ejemplos:
+  -9%   → I bajó 9% en la última semana → epidemia frenando
+  +25%  → I subió 25% en la última semana → epidemia creciendo
+
+Por qué promedios semanales:
+  Un valor de un solo día tiene ruido. El promedio de 7 días
+  captura la tendencia real, igual que los tableros COVID reales.
+
+Rango posible: de -100% (I desaparece) a +200% o más al inicio.
+Al final de la simulación suele estar entre -30% y +20%.
+No hay riesgo de valores imposibles — esta card está bien.
+
+Umbrales default:
+  Verde   (Controlled): resultado ≤ 1%
+  Naranja (Warning):    entre 1% y 20%
+  Rojo    (Critical):   más de 20% semanal
+
+
+CARD 2 — ICU PRESSURE
+"Peak daily ICU admissions as % of capacity"
+--------------------------------------------
+Pregunta: en el peor momento de esta simulación, ¿cuántas camas
+UCI nuevas se necesitan por día comparado con la capacidad?
+
+Cálculo:
+  ICU_Daily_Demand[t] = I[t] * 0.136
+  resultado = (max(ICU_Daily_Demand) / 6.000) * 100
+
+  Se usa el PICO de ICU_Daily_Demand en toda la simulación,
+  no el valor del último día.
+
+Por qué el pico y no el último día:
+  El último día cae en puntos muy distintos de la curva según
+  los parámetros. Con R₀ = 2.0 la epidemia ya pasó el pico al
+  día 366 → I_last bajo → % bajo. Con R₀ = 1.9 la epidemia
+  aún sube al día 366 → I_last alto → % alto. Eso produce
+  resultados contraintuitivos (menor R₀, mayor %). El pico
+  siempre es el peor momento real de la simulación y es
+  comparable entre escenarios.
+
+El problema del pico con parámetros altos:
+  Con R₀ = 2.5, el pico de I es ~3.4 millones de personas.
+  ICU_Daily_Demand_pico = 3.400.000 * 0.136 = 466.000 camas
+  466.000 / 6.000 * 100 = 7.771%
+  Ese número es matemáticamente correcto pero inútil en una card.
+
+La solución — cap en > 100%:
+  Si el resultado es mayor que 100%, la card muestra "> 100%"
+  con estado Critical. La diferencia entre 500% y 7.000% no
+  cambia ninguna decisión — lo que importa es que el sistema
+  colapsó. El número exacto no aporta información accionable.
+
+Display:
+  resultado ≤ 100%  → muestra el porcentaje exacto (ej: 67.32%)
+  resultado > 100%  → muestra "> 100%"
+
+Umbrales default:
+  Verde   (Controlled): resultado < 70%
+  Naranja (Warning):    entre 70% y 100%
+  Rojo    (Critical):   más de 100% → siempre muestra "> 100%"
+
+
+CARD 3 — CUMULATIVE IMPACT
+"Cumulative deaths as % of population"
+--------------------------------------------
+Pregunta: ¿cuántas personas murieron en total al final del período?
+
+Cálculo:
+  resultado = (Cumulative_Deaths[último día] / 45.000.000) * 100
+
+  Las muertes acumuladas vienen del modelo:
+    Daily_Deaths[t]       = nuevas_infecciones[t] * 0.01 (IFR)
+    Cumulative_Deaths[t]  = suma de Daily_Deaths hasta t
+
+Ejemplo:
+  150.000 muertes → (150.000 / 45.000.000) * 100 = 0.33%
+
+Rango posible:
+  Máximo teórico: IFR * 100% = 1% (si toda la población se infecta)
+  En práctica: entre 0% y ~0.8%
+  Los umbrales (0.05% y 0.20%) están bien dentro de ese rango.
+  No hay riesgo de valores imposibles — esta card está bien.
+
+Por qué muertes acumuladas y no diarias:
+  Las diarias suben y bajan. Las acumuladas son siempre crecientes
+  y representan el daño total sobre la sociedad.
+
+Umbrales default:
+  Verde   (Controlled): resultado < 0.05%  (~22.500 muertes)
+  Naranja (Warning):    entre 0.05% y 0.20% (hasta ~90.000)
+  Rojo    (Critical):   más de 0.20%
+
+
+CÓMO FUNCIONAN LOS UMBRALES (Settings panel)
+--------------------------------------------
+Los seis campos del panel Settings cambian las líneas de corte
+que clasifican el número en verde / naranja / rojo.
+
+NO cambian los números de las cards — esos dependen del modelo.
+SÍ cambian las formas (círculo / triángulo / cuadrado).
+
+Presionar "Apply thresholds" confirma los cambios.
+
+Si el umbral Warning es mayor que el Critical (o al revés),
+la función los ordena sola — no importa el orden en que los ingreses.
+
+
+CUÁNDO CAMBIA QUÉ
+--------------------------------------------
+  Mover R₀ o Compliance  → cambian los números Y las formas
+  Cambiar umbrales + Apply → cambian solo las formas
+
+
+HISTORIAL DE DECISIONES DE DISEÑO (Card 2)
+--------------------------------------------
+1. Primer intento — ICU_Occupancy_Sim último día:
+   Dio 55.151% → bug aparente, pero era el rolling sum de 10 días
+   acumulando demanda enorme. Descartado.
+
+2. Segundo intento — ICU_Daily_Demand último día:
+   Con R₀=2.0 daba 31%, con R₀=1.9 daba 106%. Contraintuitivo
+   porque la curva está en puntos distintos al día 366. Descartado.
+
+3. Tercer intento — pico de ICU_Daily_Demand (sin cap):
+   Con R₀=2.5 daba 7.771%. Matemáticamente correcto pero inutilizable.
+
+4. Solución final — pico de ICU_Daily_Demand, cap en > 100%:
+   Valores ≤ 100%: se muestran exactos.
+   Valores > 100%: se muestran como "> 100%" con estado Critical.
+   El sistema colapsó — eso es todo lo que el decisor necesita saber.
+
+
+Cristian Paez — marzo 2026
+Uso personal — no subir al repo

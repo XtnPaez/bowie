@@ -1,0 +1,56 @@
+Project Structure
+Generated: 2026-03-19 10:53:56
+Root: C:/xampp/htdocs/bowie
+
+[ [root] ]
+  _pkgdown.yml
+  app.R
+  bowie.Rproj
+  CODE_OF_CONDUCT.md
+  CODESTYLE.md
+  CONTRIBUTING.md
+  DESCRIPTION
+  LICENSE
+  NAMESPACE
+  proj_evolution.md
+  README.md
+  roadmap.md
+  write_structure.R
+
+[ data/cache ]
+  test_mock.rds
+
+[ data ]
+  iecs_data.RData
+  mock_dataset.rds
+
+[ docs ]
+  implementation_guide.md
+
+[ R ]
+  data_interface.R
+  global.R
+  mod_data.R
+  mod_entry.R
+  mod_helpers_simple.R
+  mod_menu.R
+  mod_model.R
+  mod_server.R
+  mod_server_reactivity.R
+  mod_server_simple.R
+  mod_ui.R
+  mod_ui_simple.R
+  mod_viz.R
+
+[ R/utils ]
+  utils_dependencies.R
+  utils_helpers.R
+  utils_logging.R
+  utils_validation.R
+
+[ rsconnect/shinyapps.io/cpaez ]
+  bowie-seir.dcf
+
+[ www ]
+  custom.css
+
