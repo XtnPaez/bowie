@@ -50,7 +50,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input,
     # panel.grid.major.x adds vertical guide lines at each
     # major date break, helping users read values on the X axis.
     # panel.grid.minor.x adds finer guides between major breaks.
-    ppt_theme <- function() {
+    afa_theme <- function() {
       theme_minimal() +
         theme(
           plot.title         = element_text(hjust = 0.5, face = "bold",
@@ -115,7 +115,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input,
             "Recovered"   = "#3EA27F"
           )
         ) +
-        ppt_theme()
+        afa_theme()
     })
 
     # --------------------------------------------------------
@@ -156,7 +156,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input,
             "Cumulative Deaths" = "#F59342"
           )
         ) +
-        ppt_theme()
+        afa_theme()
     })
 
     # --------------------------------------------------------
@@ -277,7 +277,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input,
           values = c("Demand Exceeded" = "#F0D9C8"),
           name   = "Alert"
         ) +
-        ppt_theme()
+        afa_theme()
     })
   })
 }

@@ -2,7 +2,7 @@
 # File: mod_helpers_simple.R
 # ------------------------------------------------------------
 # Description: Shared helper functions for the Simple View
-#   (Block 5). Contains all pure functions used by both
+#   Simplified View. Contains all pure functions used by both
 #   mod_ui_simple.R and mod_server_simple.R.
 #
 #   Placing these helpers in a dedicated file guarantees they

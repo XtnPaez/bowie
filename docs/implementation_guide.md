@@ -8,8 +8,8 @@
 | **Author** | Cristian Paez |
 | **Organisation** | CEMIC |
 | **Funded by** | Wellcome |
-| **Version** | 1.0 |
-| **Date** | March 2026 |
+| **Version** | 2.0 |
+| **Date** | May 2026 |
 | **Related documents** | ToR WP5, `README.md`, `roadmap.md`, `proj_evolution.md` |
 
 ---
@@ -53,49 +53,51 @@ Source code is available at:
 
 ## 2. System Requirements
 
-### Development environment
+### 2.1 Development environment
 
-- R >= 4.3.0
+- R >= 4.4.0 (tested on R 4.4.0, 2024-04-24 ucrt)
 - RStudio (recommended) or any R-compatible IDE
 - Git
 
-### Required R packages
+### 2.2 Required R packages
+
+All dependencies are declared in the project `DESCRIPTION` file. Install them from an R session:
 
 ```r
 install.packages(c(
   "shiny",      # Web application framework
   "shinyjs",    # Dynamic UI manipulation
   "bslib",      # Bootstrap 5 themes
-  "ggplot2",    # Static visualisations (>= 3.4.0 required for linewidth)
+  "ggplot2",    # Static visualisations (>= 3.4.0 required)
   "dplyr",      # Data manipulation
   "tidyr",      # Data reshaping
   "purrr",      # Functional programming utilities
   "scales",     # Axis formatting
   "lubridate",  # Date manipulation
   "deSolve",    # ODE integration (SEIR equations)
-  "RcppRoll",   # Rolling window operations (ICU occupancy)
-  "plotly",     # Interactive chart layer (reserved for future use)
+  "RcppRoll",   # Rolling window for ICU occupancy
+  "plotly",     # Interactive layer (reserved for future use)
   "rsconnect",  # Deployment to shinyapps.io
-  "stringr"     # String utilities (used by utils_dependencies.R)
+  "stringr"     # String utilities
 ))
 ```
 
-Note: `ggplot2 >= 3.4.0` is required. Earlier versions use the deprecated `size` aesthetic
-for line width; the codebase uses `linewidth` throughout.
+> **Note on ggplot2:** ggplot2 >= 3.4.0 is required. Earlier versions use the deprecated
+> `size` aesthetic for line width; the codebase uses `linewidth` throughout.
 
-### Software infrastructure
+### 2.3 Software infrastructure
 
-- Web server: shinyapps.io (current) or self-hosted Shiny Server
-- No database management system is required. Datasets are stored as `.rds` and `.RData`
-  files in the `data/` directory.
-- API integration capabilities are reserved for a future release (Block 6).
+- Web server: shinyapps.io (current deployment) or self-hosted Shiny Server
+- No database management system is required. Datasets are stored as `.rds` files in the
+  `data/` directory.
+- API integration capabilities are documented in section 8.4 and reserved for a future release.
 
 ---
 
 ## 3. Repository Structure
 
 ```
-seir-dashboard/
+bowie/
 ├── app.R                        # Application entry point
 ├── DESCRIPTION                  # R package metadata and dependencies
 ├── LICENSE                      # MIT licence
@@ -108,13 +110,16 @@ seir-dashboard/
 ├── R/
 │   ├── global.R                 # Global constants and library loading
 │   ├── data_interface.R         # Data Hub: loading, validation, caching
-│   ├── mod_entry.R              # Entry screen module
+│   ├── mod_entry.R              # Entry screen and CSV upload module
 │   ├── mod_menu.R               # Top navigation menu module
 │   ├── mod_ui.R                 # Advanced View UI layout and panels
+│   ├── mod_ui_simple.R          # Simplified View UI layout and KPI cards
 │   ├── mod_server.R             # Main server: parameter wiring, model orchestration
-│   ├── mod_server_reactivity.R  # Cross-module reactivity scaffold (planned)
+│   ├── mod_server_simple.R      # Simplified View server: isolated SEIR + alarm logic
+│   ├── mod_server_reactivity.R  # Cross-module reactivity scaffold (reserved)
+│   ├── mod_helpers_simple.R     # Shared helpers: alarm shapes, state labels, metrics
 │   ├── mod_model.R              # SEIR ODE model logic
-│   ├── mod_viz.R                # Visualisation module
+│   ├── mod_viz.R                # Visualisation module (ggplot2)
 │   ├── mod_data.R               # Data simulation module
 │   └── utils/
 │       ├── utils_logging.R      # Structured logging utilities
@@ -124,8 +129,11 @@ seir-dashboard/
 │
 ├── data/
 │   ├── mock_dataset.rds         # Simulated default dataset
-│   ├── iecs_data.RData          # IECS / Santoro — real COVID-19 Argentina data
+│   ├── iecs_data.rds            # IECS / Santoro — real COVID-19 Argentina parameters
 │   └── cache/                   # Auto-generated: cached datasets (save_dataset())
+│
+├── data-raw/
+│   └── prepare_iecs.R           # Reproducible script to regenerate iecs_data.rds
 │
 ├── docs/
 │   └── implementation_guide.md  # This document
@@ -138,32 +146,28 @@ seir-dashboard/
 
 ## 4. Installation and Local Setup
 
-### Clone the repository
+### 4.1 Clone the repository
 
 ```bash
 git clone https://github.com/XtnPaez/bowie.git
-cd bowie  # repository folder name
+cd bowie
 ```
 
-### Install dependencies
+### 4.2 Install dependencies
 
 ```r
-# From an R or RStudio session
+# Option A — manual install
 install.packages(c(
   "shiny", "shinyjs", "bslib", "ggplot2", "dplyr", "tidyr",
   "purrr", "scales", "lubridate", "deSolve", "RcppRoll",
   "plotly", "rsconnect", "stringr"
 ))
+
+# Option B — resolve from DESCRIPTION (requires pak)
+pak::pak()
 ```
 
-Alternatively, if a `DESCRIPTION` file is present, `renv` or `pak` can resolve
-all dependencies automatically:
-
-```r
-pak::pak()  # resolves from DESCRIPTION
-```
-
-### Run locally
+### 4.3 Run locally
 
 ```r
 shiny::runApp()
@@ -171,57 +175,57 @@ shiny::runApp()
 
 The application will open in the default browser at `http://127.0.0.1:PORT`.
 
-### Automatic dependency loading
+### 4.4 Automatic dependency loading
 
-`utils_dependencies.R` scans all project source files for `library()`, `require()`,
-and `pkg::function()` calls, then installs and loads any missing packages automatically
-at startup. It applies two filters to avoid false positives:
-
-- A curated blocklist of known non-package tokens (e.g., `col`, `pkg`, `base`).
-- A CRAN name format check: only tokens matching `^[A-Za-z][A-Za-z0-9\\.]*$` are
-  treated as package names. This prevents CSS pseudo-selectors embedded in inline
-  style strings (e.g., `#controls-col::-webkit-scrollbar`) from being parsed as
-  package names.
+`utils_dependencies.R` scans all project source files for `library()`, `require()`, and
+`pkg::function()` calls, then installs and loads any missing packages automatically at startup.
 
 ---
 
 ## 5. Configuration
 
-All global constants are defined in `R/global.R`. Modifying this file is the single
-point of change for default simulation parameters.
+All global constants are defined in `R/global.R`. Modifying this file is the single point
+of change for default simulation parameters.
 
-### Epidemiological parameters
+### 5.1 Epidemiological parameters
 
-| Constant | Default value | Description |
-|---|---|---|
-| `INITIAL_R0` | `2.5` | Basic reproduction number |
-| `INITIAL_INCUBATION_PERIOD` | `5` | Incubation period (days) |
-| `INITIAL_INFECTIOUS_PERIOD` | `7` | Infectious period (days) |
-| `INITIAL_IFR` | `0.01` | Infection Fatality Rate (proportion) |
+| Constant | Default | Description |
+|----------|---------|-------------|
+| `INITIAL_R0` | 2.5 | Basic reproduction number |
+| `INITIAL_INCUBATION_PERIOD` | 5 days | Incubation period |
+| `INITIAL_INFECTIOUS_PERIOD` | 7 days | Infectious period |
+| `INITIAL_IFR` | 0.01 | Infection Fatality Rate (proportion) |
 
-### Healthcare resource parameters
+### 5.2 Healthcare resource parameters
 
-| Constant | Default value | Source | Description |
-|---|---|---|---|
-| `INITIAL_ICU_RATE` | `0.136` | IECS [^1] | Proportion of infected requiring ICU |
-| `INITIAL_VENTILATOR_RATE` | `0.02` | International studies [^2] | Proportion of infected requiring ventilation |
-| `INITIAL_HOSPITAL_STAY_DAYS` | `10` | IECS / CDC [^1] | Average hospital stay (days) |
-| `INITIAL_ICU_CAPACITY` | `6000` | SATI [^3] | Available ICU beds |
-| `INITIAL_VENTILATOR_AVAILABILITY` | `2000` | SATI [^3] | Available ventilators |
-| `INITIAL_HEALTHCARE_STAFF` | `10000` | CONICET [^4] | Staff directly engaged in critical care |
+| Constant | Default | Source | Description |
+|----------|---------|--------|-------------|
+| `INITIAL_ICU_RATE` | 0.136 | IECS | Proportion of infected requiring ICU |
+| `INITIAL_VENTILATOR_RATE` | 0.02 | International studies | Proportion requiring ventilation |
+| `INITIAL_HOSPITAL_STAY_DAYS` | 10 days | IECS / CDC | Average hospital stay |
+| `INITIAL_ICU_CAPACITY` | 6,000 | SATI | Available ICU beds |
+| `INITIAL_VENTILATOR_AVAILABILITY` | 2,000 | SATI | Available ventilators |
+| `INITIAL_HEALTHCARE_STAFF` | 10,000 | CONICET | Staff in critical care |
 
-### Population and simulation dates
+### 5.3 Population and simulation dates
 
-| Constant | Default value | Source | Description |
-|---|---|---|---|
-| `POPULATION_ARGENTINA` | `45,000,000` | INDEC [^5] | Total population baseline |
-| `START_DATE` | `2020-03-01` | — | Simulation start date |
-| `END_DATE` | `2021-03-01` | — | Simulation end date |
+| Constant | Default | Description |
+|----------|---------|-------------|
+| `POPULATION_ARGENTINA` | 45,000,000 | Total population baseline (INDEC) |
+| `START_DATE` | `Sys.Date()` | Simulation start — initialised dynamically at startup |
+| `END_DATE` | `Sys.Date() + 365L` | Simulation end — initialised dynamically at startup |
 
-### Log level
+> **Note on simulation dates:** `START_DATE` and `END_DATE` are computed at app startup,
+> not hardcoded. This ensures the default simulation window is always relative to the current
+> date. Users can override both dates via the `dateInput()` controls in the Advanced View
+> Simulation Scope panel. The `dateInput()` widget was chosen over separate numeric fields
+> because it renders a native calendar picker — the most intuitive interaction for non-technical
+> users (design decision documented in `mod_ui.R`).
 
-The logging verbosity is controlled by the `LOG_LEVEL` environment variable. Accepted
-values are `DEBUG`, `INFO`, `WARN`, and `ERROR`. The default is `INFO`.
+### 5.4 Log level
+
+Logging verbosity is controlled by the `LOG_LEVEL` environment variable.
+Accepted values: `DEBUG`, `INFO`, `WARN`, `ERROR`. Default: `INFO`.
 
 ```r
 Sys.setenv(LOG_LEVEL = "DEBUG")  # verbose output during development
@@ -237,308 +241,197 @@ The application follows a strict modular pipeline:
 ```
 data_interface  →  mod_data  →  mod_model  →  mod_viz
                                     ↑
-                              mod_server
+                               mod_server
                              ↗          ↖
-                        mod_entry      mod_menu
+                       mod_entry      mod_menu
                              ↖          ↗
-                                app.R
-                                  ↑
-                               mod_ui
+                                 app.R
+                                   ↑
+                              mod_ui / mod_ui_simple
 ```
 
-All modules are loaded automatically by Shiny's `loadSupport()` mechanism because
-the project contains a `DESCRIPTION` file. Manual `source()` calls in `app.R` are
-not required.
+All modules are loaded automatically by Shiny's `loadSupport()` mechanism because the project
+contains a `DESCRIPTION` file.
 
-### app.R — Application entry point
+### 6.1 Key modules
 
-Defines the root UI and server. Manages top-level reactive state (`screen`,
-`dataset_selector`, `dataset_loaded`, `trigger_sim`) and wires all modules together.
+| Module | File | Responsibility |
+|--------|------|----------------|
+| Entry screen | `mod_entry.R` | Dataset selection, CSV upload modal, navigation |
+| Navigation menu | `mod_menu.R` | Persistent navbar, dataset indicator, view switching |
+| Advanced View UI | `mod_ui.R` | Sidebar parameter panels and tabbed output area |
+| Simplified View UI | `mod_ui_simple.R` | KPI card layout, scenario sliders, Settings panel |
+| Main server | `mod_server.R` | Parameter wiring, ODE orchestration, CSV export |
+| Simple View server | `mod_server_simple.R` | Isolated SEIR model, alarm state computation |
+| Simple View helpers | `mod_helpers_simple.R` | Alarm SVG shapes, state labels, metric values |
+| SEIR model | `mod_model.R` | Differential equations, post-processing, resource demand |
+| Visualisation | `mod_viz.R` | Three ggplot2 panels with AfA brand theme |
+| Data simulation | `mod_data.R` | Initial time-series structure for ODE solver |
+| Data Hub | `data_interface.R` | Dataset loading, validation, schema checks, caching |
 
-**Namespace contract (critical):** `viz_plot_server()` must be called from the
-top-level server function in `app.R`, not from inside `mod_server()`. If called from
-within `mod_server()` (which itself runs under the `"viz_advanced"` namespace),
-output ids accumulate as `"viz_advanced-viz_advanced-seir_plot"`, which does not
-match the `plotOutput` ids generated by `ui_main()`. The correct call site is `app.R`.
+> **Critical namespace note:** `viz_plot_server()` must be called from the top-level server
+> function in `app.R`, not from inside `mod_server()`. See Implementation Guide section 6.1
+> for full explanation.
 
-### global.R — Global constants and library loading
+### 6.2 Dual-view initialisation contract
 
-Loads all required libraries, defines all model constants, and dynamically sources
-utility functions from `R/utils/`. Any constant used across more than one module is
-defined here.
+When a dataset is loaded, `mod_entry_server()` populates a `dataset_params` reactiveVal in
+`app.R` with the calibrated parameters (`$parametros`, `$recursos`, `$poblacion`). This
+reactive is passed to both `mod_server()` (Advanced View) and `mod_server_simple()`
+(Simplified View), which initialise their isolated parameter stores from the same snapshot.
+After initialisation, each view evolves independently — changes in one never affect the other.
 
-### data_interface.R — Data Hub
+### 6.3 Utility modules
 
-Central interface for dataset loading, validation, schema checks, and caching.
-Exposes five public functions:
-
-| Function | Description |
-|---|---|
-| `load_iecs_data()` | Loads the IECS / Santoro dataset from `data/iecs_data.RData` |
-| `get_data(source)` | Returns a dataset by source key: `"mock"`, `"iecs"`, or `"file"` |
-| `validate_schema(data)` | Validates that a data frame contains required SEIR columns |
-| `save_dataset(data, name)` | Saves a validated dataset to `data/cache/` |
-| `list_datasets()` | Lists all cached datasets with name, path, and size |
-
-The IECS dataset is a named list with three elements whose names originate from the
-source `.RData` file and must not be renamed: `parametros` (model parameters),
-`recursos` (resource parameters), and `poblacion` (population size).
-
-### mod_entry.R — Entry screen
-
-Renders the entry screen with a AfA-branded navbar, a centred card containing the
-dataset selector, load button, and status badge, and a footer attribution strip.
-Server logic handles dataset loading, success and error feedback, and navigation to
-the Advanced View.
-
-### mod_menu.R — Top navigation menu
-
-Renders a persistent dark green navbar injected above all non-entry views. Provides
-the dataset indicator and three navigation buttons: Home, Simple (disabled pending
-Block 5 implementation), and Advanced.
-
-### mod_ui.R — Advanced View layout
-
-Defines all UI layout functions for the Advanced View. Exposes four composable helpers:
-
-| Function | Description |
-|---|---|
-| `ui_seir_params(ns)` | Epidemiological parameter panel (R₀, incubation, infectious period, IFR) |
-| `ui_policy_params(ns)` | Public policy panel (intervention type, compliance level) |
-| `ui_resource_params(ns)` | Healthcare resource panel (capacity inputs and rate sliders) |
-| `ui_main(viz_id)` | Full page layout: sticky sidebar + tabbed output area + footer |
-
-`ui_main()` uses a `tagList` wrapper (not `fluidPage`) to avoid Bootstrap container
-padding that would prevent the navbar from sitting flush at the top.
-
-### mod_server.R — Main server
-
-Orchestrates the full simulation pipeline. Responsibilities:
-
-- Initialises `reactiveValues` (`app_params`) with defaults from `global.R`.
-- Loads dataset parameters when an IECS source is selected.
-- Registers one `observeEvent` per UI input to update `app_params` and, where
-  appropriate, increment `trigger_sim` to re-run the ODE solver.
-- Calls `mod_data_server()` and `model_seir_server()` as sub-modules.
-- Renders the policy description, data preview table, and CSV download handler.
-- Returns `model_data`, `icu_capacity`, and `ventilator_availability` reactives
-  for use by `viz_plot_server()` in `app.R`.
-
-**Capacity vs. rate inputs:** ICU capacity and ventilator availability inputs do not
-increment `trigger_sim` — they only update the Resource Pressure plot threshold lines.
-Rate sliders (ICU admission rate, ventilator usage rate) do increment `trigger_sim`
-because they affect demand calculations in `mod_model.R`.
-
-**IFR scale contract:** `ifr_value` is always stored as a percentage in [0, 100]
-inside `app_params` and all UI inputs. Conversion to proportion (÷ 100) is performed
-inside `mod_model.R` via `percent_to_prop()` immediately before ODE integration.
-
-### mod_server_reactivity.R — Cross-module reactivity scaffold
-
-Reserved for future cross-module reactive bindings. Currently a scaffold with no
-active wiring. Not called from `app.R` or any other module.
-
-### mod_model.R — SEIR ODE model
-
-Implements the SEIR differential equations and post-processing pipeline. Two functions:
-
-`seir_equations(time, state, parameters)` — defines the ODE system. Returns derivatives
-and new daily infections at each time step.
-
-`model_seir_server(id, input_params, raw_data_df)` — Shiny module server. Observes
-`trigger_sim`, validates parameters, applies effective R₀ under the selected policy,
-solves the ODE system via `safe_ode()`, and post-processes results into a data frame
-containing compartment values, cumulative cases and deaths, and ICU and ventilator
-occupancy via rolling window sums. See Section 7 for the full mathematical specification.
-
-### mod_viz.R — Visualisation module
-
-Renders three plots from SEIR model output via `viz_plot_server()`. All plots share
-a common `ppt_theme()` function that applies the AfA brand palette and X-axis guide
-lines consistently. See Section 9 for colour specifications.
-
-| Output | Description |
-|---|---|
-| `seir_plot` | SEIR compartment dynamics over time |
-| `cases_deaths_plot` | Cumulative cases and deaths |
-| `resource_pressure_plot` | ICU and ventilator demand vs. capacity, with ribbon shading for excess demand periods |
-
-### mod_data.R — Data simulation module
-
-Generates the initial time-series structure passed to `model_seir_server()` as
-`raw_data_df`. Produces a data frame with columns `time`, `date`, `S`, `E`, `I`, `R`,
-and auxiliary resource columns, initialised with a population of `N - 10,000`
-susceptibles and `10,000` infected at `time = 0`. The ODE solver overwrites all
-compartment values during integration.
-
-### utils/utils_logging.R — Logging utilities
-
-| Function | Description |
-|---|---|
-| `log_message(level, msg, .module, ...)` | Prints structured log lines with timestamp, level, module, and optional context key-value pairs |
-| `set_log_level(level)` | Sets global log verbosity via `LOG_LEVEL` environment variable |
-| `with_timing(expr, .module, .label)` | Wraps an expression and logs elapsed execution time |
-
-### utils/utils_validation.R — Validation utilities
-
-Provides `validate_params()` and `validate_initial_state()`. Called by `mod_model.R`
-before ODE integration to enforce parameter ranges and compartment consistency.
-
-### utils/utils_helpers.R — Numeric helpers and ODE wrapper
-
-| Function | Description |
-|---|---|
-| `clamp(x, minv, maxv)` | Restricts a value to a given interval |
-| `percent_to_prop(x_pct)` | Converts percentage to proportion (÷ 100) |
-| `coalesce_num(x, y)` | Replaces NA values with a fallback numeric |
-| `not_null(x)` | Returns TRUE if object is not NULL |
-| `safe_ode(...)` | Error-safe wrapper around `deSolve::ode()`; logs failures and re-throws with a clean message |
-
-### utils/utils_dependencies.R — Automatic dependency loading
-
-Scans all project source files for package references, filters false positives, and
-installs and loads any missing packages at startup. See Section 4 for filter details.
+| Module | Responsibility |
+|--------|---------------|
+| `utils_logging.R` | Structured log lines with timestamp, level, and module context |
+| `utils_validation.R` | Parameter range checks and compartment consistency validation |
+| `utils_helpers.R` | `clamp()`, `percent_to_prop()`, `safe_ode()` and other numeric helpers |
+| `utils_dependencies.R` | Automatic package detection, installation, and loading at startup |
 
 ---
 
 ## 7. SEIR Model — Equations and Parameters
 
-### Compartmental structure
-
-The model divides the population into four mutually exclusive compartments:
+### 7.1 Compartmental structure
 
 | Compartment | Symbol | Description |
-|---|---|---|
+|-------------|--------|-------------|
 | Susceptible | S | Individuals with no immunity who may become infected |
-| Exposed | E | Individuals who have been infected but are not yet infectious |
-| Infectious | I | Individuals who are actively infectious |
-| Recovered | R | Individuals who have recovered and are assumed immune |
+| Exposed | E | Individuals infected but not yet infectious |
+| Infectious | I | Individuals actively infectious |
+| Recovered | R | Individuals who have recovered and are assumed to be immune |
 
-### Differential equations
+### 7.2 Differential equations
 
-$$
-\frac{dS}{dt} = -\beta \cdot \frac{S \cdot I}{N}
-$$
+The model is governed by the following system of ODEs, integrated numerically using
+`deSolve::ode()`:
 
-$$
-\frac{dE}{dt} = \beta \cdot \frac{S \cdot I}{N} - \sigma \cdot E
-$$
-
-$$
-\frac{dI}{dt} = \sigma \cdot E - \gamma \cdot I
-$$
-
-$$
-\frac{dR}{dt} = \gamma \cdot I
-$$
+```
+dS/dt = -β · (S · I) / N
+dE/dt =  β · (S · I) / N  −  σ · E
+dI/dt =  σ · E  −  γ · I
+dR/dt =  γ · I
 
 Where:
+  N = S + E + I + R   (total population)
+  β = R₀ · γ          (transmission rate)
+  σ = 1 / λE          (progression rate: exposed → infectious)
+  γ = 1 / λI          (recovery rate)
+  λE = incubation period (days)
+  λI = infectious period (days)
+```
 
-| Symbol | Definition |
-|---|---|
-| $N$ | Total population ($S + E + I + R$) |
-| $\beta = R_0 \cdot \gamma$ | Transmission rate |
-| $\sigma = 1 / \lambda_E$ | Progression rate from exposed to infectious |
-| $\gamma = 1 / \lambda_I$ | Recovery rate |
-| $\lambda_E$ | Incubation period (days) |
-| $\lambda_I$ | Infectious period (days) |
+### 7.3 Effective R₀ under policy
 
-### Effective R₀ under policy
+When a public health intervention is active, the effective reproduction number is reduced
+proportionally to the compliance level:
 
-When a public health intervention is active (i.e., `policy_type != "no_intervention"`),
-the effective reproduction number is reduced proportionally to the compliance level:
+```
+R₀_eff = R₀ · (1 − 0.5 · c)
+```
 
-$$
-R_0^{\text{eff}} = R_0 \cdot \left(1 - 0.5 \cdot c\right)
-$$
+Where `c` is the compliance level as a proportion in [0, 1]. At full compliance (c = 1),
+R₀ is reduced by 50%. The effective value is clamped to a minimum of 0.5.
 
-Where $c$ is the compliance level as a proportion in [0, 1]. At full compliance ($c = 1$),
-$R_0$ is reduced by 50%. The effective value is clamped to a minimum of 0.5 to
-prevent biologically implausible results.
+### 7.4 Healthcare resource demand
 
-### Post-processing: healthcare resource demand
+```
+ICU_Daily_Demand_t    = I_t · r_ICU
+Vent_Daily_Demand_t   = I_t · r_vent
+ICU_Occupancy_Sim_t   = Σ ICU_Daily_Demand_k  (k = t−h+1 to t)
+Vent_Usage_Sim_t      = Σ Vent_Daily_Demand_k (k = t−h+1 to t)
+```
 
-Daily ICU and ventilator demand are derived from the infectious compartment:
+Where `h = INITIAL_HOSPITAL_STAY_DAYS` (default: 10 days).
 
-$$
-\text{ICU\_Daily\_Demand} = I \cdot r_{\text{ICU}}
-$$
-
-$$
-\text{Vent\_Daily\_Demand} = I \cdot r_{\text{vent}}
-$$
-
-Cumulative occupancy is estimated using a rolling sum over the average hospital
-stay window:
-
-$$
-\text{ICU\_Occupancy\_Sim}_t = \sum_{k=t-h+1}^{t} \text{ICU\_Daily\_Demand}_k
-$$
-
-Where $h$ = `INITIAL_HOSPITAL_STAY_DAYS` (default: 10 days). The same formula
-applies to `Vent_Usage_Sim`. For time points where fewer than $h$ days are available
-(i.e., the start of the simulation), a cumulative sum is used as a fallback.
-
-### Output data frame columns
-
-| Column | Description |
-|---|---|
-| `date` | Simulation date |
-| `S`, `E`, `I`, `R` | Compartment sizes (normalised to total population) |
-| `Daily_New_Infections` | New infections per day ($\sigma \cdot E$) |
-| `Cumulative_Cases` | Running total of new infections |
-| `Daily_Deaths` | Daily deaths ($\text{Daily\_New\_Infections} \cdot \text{IFR}$) |
-| `Cumulative_Deaths` | Running total of deaths |
-| `ICU_Occupancy_Sim` | Estimated ICU bed occupancy |
-| `Vent_Usage_Sim` | Estimated ventilator usage |
+> **Approximation note:** ICU and ventilator occupancy are estimated using a rolling sum,
+> which is a computational simplification. A more precise model would use a queueing model
+> with individual-level data, which is not available at this stage.
 
 ---
 
 ## 8. Dataset Sources
 
-### Simulated dataset (mock)
+### 8.1 Simulated dataset (mock)
 
-Loaded from `data/mock_dataset.rds`. Provides a SEIR-compatible time-series
-structure for parameter exploration without requiring real data. The initial state
-is `S = N - 10,000`, `I = 10,000`, `E = 0`, `R = 0`.
+Constructed by `build_dataset()` using global defaults from `global.R`. Initial state:
+`S = POPULATION_ARGENTINA − 10,000`, `I = 10,000`, `E = 0`, `R = 0`.
 
-### IECS / Santoro dataset
+### 8.2 IECS / Santoro dataset
 
-Loaded from `data/iecs_data.RData` via `load_iecs_data()`. Contains real COVID-19
-epidemiological and resource parameters for Argentina derived from the IECS
-(Institute for Clinical Effectiveness and Health Policy) Santoro model [^1].
+Loaded from `data/iecs_data.rds` via `load_iecs_data()`. Contains real COVID-19
+epidemiological and resource parameters for Argentina derived from the IECS model
+(Santoro et al., 2022).
+
+The `.rds` file is generated by `data-raw/prepare_iecs.R`, which documents all parameter
+values and their primary sources. To regenerate:
+
+```r
+source("data-raw/prepare_iecs.R")
+```
 
 The file exposes a named list with three elements:
 
 | Element | Type | Contents |
-|---|---|---|
+|---------|------|----------|
 | `parametros` | List | R₀, incubation period, infectious period, IFR |
-| `recursos` | List | ICU rate, ventilator rate, hospital stay days, ICU capacity, ventilator availability, healthcare staff |
+| `recursos` | List | ICU rate, ventilator rate, hospital stay, ICU capacity, ventilator availability, healthcare staff |
 | `poblacion` | Numeric | Total population |
 
-Note: field names within this list (`parametros`, `recursos`, `poblacion`) originate
-from the source dataset and must not be renamed in the codebase.
+### 8.3 User-uploaded CSV
 
-A legacy field name normalisation is applied automatically by `load_iecs_data()`:
-the older prefix `INICIAL_` is converted to `INITIAL_` where present.
+Users can upload their own regional parameter snapshot via the entry screen. The CSV must
+follow this two-column format:
 
-### Adding a new dataset source
+```csv
+parameter,value
+r0,2.8
+incubation_period,5
+infectious_period,7
+ifr,0.012
+icu_capacity,3200
+ventilator_availability,800
+healthcare_staff,6500
+icu_admission_rate,0.14
+ventilator_usage_rate,0.02
+population,18000000
+```
 
-To integrate a new data source, extend `get_data()` in `data_interface.R` with a
-new source key, ensure the returned data frame passes `validate_schema()`, and add
-the corresponding option to the `selectInput` in `mod_entry.R`.
+The CSV is validated by `validate_user_csv()` in `data_interface.R`, which checks column
+names, required parameter presence, and numeric validity. On success, the parameters are
+applied to both views via `dataset_params`.
+
+**Design rationale:** The dataset is a parameter snapshot — a "photo" of the user's health
+system and epidemiological context. The platform uses it as the starting point for simulation.
+Users then adjust sliders to explore "what if" scenarios. Dates are not part of the dataset;
+they are simulation parameters controlled via the Simulation Scope panel.
+
+### 8.4 Extending to new dataset sources
+
+To integrate a new data source: extend `get_data()` in `data_interface.R` with a new
+source key; ensure the returned list passes `validate_schema()`; and add the corresponding
+option to the `selectInput` in `mod_entry.R`.
+
+**API connectivity:** Integration with external data sources — such as the World Health
+Organization (WHO) and Our World in Data (OWID) repositories — is supported by the module
+architecture and documented here as a future extension. The connection mechanism would extend
+`get_data()` with a new `"api"` source key, calling the relevant endpoint and mapping the
+response to the canonical dataset structure via `build_dataset()`. Implementation is deferred
+pending resource availability.
 
 ---
 
 ## 9. Visual Design System
 
-The interface follows the Analysis for Action (AfA) brand guidelines
-defined in the Wellcome / CEMIC style template.
+The interface follows the Analysis for Action (AfA) brand guidelines.
+All chart styling is centralised in the `afa_theme()` function inside `mod_viz.R`.
 
-### Colour palette
+### 9.1 UI colour palette
 
 | Role | Name | Hex |
-|---|---|---|
+|------|------|-----|
 | Primary / navbar | Dark green | `#324027` |
 | Secondary surface | Earthy green | `#48553F` |
 | Accent (sparingly) | Orange | `#F59342` |
@@ -547,56 +440,46 @@ defined in the Wellcome / CEMIC style template.
 | Panel / input background | Earthy tint | `#F8F5F1` |
 | Border | Grey | `#D0D4CE` |
 
-### Chart colours — categorical data
+### 9.2 Chart colours — SEIR compartments
 
-Applied in order for SEIR compartment plots:
-
-| Series | Colour name | Hex |
-|---|---|---|
+| Compartment | Colour | Hex |
+|-------------|--------|-----|
 | Susceptible | Near black | `#1E2A16` |
 | Exposed | Burnt orange | `#D17E38` |
 | Infectious | Dark stone | `#444443` |
 | Recovered | Sea green | `#3EA27F` |
 
-### Chart colours — accent
+### 9.3 Simplified View alarm palette
 
-| Series | Hex |
-|---|---|
-| Cumulative cases / capacity line | `#324027` |
-| Cumulative deaths / demand line | `#F59342` |
-| Excess demand ribbon | `#F0D9C8` |
-
-All chart styling is centralised in the `ppt_theme()` function inside `mod_viz.R`.
-This function also adds X-axis major and minor grid lines (`panel.grid.major.x`,
-`panel.grid.minor.x`) to all three plots for readability.
+| State | Shape | Colour | Hex |
+|-------|-------|--------|-----|
+| Controlled | Circle | AfA sea green | `#3EA27F` |
+| Warning | Triangle | AfA orange | `#F59342` |
+| Critical | Square | AfA dark red | `#752111` |
 
 ---
 
 ## 10. Deployment
 
-### shinyapps.io
+### 10.1 shinyapps.io
 
 ```r
 library(rsconnect)
-
 rsconnect::deployApp(
-  appDir     = ".",
-  appName    = "bowie-seir",
+  appDir      = ".",
+  appName     = "bowie-seir",
   forceUpdate = TRUE
 )
 ```
 
-Ensure `rsconnect` is configured with a valid shinyapps.io account token before
-deploying. See the rsconnect documentation for authentication setup.
+Ensure `rsconnect` is configured with a valid shinyapps.io account token before deploying.
 
-### Self-hosted Shiny Server
+### 10.2 Self-hosted Shiny Server
 
-Copy the repository to the Shiny Server apps directory (typically
-`/srv/shiny-server/`) and ensure all R package dependencies are installed in the
-server's R library path. No additional configuration is required beyond standard
-Shiny Server setup.
+Copy the repository to the Shiny Server apps directory (typically `/srv/shiny-server/`)
+and ensure all R package dependencies are installed in the server's R library path.
 
-### Environment variables for production
+### 10.3 Environment variables for production
 
 ```bash
 LOG_LEVEL=WARN   # suppress DEBUG and INFO output in production
@@ -606,35 +489,25 @@ LOG_LEVEL=WARN   # suppress DEBUG and INFO output in production
 
 ## 11. Known Limitations
 
-The following limitations reflect the current implementation scope as defined by
-the ToR Product 2 requirements. Items not covered by the ToR are outside the
-scope of this implementation.
-
 | Limitation | Status |
-|---|---|
-| Simplified View (decision-maker interface with KPIs) | Pending — Block 5 |
-| External data connectivity (WHO, OWID APIs) | Pending — Block 6 |
-| Sociodemographic data layer | Pending — Block 6 |
-| Interactive presentation with practical exercises | Pending — Block 7 |
-| ICU / ventilator occupancy uses a rolling sum approximation | By design — a queueing model would require individual-level data not available at this stage |
-| IFR is applied as a global value | By design — age-stratified IFR is outside the current ToR scope |
+|------------|--------|
+| External data connectivity (WHO, OWID APIs) | Deferred — architecture documented in section 8.4 |
+| Sociodemographic data layer | Out of scope — relevant fields should be included in user CSV |
+| ICU / ventilator occupancy uses rolling sum approximation | By design — queueing model requires individual-level data not available |
+| IFR applied as a global value | By design — age-stratified IFR is outside current ToR scope |
 
 ---
 
 ## 12. References
 
-[^1]: Instituto de Efectividad Clínica y Sanitaria (IECS). *Modelo epidemiológico y evaluación económica de intervenciones frente a COVID-19 en Argentina.* Available at: https://www.iecs.org.ar/wp-content/uploads/Modelo-epi-y-eval-econ_para-web.pdf
+1. Santoro A, López Osornio A, Williams I, et al. Development and application of a dynamic transmission model of health systems' preparedness and response to COVID-19 in twenty-six Latin American and Caribbean countries. *PLOS Glob Public Health.* 2022;2(3):e0000186. https://doi.org/10.1371/journal.pgph.0000186
 
-[^2]: Grasselli G, Zangrillo A, Zanella A, et al. Baseline characteristics and outcomes of 1591 patients infected with SARS-CoV-2 admitted to ICUs of the Lombardy Region, Italy. *JAMA.* 2020;323(16):1574–1581. Available at: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0246318
+2. Instituto de Efectividad Clínica y Sanitaria (IECS). Modelo epidemiológico y evaluación económica de intervenciones frente a COVID-19 en Argentina. Available at: https://www.iecs.org.ar/wp-content/uploads/Modelo-epi-y-eval-econ_para-web.pdf
 
-[^3]: Sociedad Argentina de Terapia Intensiva (SATI). *Camas de cuidados intensivos en Argentina.* Available at: https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0025-76802022000100035
+3. Grasselli G, Zangrillo A, Zanella A, et al. Baseline characteristics and outcomes of 1591 patients infected with SARS-CoV-2 admitted to ICUs of the Lombardy Region, Italy. *JAMA.* 2020;323(16):1574–1581. https://doi.org/10.1371/journal.pone.0246318
 
-[^4]: Comes Y, Solitario R, Garbus P, et al. *El trabajo en salud en Argentina.* CONICET Digital. Available at: https://ri.conicet.gov.ar/bitstream/handle/11336/161336/CONICET_Digital_Nro.9508fef7-fcb8-4e0e-9bcd-8c593177d630_A.pdf
+4. Sociedad Argentina de Terapia Intensiva (SATI). Camas de cuidados intensivos en Argentina. Available at: https://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0025-76802022000100035
 
-[^5]: Instituto Nacional de Estadística y Censos (INDEC). *Proyecciones de población.* Available at: https://www.indec.gob.ar/indec/web/Nivel4-Tema-2-24-84
+5. Comes Y, Solitario R, Garbus P, et al. El trabajo en salud en Argentina. CONICET Digital. Available at: https://ri.conicet.gov.ar/bitstream/handle/11336/161336/CONICET_Digital_Nro.9508fef7-fcb8-4e0e-9bcd-8c593177d630_A.pdf
 
----
-
-**Maintainer:** Cristian Paez  
-**Project:** Analysis for Action (Argentina Unit)  
-**Funded by:** Wellcome
+6. Instituto Nacional de Estadística y Censos (INDEC). Proyecciones de población. Available at: https://www.indec.gob.ar/indec/web/Nivel4-Tema-2-24-84

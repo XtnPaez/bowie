@@ -7,7 +7,7 @@
 #
 # ⚠️ STATUS: Planned — not yet active.
 #   This module is NOT currently called from app.R or mod_server.R.
-#   It is retained as a scaffold for Block 5 (Simplified View)
+#   It is retained as a scaffold for the Simplified View
 #   when cross-module reactivity coordination will be required.
 #
 #   Known limitation: session$sendCustomMessage("refresh_plots")

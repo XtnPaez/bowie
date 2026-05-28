@@ -185,7 +185,6 @@ ui_resource_params <- function(ns) {
 }
 
 
-
 # ------------------------------------------------------------
 # Function: ui_scope_params()
 # Description:
@@ -336,7 +335,7 @@ ui_main <- function(viz_id) {
           margin-bottom: 14px;
         }
 
-        .ppt-footer {
+        .afa-footer {
           background: #F8F5F1;
           border-top: 0.5px solid #D0D4CE;
           padding: 8px 20px;
@@ -451,7 +450,7 @@ ui_main <- function(viz_id) {
       # Footer bar
       # --------------------------------------------------------
       tags$div(
-        class = "ppt-footer",
+        class = "afa-footer",
         tags$span(
           tags$span(
             style = paste(

@@ -24,7 +24,8 @@
 # Created: 2025-11-07
 # ============================================================
 
-mod_server <- function(id, dataset_selector) {
+mod_server <- function(id, dataset_selector,
+                      dataset_params = NULL) {
   moduleServer(id, function(input, output, session) {
 
     # --------------------------------------------------------
@@ -111,12 +112,62 @@ mod_server <- function(id, dataset_selector) {
         iecs_data <- load_iecs_data()
         apply_iecs_to_params(iecs_data, app_params)
         log_message("INFO", "IECS data loaded successfully", .module = "SERVER")
+
+      } else if (dataset_selector() == "csv") {
+        # CSV: parameters already applied to app_params via
+        # dataset_params reactive in app.R. Advanced View sliders
+        # are updated here from the same parameter set.
+        log_message("INFO", "CSV dataset selected — parameters applied via dataset_params",
+                    .module = "SERVER")
+
       } else {
         log_message("INFO", "Using simulated mock dataset", .module = "SERVER")
       }
 
       app_params$trigger_sim <- app_params$trigger_sim + 1L
     }, ignoreInit = FALSE)
+
+    # --------------------------------------------------------
+    # Dataset params observer — applies calibrated parameters
+    # from any source (IECS, CSV) to app_params and updates
+    # all Advanced View sliders via updateSliderInput().
+    # Fires when dataset_params changes — i.e. when a
+    # calibrated dataset is loaded. Ignored for mock (NULL).
+    # --------------------------------------------------------
+    observeEvent(dataset_params(), {
+      dp <- dataset_params()
+      req(!is.null(dp), !is.null(dp$parametros))
+
+      apply_iecs_to_params(dp, app_params)
+
+      # Update UI sliders to reflect loaded parameters
+      updateSliderInput(session, "r0_value",
+                        value = dp$parametros$R0)
+      updateSliderInput(session, "incubation_period",
+                        value = dp$parametros$incubation_period)
+      updateSliderInput(session, "infectious_period",
+                        value = dp$parametros$infectious_period)
+      updateSliderInput(session, "ifr_value",
+                        value = dp$parametros$IFR * 100)
+      updateNumericInput(session, "icu_capacity",
+                         value = dp$recursos$INITIAL_ICU_CAPACITY)
+      updateNumericInput(session, "ventilator_availability",
+                         value = dp$recursos$INITIAL_VENTILATOR_AVAILABILITY)
+      updateNumericInput(session, "healthcare_staff",
+                         value = dp$recursos$INITIAL_HEALTHCARE_STAFF)
+      updateSliderInput(session, "icu_admission_rate",
+                        value = dp$recursos$INITIAL_ICU_RATE * 100)
+      updateSliderInput(session, "ventilator_usage_rate",
+                        value = dp$recursos$INITIAL_VENTILATOR_RATE * 100)
+      if (!is.null(dp$poblacion)) {
+        updateNumericInput(session, "population",
+                           value = dp$poblacion)
+      }
+
+      log_message("INFO",
+                  "Advanced View updated from dataset parameters",
+                  .module = "SERVER")
+    }, ignoreNULL = TRUE)
 
     # --------------------------------------------------------
     # Parameter observers — SEIR epidemiological parameters

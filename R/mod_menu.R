@@ -12,7 +12,7 @@
 #   the current screen.
 # Author: Cristian Paez
 # Created: 2025-11-07
-# Updated: 2026-03-19 — Block 5: Simple View button enabled;
+# Updated: 2026-03-19 — Simple View button enabled;
 #   dynamic active-state highlight added for both view buttons.
 # ============================================================
 
@@ -106,7 +106,17 @@ mod_menu_server <- function(id, screen, dataset_selector) {
     output$active_dataset <- renderText({
       ds <- dataset_selector()
       if (is.null(ds)) return("No dataset loaded")
-      paste("Dataset:", toupper(ds))
+
+      # Human-readable label for each source key.
+      # toupper() is not used — "CSV" is not meaningful to
+      # a decision-maker; the full label is more informative.
+      label <- switch(ds,
+        "mock" = "Simulated (mock)",
+        "iecs" = "IECS – Santoro",
+        "csv"  = "Custom dataset",
+        toupper(ds)   # fallback for any future source keys
+      )
+      paste("Dataset:", label)
     })
     # --- End of reactive block ---
 
@@ -160,7 +170,7 @@ mod_menu_server <- function(id, screen, dataset_selector) {
     })
     # --- End of reactive block ---
 
-    # --- Reactive block: Simple button — Block 5 ---
+    # --- Reactive block: Simple button ---
     observeEvent(input$btn_simple, {
       screen("simple")
       log_message("INFO", "User navigated to Simple View via menu",

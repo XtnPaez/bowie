@@ -5,7 +5,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-shinyapps.io-324027?style=flat-square)](https://cpaez.shinyapps.io/bowie-seir/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
-[![R](https://img.shields.io/badge/R-%3E%3D%204.3-276DC3?style=flat-square)](https://www.r-project.org/)
+[![R](https://img.shields.io/badge/R-%3E%3D%204.4-276DC3?style=flat-square)](https://www.r-project.org/)
 
 ---
 
@@ -28,9 +28,13 @@ enabling interactive scenario exploration, resource planning, and educational us
 - **Interactive SEIR simulation** — adjust R₀, incubation period, infectious period, and IFR in real time
 - **Public policy modelling** — simulate four intervention strategies: no intervention, phased mitigation, intermittent, and ICU-triggered
 - **Healthcare resource pressure analysis** — compare simulated ICU and ventilator demand against configurable capacity thresholds
-- **Dual dataset support** — simulated (mock) or real (IECS/Santoro) datasets
+- **Simplified View** — decision-maker interface with three KPI alarm cards (Epidemic Trajectory, ICU Pressure, Cumulative Impact) using a geometric colour-coded alarm system
+- **Advanced View** — full parameter control for technical users, including simulation scope (population, start date, end date)
+- **Three dataset sources** — simulated (mock), IECS / Santoro (real Argentine COVID-19 parameters), or user-uploaded CSV
+- **CSV upload** — load your own regional parameter snapshot via a guided modal dialog; the platform uses it as the starting point for simulation
 - **CSV export** — download full simulation results in European locale format
-- **Modular open-source architecture** — clean separation between data, model, visualisation, UI, and server layers; easily modifiable for SIR, SEIRD, or custom models as per ToR specification
+- **Dual-view initialisation** — both views initialise from the same loaded dataset, then evolve independently
+- **Modular open-source architecture** — clean separation between data, model, visualisation, UI, and server layers; easily modifiable for SIR, SEIRD, or custom models per ToR specification
 - **AfA-aligned visual design** — UI and chart colours follow the Analysis for Action brand palette (Wellcome / CEMIC)
 
 ---
@@ -54,44 +58,48 @@ near black `#1E2A16` → burnt orange `#D17E38` → dark stone `#444443` → sea
 
 ---
 
-## Project Structure
+## Repository Structure
 
 ```
-seir-dashboard/
+bowie/
 ├── app.R                        # Application entry point
-├── DESCRIPTION                  # Package metadata and dependencies
+├── DESCRIPTION                  # R package metadata and dependencies
 ├── LICENSE                      # MIT licence
-├── NAMESPACE                    # Package namespace
-├── README.md                    # This file
+├── NAMESPACE                    # R package namespace
+├── README.md                    # Project overview
 ├── CODESTYLE.md                 # Coding and commenting standards
-├── CONTRIBUTING.md              # Contribution guidelines
-├── CODE_OF_CONDUCT.md           # Community standards
 ├── roadmap.md                   # Strategic roadmap and block status
 ├── proj_evolution.md            # ToR alignment and progress report
 │
 ├── R/
 │   ├── global.R                 # Global constants and library loading
-│   ├── data_interface.R         # Data Hub: loading, validation, persistence
-│   ├── mod_entry.R              # Entry screen module
+│   ├── data_interface.R         # Data Hub: loading, validation, caching
+│   ├── mod_entry.R              # Entry screen and CSV upload module
 │   ├── mod_menu.R               # Top navigation menu module
-│   ├── mod_ui.R                 # Main UI layout and parameter panels
-│   ├── mod_server.R             # Main server: parameters, model wiring
+│   ├── mod_ui.R                 # Advanced View UI layout and panels
+│   ├── mod_ui_simple.R          # Simplified View UI layout and KPI cards
+│   ├── mod_server.R             # Main server: parameter wiring, model orchestration
+│   ├── mod_server_simple.R      # Simplified View server: isolated SEIR + alarm logic
+│   ├── mod_helpers_simple.R     # Shared helpers: alarm shapes, state labels, metrics
 │   ├── mod_model.R              # SEIR ODE model logic
 │   ├── mod_viz.R                # Visualisation module (ggplot2)
 │   ├── mod_data.R               # Data simulation module
-│   ├── mod_server_reactivity.R  # Cross-module reactivity scaffold (planned)
 │   └── utils/
 │       ├── utils_logging.R      # Structured logging utilities
-│       ├── utils_validation.R   # Parameter validation utilities
+│       ├── utils_validation.R   # Parameter and schema validation
 │       ├── utils_helpers.R      # Numeric helpers and safe ODE wrapper
-│       └── utils_dependencies.R # Automatic dependency detection
+│       └── utils_dependencies.R # Automatic dependency detection and loading
 │
 ├── data/
 │   ├── mock_dataset.rds         # Simulated default dataset
-│   └── iecs_data.RData          # IECS/Santoro — real COVID-19 Argentina data
+│   ├── iecs_data.rds            # IECS / Santoro — real COVID-19 Argentina parameters
+│   └── cache/                   # Auto-generated: cached datasets
+│
+├── data-raw/
+│   └── prepare_iecs.R           # Reproducible script to regenerate iecs_data.rds
 │
 ├── docs/
-│   └── documentacion.Rmd        # Technical documentation (translation in progress)
+│   └── implementation_guide.md  # Full technical documentation (Product 3a)
 │
 └── www/
     └── custom.css               # Visual overrides — AfA brand palette
@@ -99,99 +107,77 @@ seir-dashboard/
 
 ---
 
-## Setup
-
-### Prerequisites
-
-- R >= 4.3
-- Required packages (see `DESCRIPTION` for full list):
-
-```r
-install.packages(c(
-  "shiny", "shinyjs", "bslib", "ggplot2", "plotly",
-  "dplyr", "tidyr", "purrr", "scales", "lubridate",
-  "deSolve", "RcppRoll", "rsconnect"
-))
-```
-
-### Run locally
+## Installation
 
 ```bash
 git clone https://github.com/XtnPaez/bowie.git
-cd bowie  # repository folder name
+cd bowie
 ```
 
 ```r
+# Install dependencies
+install.packages(c(
+  "shiny", "shinyjs", "bslib", "ggplot2", "dplyr", "tidyr",
+  "purrr", "scales", "lubridate", "deSolve", "RcppRoll",
+  "plotly", "rsconnect", "stringr"
+))
+
+# Run locally
 shiny::runApp()
 ```
 
-### Deploy to shinyapps.io
+---
+
+## Dataset Sources
+
+The platform supports three dataset sources, selectable from the entry screen:
+
+| Source | Description |
+|--------|-------------|
+| Simulated (mock) | Synthetic dataset generated from default epidemiological parameters. Use for free exploration. |
+| IECS / Santoro | Real COVID-19 parameters for Argentina, derived from Santoro et al. (2022). Use for empirically grounded simulation. |
+| Upload your own (CSV) | Upload a two-column CSV (`parameter`, `value`) with your regional epidemiological and resource parameters. See the modal dialog for the full field specification. |
+
+To regenerate the IECS dataset from source parameters:
 
 ```r
+source("data-raw/prepare_iecs.R")
+```
+
+---
+
+## Deployment
+
+```r
+library(rsconnect)
 rsconnect::deployApp(
-  appDir = ".",
-  appName = "bowie-seir",
+  appDir      = ".",
+  appName     = "bowie-seir",
   forceUpdate = TRUE
 )
 ```
 
 ---
 
-## Usage
-
-1. **Select a dataset** on the entry screen and click **Load dataset**:
-   - **Simulated (mock)** — synthetic data for parameter exploration
-   - **IECS / Santoro** — real COVID-19 Argentina data
-2. Navigate to **Advanced View**
-3. Adjust epidemiological, policy, and resource parameters using the sidebar controls
-4. Explore results across three tabs:
-   - **Epidemic Curves** — SEIR compartment dynamics and cumulative cases/deaths
-   - **Resource Pressure** — ICU and ventilator demand vs. capacity thresholds
-   - **Simulated Data** — tabular preview and CSV download
-
-> **Simple View** is currently disabled — implementation planned for the next phase.
-
----
-
-## Development Status
-
-| Block | ToR Requirement | Status |
-|-------|----------------|--------|
-| 1–4. Foundation | Modular architecture, Data Hub, UX | ✅ Complete |
-| 4b. UI Polish | AfA brand palette, namespace fixes, deprecation fixes | ✅ Complete |
-| 5. Simplified Visualisation | Decision-maker interface with KPIs | 🟡 In progress |
-| 6. External Data + Sociodemographic | WHO / OWID APIs + demographics layer | 🔴 Pending |
-| 7. Interactive Presentation | Infographic and practical exercises | 🔴 Pending |
-
-Overall ToR coverage: **≈ 85%** — see [`proj_evolution.md`](proj_evolution.md) for full breakdown.
-
----
-
 ## Documentation
 
-Technical documentation is available in [`docs/documentacion.Rmd`](docs/documentacion.Rmd).  
-⚠️ Currently in Spanish — translation and update in progress.
-
-For coding standards, see [`CODESTYLE.md`](CODESTYLE.md).  
-For contribution guidelines, see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- **Implementation Guide** (`docs/implementation_guide.md`) — module architecture, SEIR equations, dataset specification, visual design system, deployment instructions
+- **Roadmap** (`roadmap.md`) — development blocks and delivery status
+- **Project Evolution** (`proj_evolution.md`) — ToR alignment and progress report
 
 ---
 
-## Roadmap
+## References
 
-See [`roadmap.md`](roadmap.md) for the full strategic plan and block dependencies.
-
----
-
-## Licence
-
-MIT License — see [`LICENSE`](LICENSE) for details.
+Santoro A, López Osornio A, Williams I, et al. Development and application of a dynamic
+transmission model of health systems' preparedness and response to COVID-19 in twenty-six
+Latin American and Caribbean countries. *PLOS Glob Public Health.* 2022;2(3):e0000186.
+https://doi.org/10.1371/journal.pgph.0000186
 
 ---
 
-## Authors
-
-**Cristian Paez** — Lead Developer  
-paez.cristian@gmail.com  
-Analysis for Action (Argentina Unit)  
-Funded by Wellcome
+**Maintainer:** Cristian Paez  
+**Organisation:** CEMIC  
+**Project:** Analysis for Action (Argentina Unit) · WP5  
+**Funded by:** Wellcome  
+**Date:** May 2026

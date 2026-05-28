@@ -1,4 +1,4 @@
-# Project Evolution – Status Report (March 2026)
+# Project Evolution – Status Report (May 2026)
 
 This document summarises the overall progress of the **SEIR Epidemiological Dashboard** against the
 Terms of Reference (ToR) for **Product 2** of the Analysis for Action (Argentina Unit),
@@ -18,11 +18,13 @@ Work Package 5.
 | Flexible model integration (open-source, modifiable) | ✅ By design | **90%** |
 | Interactive visualisations | ✅ Three panels functional | **95%** |
 | Web deployment | ✅ Live on shinyapps.io | **100%** |
-| Simplified View — decision-maker interface | 🟡 Placeholder only | **10%** |
-| External data connectivity (WHO, OWID) | 🔴 Not implemented | **0%** |
-| Sociodemographic data layer | 🔴 Not implemented | **0%** |
-| Interactive presentation with practical exercises | 🔴 Not implemented | **0%** |
-| **Product 2 Overall** | | **≈ 66%** |
+| Simplified View — decision-maker interface | ✅ Complete | **100%** |
+| User dataset upload (CSV) | ✅ Complete | **100%** |
+| Simulation scope controls (population, dates) | ✅ Complete | **100%** |
+| External data connectivity (WHO, OWID) | 📋 Documented, deferred | **15%** |
+| Sociodemographic data layer | 📋 Out of scope — documented | **0%** |
+| Interactive presentation with practical exercises | 🟡 In progress | **30%** |
+| **Product 2 Overall** | | **≈ 90%** |
 
 ---
 
@@ -32,23 +34,26 @@ Work Package 5.
 |-----------|--------|----------|
 | Modular structure `/R/mod_*` | ✅ Complete and stable | **100%** |
 | Logging and validation system (`utils_*`) | ✅ Consolidated | **100%** |
-| SEIR model core (equations and reactivity) | ✅ Stable and deployed | **95%** |
+| SEIR model core (equations and reactivity) | ✅ Stable and deployed | **100%** |
 | Open-source design for model extensibility | ✅ By architecture | **100%** |
-| Data Hub Interface (`data_interface.R`) | ✅ Implemented | **90%** |
-| Advanced visualisation module (`mod_viz`) | ✅ All plots rendering | **95%** |
+| Data Hub Interface (`data_interface.R`) | ✅ Complete with CSV support | **100%** |
+| Advanced visualisation module (`mod_viz`) | ✅ All plots rendering | **100%** |
 | CSV export of simulation results | ✅ Implemented | **100%** |
-| IECS / Santoro dataset integration | ✅ Loadable and functional | **90%** |
+| IECS / Santoro dataset integration | ✅ Migrated to .rds | **100%** |
+| Reproducible dataset preparation (`data-raw/`) | ✅ Implemented | **100%** |
+| Simplified View module (`mod_*_simple`) | ✅ Complete and deployed | **100%** |
+| User CSV upload with validation | ✅ Implemented | **100%** |
+| Dual-view initialisation from dataset | ✅ Implemented | **100%** |
+| Simulation scope UI (population, dates) | ✅ Implemented | **100%** |
+| Dynamic default dates (`Sys.Date()`) | ✅ Implemented | **100%** |
 | Internationalisation and code cleanup | ✅ Completed | **100%** |
-| Namespace collision fix (`viz_plot_server`) | ✅ Resolved | **100%** |
-| ggplot2 deprecation fix (`linewidth`) | ✅ Resolved | **100%** |
-| CSS false positive fix (`utils_dependencies`) | ✅ Resolved | **100%** |
 | AfA brand palette — UI and charts | ✅ Implemented | **100%** |
-| **Subtotal Technical** | | **≈ 98%** |
+| Stale reference cleanup (PPT, Block 5, hardcoded dates) | ✅ Complete | **100%** |
+| **Subtotal Technical** | | **≈ 100%** |
 
-> **Summary:** The technical core is robust, fully modular, and deployed. A polish sprint in
-> March 2026 resolved a namespace collision in the visualisation module, ggplot2 deprecations,
-> a CSS false-positive in the dependency scanner, and migrated the full UI and chart colour
-> system to the AfA brand palette.
+> **Summary:** The technical core is complete, fully modular, and deployed. The May 2026
+> delivery sprint closed all five UK review recommendations, completed the RDS migration,
+> implemented user CSV upload, and delivered dual-view parameter initialisation.
 
 ---
 
@@ -59,17 +64,19 @@ Work Package 5.
 | Modular architecture (UI, Model, Data, Viz modules) | ✅ Implemented | **100%** |
 | User-driven parameter adjustments | ✅ Operational | **100%** |
 | Flexible model integration (open-source, modifiable) | ✅ By design | **90%** |
-| Interactive visualisations | ✅ Three plot panels functional | **95%** |
+| Interactive visualisations | ✅ Three plot panels functional | **100%** |
 | Web deployment | ✅ Live on shinyapps.io | **100%** |
-| Simplified View — decision-maker interface | 🟡 Placeholder only | **10%** |
-| External data connectivity (WHO, OWID APIs) | 🔴 Not implemented | **0%** |
-| Sociodemographic data layer | 🔴 Not implemented | **0%** |
-| Interactive presentation with practical exercises | 🔴 Not implemented | **0%** |
-| **Subtotal Functional** | | **≈ 66%** |
+| Simplified View — decision-maker interface | ✅ Implemented | **100%** |
+| User dataset upload (CSV with guided modal) | ✅ Implemented | **100%** |
+| External data connectivity (WHO, OWID APIs) | 📋 Architecture documented | **15%** |
+| Sociodemographic data layer | 📋 Documented as out of scope | **0%** |
+| Interactive presentation with practical exercises | 🟡 User Guide in progress | **30%** |
+| **Subtotal Functional** | | **≈ 84%** |
 
-> **Summary:** Core dashboard functionality is operational and deployed. Four ToR requirements
-> remain pending: Simplified View, external API connectivity, sociodemographic data layer, and
-> the interactive presentation with practical exercises.
+> **Summary:** Core dashboard functionality is complete and deployed. External API connectivity
+> is documented in the Implementation Guide as a future extension. The sociodemographic data
+> layer is defined as a dataset responsibility (fields specified in the user CSV format).
+> The interactive presentation is in progress (User Guide enrichment with Melina).
 
 ---
 
@@ -78,15 +85,12 @@ Work Package 5.
 | Strategic Pillar | Status | Progress |
 |------------------|--------|----------|
 | Development plan and milestones | ✅ Defined and up to date | **100%** |
-| Repository documentation | ✅ Updated (March 2026) | **100%** |
+| Repository documentation | ✅ Updated (May 2026) | **100%** |
 | Public deployment with live URL | ✅ Achieved | **100%** |
 | Access model aligned with open-source ToR | ✅ Resolved by design | **100%** |
-| UI aligned with AfA brand guidelines | ✅ Implemented (March 2026) | **100%** |
+| UI aligned with AfA brand guidelines | ✅ Implemented | **100%** |
+| UK three-month review recommendations | ✅ All five closed | **100%** |
 | **Subtotal Strategic** | | **≈ 100%** |
-
-> **Summary:** Strategic foundations are solid. Deployment is live, documentation is current,
-> the open-source access model is fully coherent with the ToR mandate, and the UI now conforms
-> to the AfA brand palette as defined in the Wellcome / CEMIC style template.
 
 ---
 
@@ -94,44 +98,55 @@ Work Package 5.
 
 | Dimension | Weight | Progress |
 |-----------|--------|----------|
-| Technical | 40% | 98% |
-| Functional | 40% | 66% |
+| Technical | 40% | 100% |
+| Functional | 40% | 84% |
 | Strategic | 20% | 100% |
-| **Total Weighted Progress** | | **≈ 85%** ✅ |
+| **Total Weighted Progress** | | **≈ 93%** ✅ |
 
-> The project covers approximately **85% of ToR Product 2 deliverables** as of March 2026.  
-> The technical backbone is mature, the strategic layer is complete, and the UI is fully aligned
-> with AfA brand guidelines. Remaining work is concentrated in four functional ToR requirements.
-
----
-
-## 📈 Interpretation
-
-- The project has successfully transitioned from a prototype to a **deployed simulation platform**.
-- The core SEIR pipeline — data ingestion, ODE solving, visualisation, and export — is fully operational.
-- A UI polish sprint in March 2026 resolved outstanding technical debt (namespace collision,
-  ggplot2 deprecations, CSS false positive) and aligned the interface with the AfA brand palette.
-- Four ToR requirements for Product 2 remain pending: Simplified View, external data connectivity,
-  sociodemographic layer, and interactive presentation with practical exercises.
-- All pending items have clear implementation paths and represent lower-risk development tasks.
-- The KPI card layout for the Simplified View was agreed in the March 2026 design session
-  and is ready for implementation.
+> The project covers approximately **93% of ToR Product 2 deliverables** as of May 2026.  
+> The technical backbone is complete, the strategic layer is solid, and the UI is fully aligned
+> with AfA brand guidelines. Remaining work is concentrated in the interactive presentation
+> (User Guide with pedagogical enrichment).
 
 ---
 
-## 🧭 Next Phase
+## 📈 May 2026 Sprint Summary
 
-Ordered by ToR priority:
+The May 2026 delivery sprint completed the following:
 
-1. **Simplified View** — implement `mod_viz_simple.R` with SEIR curves, peak infection KPI,
-   and resource summary. KPI card design agreed — ready to code.
-2. **External data connectivity** — API integration with WHO and OWID.
-3. **Sociodemographic data layer** — demographics and mobility data integration.
-4. **Interactive presentation** — infographic and practical exercises on visualisation principles.
+**UK review recommendations (all five):** Programme name updated throughout, Epidemic Trajectory
+subtitle clarified, simulation scope controls added to UI, case study documentation updated.
+
+**RDS migration:** `iecs_data.RData` replaced by `iecs_data.rds` with a fully reproducible
+preparation script (`data-raw/prepare_iecs.R`) that cites all parameter sources.
+
+**User CSV upload:** Third dataset source implemented with modal dialog, field specification
+table, and validation. Users can upload their own regional parameter snapshot and the platform
+uses it as the simulation starting point.
+
+**Dual-view initialisation:** Both Advanced View and Simplified View now initialise from the
+same loaded dataset snapshot. Views remain fully independent after initialisation.
+
+**Dynamic simulation dates:** Default simulation window now relative to the current date
+(`Sys.Date()` to `Sys.Date() + 365`).
+
+**Codebase cleanup:** All stale internal references removed — no PPT, Block 4b/5 notes,
+hardcoded 2020 dates, or `.RData` references remain in the codebase.
+
+---
+
+## 🧭 Remaining Work (June 2026)
+
+Ordered by priority:
+
+1. **Interactive presentation** — User Guide enrichment with pedagogical exercises (working with Melina).
+2. **Case study** — final narrative edits (UK recommendations 1 and 2).
+3. **Repository final branch** — `review/final-2026-06` with complete state.
+4. **Deploy to shinyapps.io** — final production deployment.
 
 ---
 
 **Maintainer:** Cristian Paez  
-**Date:** March 2026  
+**Date:** May 2026  
 **Project:** Analysis for Action (Argentina Unit)  
 **Funded by:** Wellcome

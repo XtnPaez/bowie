@@ -15,7 +15,7 @@
 #   viz_plot_server() must be called with id = "viz_advanced"
 #   from the TOP-LEVEL server — never from inside another
 #   moduleServer() call — to prevent double-prefixed ids.
-#   See Block 4b notes for full explanation.
+#   See Implementation Guide section 6.1 for full explanation.
 #
 # Namespace contract — Simple View:
 #   mod_ui_simple("viz_simple") / mod_server_simple("viz_simple").
@@ -27,7 +27,7 @@
 #   namespace ids to avoid collision with "data_sim"/"seir_model"
 #   used by the Advanced View.
 #
-# Block 5 — Simplified View implemented: 2026-03-19
+# Simplified View implemented: 2026-03-19
 # ============================================================
 
 library(shiny)
@@ -58,9 +58,9 @@ server <- function(input, output, session) {
   trigger_sim      <- reactiveVal(0)
 
   # Stores calibrated parameters from the loaded dataset.
-  # NULL for mock (no calibrated parameters); named list with
-  # $parametros and $recursos for IECS and user CSV sources.
-  # Passed to both views so both initialise from the same photo.
+  # NULL for mock; named list with $parametros, $recursos,
+  # $poblacion for IECS and user CSV sources. Passed to both
+  # views so both initialise from the same dataset snapshot.
   dataset_params   <- reactiveVal(NULL)
 
   # --------------------------------------------------------
@@ -107,7 +107,9 @@ server <- function(input, output, session) {
     if (advanced_initialised()) return()
     advanced_initialised(TRUE)
 
-    out <- mod_server("viz_advanced", reactive({ dataset_selector() }))
+    out <- mod_server("viz_advanced",
+                       reactive({ dataset_selector() }),
+                       dataset_params)
 
     viz_plot_server(
       id                            = "viz_advanced",
@@ -118,7 +120,7 @@ server <- function(input, output, session) {
   })
 
   # --------------------------------------------------------
-  # Simple view — Block 5
+  # Simple view
   # --------------------------------------------------------
   # mod_server_simple() is self-contained: it calls
   # mod_data_server() and model_seir_server() internally.

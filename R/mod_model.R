@@ -121,9 +121,18 @@ model_seir_server <- function(id, input_params, raw_data_df) {
         I = initial_state_df$I[1],
         R = initial_state_df$R[1]
       )
+
+      # Use the actual sum of the initial state as the reference
+      # population for validation. This avoids a race condition
+      # where app_params$population is updated by dataset_params
+      # after mod_data_server() has already built the frame with
+      # a different population value (e.g. CSV upload with a
+      # population different from POPULATION_ARGENTINA).
+      # params$population is then normalised to match in Step 7.
+      actual_population <- sum(initial_state)
       validate_initial_state(initial_state["S"], initial_state["E"],
                              initial_state["I"], initial_state["R"],
-                             population = params$population)
+                             population = actual_population)
       
       # --- Step 5: Time steps and ODE parameters ---
       times <- raw_data_df()$time
