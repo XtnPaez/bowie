@@ -15,7 +15,7 @@ Work Package 5.
 |-----------------|--------|----------|
 | Modular architecture (UI, Model, Data, Viz) | ✅ Complete | **100%** |
 | User-driven parameter adjustments | ✅ Complete | **100%** |
-| Flexible model integration (open-source, modifiable) | ✅ By design | **90%** |
+| Flexible model integration (open-source, modifiable) | ✅ By design | **95%** |
 | Interactive visualisations | ✅ Three panels functional | **95%** |
 | Web deployment | ✅ Live on shinyapps.io | **100%** |
 | Simplified View — decision-maker interface | ✅ Complete | **100%** |
@@ -63,7 +63,7 @@ Work Package 5.
 |-----------------|--------|----------|
 | Modular architecture (UI, Model, Data, Viz modules) | ✅ Implemented | **100%** |
 | User-driven parameter adjustments | ✅ Operational | **100%** |
-| Flexible model integration (open-source, modifiable) | ✅ By design | **90%** |
+| Flexible model integration (open-source, modifiable) | ✅ By design | **95%** |
 | Interactive visualisations | ✅ Three plot panels functional | **100%** |
 | Web deployment | ✅ Live on shinyapps.io | **100%** |
 | Simplified View — decision-maker interface | ✅ Implemented | **100%** |
@@ -71,7 +71,7 @@ Work Package 5.
 | External data connectivity (WHO, OWID APIs) | 📋 Architecture documented | **15%** |
 | Sociodemographic data layer | 📋 Documented as out of scope | **0%** |
 | Interactive presentation with practical exercises | 🟡 User Guide in progress | **30%** |
-| **Subtotal Functional** | | **≈ 84%** |
+| **Subtotal Functional** | | **≈ 86%** |
 
 > **Summary:** Core dashboard functionality is complete and deployed. External API connectivity
 > is documented in the Implementation Guide as a future extension. The sociodemographic data
@@ -101,9 +101,9 @@ Work Package 5.
 | Technical | 40% | 100% |
 | Functional | 40% | 84% |
 | Strategic | 20% | 100% |
-| **Total Weighted Progress** | | **≈ 93%** ✅ |
+| **Total Weighted Progress** | | **≈ 94%** ✅ |
 
-> The project covers approximately **93% of ToR Product 2 deliverables** as of May 2026.  
+> The project covers approximately **94% of ToR Product 2 deliverables** as of May 2026.  
 > The technical backbone is complete, the strategic layer is solid, and the UI is fully aligned
 > with AfA brand guidelines. Remaining work is concentrated in the interactive presentation
 > (User Guide with pedagogical enrichment).
