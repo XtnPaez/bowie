@@ -238,38 +238,22 @@ mod_entry_server <- function(id, screen, dataset_selector,
     # --------------------------------------------------------
     # Local dataset loader
     # --------------------------------------------------------
+    # safe_load_dataset()
+    # Delegates to get_data() from data_interface.R, which
+    # handles all sources (mock, iecs, csv) via build_dataset().
+    # Returns the $data element of the get_data() result list
+    # for compatibility with the existing dataset_loaded()
+    # reactive — downstream modules receive a plain data frame.
+    # Hardcoded dates and manual data frame construction
+    # removed — now handled centrally by build_dataset().
+    # --------------------------------------------------------
     safe_load_dataset <- function(source) {
       log_message("INFO",
                   paste("Loading dataset (local call):", source),
                   .module = "ENTRY")
 
-      data <- NULL
-
-      if (source == "mock" && file.exists("data/mock_dataset.rds")) {
-        data <- readRDS("data/mock_dataset.rds")
-
-      } else if (source == "iecs" &&
-                 file.exists("data/iecs_data.RData")) {
-        iecs_data <- load_iecs_data()
-        if (exists("iecs_data")) {
-          if (is.list(iecs_data)) {
-            pop        <- iecs_data$poblacion
-            start_date <- as.Date("2020-03-01")
-            days       <- 200
-            data <- data.frame(
-              time = 0:days,
-              date = start_date + 0:days,
-              S    = pop - 10000 - 0:days * 10,
-              E    = 500 + sin(0:days / 10) * 200,
-              I    = 10000 + cos(0:days / 15) * 500,
-              R    = 0:days * 50
-            )
-          } else if (is.data.frame(iecs_data)) {
-            data <- iecs_data
-          }
-        }
-      }
-      data
+      result <- get_data(source)
+      result$data
     }
 
     # --------------------------------------------------------
