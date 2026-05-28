@@ -123,7 +123,8 @@ mod_entry_ui <- function(id) {
             label    = NULL,
             choices  = c(
               "Simulated (mock)"          = "mock",
-              "IECS \u2013 Santoro model" = "iecs"
+              "IECS \u2013 Santoro model"     = "iecs",
+              "Upload your own dataset (CSV)" = "csv"
             ),
             selected = "mock",
             width    = "100%"
@@ -288,9 +289,98 @@ mod_entry_server <- function(id, screen, dataset_selector,
     })
 
     # --------------------------------------------------------
-    # Load dataset — shows status badge inside the card
+    # Load dataset — shows status badge inside the card.
+    # For CSV source: opens a modal with upload instructions
+    # and a fileInput. For mock/iecs: loads directly.
     # --------------------------------------------------------
     observeEvent(input$load_dataset, {
+
+      # CSV source — show upload modal before loading
+      if (isTRUE(input$dataset_selector == "csv")) {
+        showModal(modalDialog(
+          title     = "Upload your own dataset",
+          size      = "m",
+          easyClose = FALSE,
+
+          tags$p(
+            style = "color:#48553F; margin-bottom:16px;",
+            "Upload a CSV file with your epidemiological and ",
+            "healthcare resource parameters. The platform will ",
+            "use these values as the starting point for the simulation ",
+            "— your own regional ‘photo’."
+          ),
+
+          tags$div(
+            style = paste(
+              "background:#F8F5F1;",
+              "border:0.5px solid #D0D4CE;",
+              "border-radius:8px;",
+              "padding:14px 16px;",
+              "margin-bottom:16px;"
+            ),
+            tags$p(
+              tags$strong("Required format:"),
+              " two columns — ",
+              tags$code("parameter"),
+              " and ",
+              tags$code("value"),
+              " — with the following rows:",
+              style = "margin-bottom:10px; font-size:0.9rem;"
+            ),
+            tags$table(
+              style = "width:100%; font-size:0.85rem; border-collapse:collapse;",
+              tags$thead(tags$tr(
+                tags$th("parameter",   style = "text-align:left; padding:4px 8px; background:#324027; color:#F4F6F5;"),
+                tags$th("value",       style = "text-align:left; padding:4px 8px; background:#324027; color:#F4F6F5;"),
+                tags$th("description", style = "text-align:left; padding:4px 8px; background:#324027; color:#F4F6F5;")
+              )),
+              tags$tbody(
+                tags$tr(tags$td("r0",                    style="padding:3px 8px;"), tags$td("2.5",      style="padding:3px 8px;"), tags$td("Basic reproduction number",                 style="padding:3px 8px; color:#48553F;")),
+                tags$tr(style="background:#F4F6F5;",
+                  tags$td("incubation_period",           style="padding:3px 8px;"), tags$td("5",        style="padding:3px 8px;"), tags$td("Days from exposure to infectious",           style="padding:3px 8px; color:#48553F;")),
+                tags$tr(tags$td("infectious_period",     style="padding:3px 8px;"), tags$td("7",        style="padding:3px 8px;"), tags$td("Days an individual remains infectious",      style="padding:3px 8px; color:#48553F;")),
+                tags$tr(style="background:#F4F6F5;",
+                  tags$td("ifr",                         style="padding:3px 8px;"), tags$td("0.01",     style="padding:3px 8px;"), tags$td("Infection fatality rate (proportion)",       style="padding:3px 8px; color:#48553F;")),
+                tags$tr(tags$td("icu_capacity",          style="padding:3px 8px;"), tags$td("6000",     style="padding:3px 8px;"), tags$td("Total ICU beds available",                   style="padding:3px 8px; color:#48553F;")),
+                tags$tr(style="background:#F4F6F5;",
+                  tags$td("ventilator_availability",     style="padding:3px 8px;"), tags$td("2000",     style="padding:3px 8px;"), tags$td("Total ventilators available",                style="padding:3px 8px; color:#48553F;")),
+                tags$tr(tags$td("healthcare_staff",      style="padding:3px 8px;"), tags$td("10000",    style="padding:3px 8px;"), tags$td("Staff in critical care",                     style="padding:3px 8px; color:#48553F;")),
+                tags$tr(style="background:#F4F6F5;",
+                  tags$td("icu_admission_rate",          style="padding:3px 8px;"), tags$td("0.136",    style="padding:3px 8px;"), tags$td("Proportion of cases requiring ICU",          style="padding:3px 8px; color:#48553F;")),
+                tags$tr(tags$td("ventilator_usage_rate", style="padding:3px 8px;"), tags$td("0.02",     style="padding:3px 8px;"), tags$td("Proportion requiring ventilation",           style="padding:3px 8px; color:#48553F;")),
+                tags$tr(style="background:#F4F6F5;",
+                  tags$td("population",                  style="padding:3px 8px;"), tags$td("45000000", style="padding:3px 8px;"), tags$td("Total population",                          style="padding:3px 8px; color:#48553F;"))
+              )
+            )
+          ),
+
+          tags$p(
+            style = "font-size:0.85rem; color:#7A8A72; margin-bottom:12px;",
+            "Use the IECS / Santoro dataset as a reference template. ",
+            "Values shown above are the Argentine defaults — replace them ",
+            "with your own regional figures."
+          ),
+
+          fileInput(
+            ns("csv_upload"),
+            label    = "Select CSV file",
+            accept   = ".csv",
+            multiple = FALSE
+          ),
+
+          footer = tagList(
+            modalButton("Cancel"),
+            actionButton(
+              ns("confirm_csv_upload"),
+              "Load dataset",
+              class = "btn btn-primary"
+            )
+          )
+        ))
+        return()
+      }
+
+      # mock / iecs — load directly
       shinyjs::disable("load_dataset")
       shinyjs::runjs("document.body.style.opacity = 0.6;")
 
@@ -301,9 +391,6 @@ mod_entry_server <- function(id, screen, dataset_selector,
         req(result$data)
         dataset_loaded(result$data)
 
-        # Store calibrated parameters so both views initialise
-        # from the same dataset snapshot (Paso 5 contract).
-        # NULL for mock — no calibrated parameters available.
         if (!is.null(dataset_params)) {
           dataset_params(list(
             parametros = result$parametros,
@@ -312,7 +399,7 @@ mod_entry_server <- function(id, screen, dataset_selector,
           ))
         }
 
-        # Success badge — AfA green tint
+        # Success badge
         output$status_message <- renderUI({
           tags$div(
             id    = ns("alert_box"),
@@ -324,15 +411,10 @@ mod_entry_server <- function(id, screen, dataset_selector,
               "border-radius:6px;",
               "margin-bottom:12px;"
             ),
-            tags$span(
-              style = paste(
-                "width:8px; height:8px;",
-                "border-radius:50%;",
-                "background:#27500A;",
-                "flex-shrink:0;",
-                "display:inline-block;"
-              )
-            ),
+            tags$span(style = paste(
+              "width:8px; height:8px; border-radius:50%;",
+              "background:#27500A; flex-shrink:0; display:inline-block;"
+            )),
             tags$span(
               "Dataset loaded successfully.",
               style = "font-size:13px; color:#27500A; font-weight:500;"
@@ -346,7 +428,6 @@ mod_entry_server <- function(id, screen, dataset_selector,
                                      animType = "fade"))
 
       }, error = function(e) {
-        # Error badge — AfA earthy red tint
         output$status_message <- renderUI({
           tags$div(
             id    = ns("alert_box"),
@@ -358,22 +439,16 @@ mod_entry_server <- function(id, screen, dataset_selector,
               "border-radius:6px;",
               "margin-bottom:12px;"
             ),
-            tags$span(
-              style = paste(
-                "width:8px; height:8px;",
-                "border-radius:50%;",
-                "background:#752111;",
-                "flex-shrink:0;",
-                "display:inline-block;"
-              )
-            ),
+            tags$span(style = paste(
+              "width:8px; height:8px; border-radius:50%;",
+              "background:#752111; flex-shrink:0; display:inline-block;"
+            )),
             tags$span(
               paste("Error loading dataset:", e$message),
               style = "font-size:13px; color:#752111;"
             )
           )
         })
-
         shinyjs::delay(4000,
                        shinyjs::hide(id       = ns("alert_box"),
                                      anim     = TRUE,
@@ -385,6 +460,101 @@ mod_entry_server <- function(id, screen, dataset_selector,
     })
 
     # --------------------------------------------------------
+    # CSV upload confirmation — fired when user clicks
+    # "Load dataset" inside the modal.
+    # Validates the uploaded file via validate_user_csv(),
+    # builds the dataset, updates reactive state, and closes
+    # the modal. Shows a success or error badge on completion.
+    # --------------------------------------------------------
+    observeEvent(input$confirm_csv_upload, {
+      req(input$csv_upload)
+
+      shinyjs::disable("confirm_csv_upload")
+
+      tryCatch({
+        result <- get_data(
+          source = "csv",
+          params = list(path = input$csv_upload$datapath)
+        )
+        req(result$data)
+
+        dataset_selector("csv")
+        dataset_loaded(result$data)
+
+        if (!is.null(dataset_params)) {
+          dataset_params(list(
+            parametros = result$parametros,
+            recursos   = result$recursos,
+            poblacion  = result$poblacion
+          ))
+        }
+
+        removeModal()
+
+        output$status_message <- renderUI({
+          tags$div(
+            id    = ns("alert_box"),
+            style = paste(
+              "display:flex; align-items:center; gap:8px;",
+              "padding:10px 14px;",
+              "background:#C0DD97;",
+              "border:0.5px solid #3B6D11;",
+              "border-radius:6px;",
+              "margin-bottom:12px;"
+            ),
+            tags$span(style = paste(
+              "width:8px; height:8px; border-radius:50%;",
+              "background:#27500A; flex-shrink:0; display:inline-block;"
+            )),
+            tags$span(
+              "Custom dataset loaded successfully.",
+              style = "font-size:13px; color:#27500A; font-weight:500;"
+            )
+          )
+        })
+
+        shinyjs::delay(3000,
+                       shinyjs::hide(id       = ns("alert_box"),
+                                     anim     = TRUE,
+                                     animType = "fade"))
+
+        log_message("INFO", "User CSV loaded successfully", .module = "ENTRY")
+
+      }, error = function(e) {
+        removeModal()
+        output$status_message <- renderUI({
+          tags$div(
+            id    = ns("alert_box"),
+            style = paste(
+              "display:flex; align-items:center; gap:8px;",
+              "padding:10px 14px;",
+              "background:#F9EDEA;",
+              "border:0.5px solid #E8B8AD;",
+              "border-radius:6px;",
+              "margin-bottom:12px;"
+            ),
+            tags$span(style = paste(
+              "width:8px; height:8px; border-radius:50%;",
+              "background:#752111; flex-shrink:0; display:inline-block;"
+            )),
+            tags$span(
+              paste("Error loading CSV:", e$message),
+              style = "font-size:13px; color:#752111;"
+            )
+          )
+        })
+        shinyjs::delay(4000,
+                       shinyjs::hide(id       = ns("alert_box"),
+                                     anim     = TRUE,
+                                     animType = "fade"))
+        log_message("ERROR", paste("CSV upload failed:", e$message),
+                    .module = "ENTRY")
+      })
+
+      shinyjs::enable("confirm_csv_upload")
+    })
+
+        # --------------------------------------------------------
     # Navigation to Advanced view
     # --------------------------------------------------------
     observeEvent(input$go_advanced, {
