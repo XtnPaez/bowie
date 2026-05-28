@@ -185,6 +185,80 @@ ui_resource_params <- function(ns) {
 }
 
 
+
+# ------------------------------------------------------------
+# Function: ui_scope_params()
+# Description:
+#   Builds the simulation scope control panel, exposing
+#   population size and simulation date range as user-editable
+#   inputs. These parameters are wired to app_params in
+#   mod_server.R (observers already present).
+#
+#   Design decision: dateInput() was chosen over separate
+#   numeric fields for day, month, and year because it renders
+#   a native calendar picker — the most intuitive interaction
+#   for date selection by non-technical users.
+#
+# Parameters:
+#   ns – Shiny namespace function produced by NS(id).
+# Returns:
+#   A div() containing numericInput and dateInput widgets.
+# ------------------------------------------------------------
+ui_scope_params <- function(ns) {
+  div(
+    tags$div(
+      "Simulation scope",
+      style = paste(
+        "font-size:10px; font-weight:500;",
+        "color:#48553F;",
+        "text-transform:uppercase;",
+        "letter-spacing:0.06em;",
+        "padding-bottom:8px;",
+        "border-bottom:0.5px solid #D0D4CE;",
+        "margin-bottom:10px;"
+      )
+    ),
+
+    tags$small(
+      class = "text-muted",
+      "Adjust total population and simulation period. ",
+      "Changes re-run the model automatically."
+    ),
+    br(), br(),
+
+    # Total population — numericInput allows precise entry of
+    # any country-level or subnational population figure.
+    numericInput(
+      inputId = ns("population"),
+      label   = "Total Population",
+      value   = POPULATION_ARGENTINA,
+      min     = 1000,
+      step    = 100000
+    ),
+
+    # Simulation start date — dateInput renders a calendar
+    # picker, chosen over separate numeric fields for
+    # intuitiveness (see design decision note above).
+    dateInput(
+      inputId  = ns("start_date"),
+      label    = "Simulation Start Date",
+      value    = START_DATE,
+      format   = "dd/mm/yyyy",
+      language = "en"
+    ),
+
+    # Simulation end date — same rationale as start date.
+    dateInput(
+      inputId  = ns("end_date"),
+      label    = "Simulation End Date",
+      value    = END_DATE,
+      format   = "dd/mm/yyyy",
+      language = "en"
+    )
+  )
+}
+
+
 # ------------------------------------------------------------
 # Function: ui_main()
 # Description:
@@ -290,7 +364,8 @@ ui_main <- function(viz_id) {
           style = "width:280px; flex-shrink:0;",
           wellPanel(ui_seir_params(ns)),
           wellPanel(ui_policy_params(ns)),
-          wellPanel(ui_resource_params(ns))
+          wellPanel(ui_resource_params(ns)),
+          wellPanel(ui_scope_params(ns))
           # Run Simulation button — temporarily hidden.
           # Uncomment to restore manual-trigger behaviour and
           # re-enable the observeEvent in mod_server.R.
