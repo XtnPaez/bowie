@@ -1,8 +1,8 @@
 # ============================================================
 # File: mod_menu.R
 # ------------------------------------------------------------
-# Description: Top navigation menu module. Renders a PPT-branded
-#   dark green navbar that persists across all non-entry views.
+# Description: Top navigation menu module. Renders an Analysis for
+#   Action–branded dark green navbar that persists across all non-entry views.
 #   Provides:
 #     - Brand name.
 #     - Active dataset indicator (italic, muted).
@@ -20,7 +20,7 @@
 # ------------------------------------------------------------
 # Function: mod_menu_ui()
 # Description:
-#   Renders the top navigation bar as a PPT dark green navbar.
+#   Renders the top navigation bar as an Analysis for Action dark green navbar.
 #   Injected above main content by app.R when screen() != "entry".
 # Parameters:
 #   id – Shiny module identifier.
@@ -44,7 +44,7 @@ mod_menu_ui <- function(id) {
 
       # Left: brand name
       tags$span(
-        style = "font-size:18px; font-weight:500; color:#F4F6F5;",
+        style = "font-size:14px; font-weight:500; color:#F4F6F5;",
         "SEIR Dashboard"
       ),
 
@@ -52,7 +52,7 @@ mod_menu_ui <- function(id) {
       tags$span(
         textOutput(ns("active_dataset"), inline = TRUE),
         style = paste(
-          "font-size:18px;",
+          "font-size:11px;",
           "color:rgba(244,246,245,0.55);",
           "font-style:italic;"
         )
@@ -66,7 +66,7 @@ mod_menu_ui <- function(id) {
         actionButton(
           ns("btn_home"), "Home",
           style = paste(
-            "font-size:18px;",
+            "font-size:11px;",
             "padding:4px 12px;",
             "border-radius:5px;",
             "background:transparent;",
@@ -122,7 +122,7 @@ mod_menu_server <- function(id, screen, dataset_selector) {
       actionButton(
         session$ns("btn_simple"), "Simple",
         style = paste0(
-          "font-size:18px;",
+          "font-size:11px;",
           "padding:4px 12px;",
           "border-radius:5px;",
           "background:transparent;",
@@ -144,7 +144,7 @@ mod_menu_server <- function(id, screen, dataset_selector) {
       actionButton(
         session$ns("btn_advanced"), "Advanced",
         style = paste0(
-          "font-size:18px;",
+          "font-size:11px;",
           "padding:4px 12px;",
           "border-radius:5px;",
           "background:transparent;",

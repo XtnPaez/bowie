@@ -5,7 +5,7 @@
 # including compartment curves, cumulative cases/deaths, and
 # critical resource demand vs. capacity plots.
 #
-# Colour palette: aligned with PPT (Pandemic Preparedness
+# Colour palette: aligned with Analysis for Action (AfA
 # Toolkit) brand guidelines (Wellcome / CEMIC).
 #   Categorical data visualisation palette (in order):
 #     Near black   #1E2A16  – Susceptible
@@ -44,7 +44,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input,
   moduleServer(id, function(input, output, session) {
 
     # --------------------------------------------------------
-    # Shared ggplot2 theme — PPT palette, X-axis guide lines
+    # Shared ggplot2 theme — AfA palette, X-axis guide lines
     # --------------------------------------------------------
     # Applied consistently across all three plots.
     # panel.grid.major.x adds vertical guide lines at each
@@ -92,7 +92,7 @@ viz_plot_server <- function(id, model_data, icu_capacity_input,
       }
       req(plot_data)
 
-      # Categorical colours follow PPT data visualisation order:
+      # Categorical colours follow AfA data visualisation order:
       # near black → burnt orange → dark stone → sea green
       # linewidth replaces the deprecated size aesthetic (ggplot2 >= 3.4.0)
       ggplot(plot_data, aes(x = date)) +
@@ -135,8 +135,8 @@ viz_plot_server <- function(id, model_data, icu_capacity_input,
       }
       req(plot_data)
 
-      # Cases: dark green (primary PPT colour)
-      # Deaths: orange accent (PPT standard accent)
+      # Cases: dark green (primary AfA colour)
+      # Deaths: orange accent (AfA standard accent)
       # linewidth replaces the deprecated size aesthetic (ggplot2 >= 3.4.0)
       ggplot(plot_data, aes(x = date)) +
         geom_line(aes(y = Cumulative_Cases,  colour = "Cumulative Cases"),

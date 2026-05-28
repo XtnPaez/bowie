@@ -20,10 +20,10 @@
 #     resolve_alarm_state() – classifies a metric into alarm state
 #     coalesce_num()        – NULL/NA-safe numeric fallback
 #
-# PPT alarm palette:
-#   Controlled  – circle   – #3EA27F (PPT sea green)
-#   Warning     – triangle – #F59342 (PPT orange)
-#   Critical    – square   – #752111 (PPT dark red)
+# AfA alarm palette:
+#   Controlled  – circle   – #3EA27F (AfA sea green)
+#   Warning     – triangle – #F59342 (AfA orange)
+#   Critical    – square   – #752111 (AfA dark red)
 #
 # Author: Cristian Paez
 # Created: 2026-03-19
@@ -46,12 +46,12 @@
 # ------------------------------------------------------------
 alarm_shape_svg <- function(state = "controlled", size = 64) {
 
-  # PPT alarm palette — never Bootstrap defaults
+  # AfA alarm palette — never Bootstrap defaults
   colour <- switch(
     state,
-    "controlled" = "#3EA27F",   # PPT sea green
-    "warning"    = "#F59342",   # PPT orange
-    "critical"   = "#752111",   # PPT dark red
+    "controlled" = "#3EA27F",   # AfA sea green
+    "warning"    = "#F59342",   # AfA orange
+    "critical"   = "#752111",   # AfA dark red
     "#CCCCCC"                   # fallback — should never occur
   )
 
@@ -107,7 +107,7 @@ alarm_shape_svg <- function(state = "controlled", size = 64) {
 # Function: state_label_ui()
 # Description:
 #   Returns a styled tags$p() with the human-readable alarm
-#   state label, coloured with the matching PPT palette colour.
+#   state label, coloured with the matching AfA palette colour.
 # Parameters:
 #   state – character; "controlled", "warning", or "critical".
 # Returns:
@@ -125,7 +125,7 @@ state_label_ui <- function(state) {
   tags$p(
     cfg$text,
     style = paste0(
-      "font-size:0.88rem;",
+      "font-size:0.7rem;",
       "font-weight:700;",
       "letter-spacing:0.08em;",
       "text-transform:uppercase;",
@@ -152,7 +152,7 @@ metric_value_ui <- function(formatted_value, unit_label) {
     tags$span(
       formatted_value,
       style = paste(
-        "font-size:2.5rem;",
+        "font-size:2rem;",
         "font-weight:700;",
         "color:#1E2A16;",
         "line-height:1;"
@@ -161,7 +161,7 @@ metric_value_ui <- function(formatted_value, unit_label) {
     tags$br(),
     tags$span(
       unit_label,
-      style = "font-size:0.88rem; color:#7A8A72;"
+      style = "font-size:0.7rem; color:#7A8A72;"
     )
   )
 }
@@ -193,21 +193,15 @@ resolve_alarm_state <- function(value, warn, crit,
                                 direction = "above") {
   if (is.na(value) || !is.finite(value)) return("controlled")
 
-  # Sort thresholds so lo <= hi regardless of user input order.
-  # This makes the function robust when warn > crit (e.g. user
-  # sets critical to 0 while warning is still at 70).
-  lo <- min(warn, crit)
-  hi <- max(warn, crit)
-
   if (direction == "above") {
-    if (value <= lo) return("controlled")
-    if (value <= hi) return("warning")
+    if (value <= warn) return("controlled")
+    if (value <= crit) return("warning")
     return("critical")
   }
 
   # direction == "below"
-  if (value >= hi) return("controlled")
-  if (value >= lo) return("warning")
+  if (value >= warn) return("controlled")
+  if (value >= crit) return("warning")
   return("critical")
 }
 

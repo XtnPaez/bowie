@@ -3,8 +3,8 @@
 # ------------------------------------------------------------
 # Description: Entry screen module for dataset selection and
 #              navigation to the Advanced or Simple views.
-#              Layout aligned with PPT brand guidelines:
-#              dark green navbar, card-centred layout, PPT
+#              Layout aligned with Analysis for Action brand guidelines:
+#              dark green navbar, card-centred layout, Analysis for Action
 #              colour palette throughout.
 # Author: Cristian Paez
 # Created: 2025-11-07
@@ -15,7 +15,7 @@
 # ------------------------------------------------------------
 # Function: mod_entry_ui()
 # Description:
-#   Renders the full entry screen. Includes a PPT-branded
+#   Renders the full entry screen. Includes an Analysis for Action–branded
 #   navbar at the top and a centred card containing the
 #   dataset selector, load button, status badge, and view
 #   mode buttons. The footer bar anchors the page at the
@@ -32,7 +32,7 @@ mod_entry_ui <- function(id) {
     useShinyjs(),
 
     # --------------------------------------------------------
-    # Top navbar — PPT dark green, no Bootstrap fluidPage
+    # Top navbar — AfA dark green, no Bootstrap fluidPage
     # wrapper so the navbar sits flush at the top of the page
     # --------------------------------------------------------
     tags$nav(
@@ -47,21 +47,21 @@ mod_entry_ui <- function(id) {
         "border-bottom:1px solid #1E2A16;"
       ),
       tags$span(
-        style = "font-size:18px; font-weight:500; color:#F4F6F5;",
+        style = "font-size:14px; font-weight:500; color:#F4F6F5;",
         "SEIR Dashboard"
       ),
       tags$span(
         style = paste(
-          "font-size:18px;",
+          "font-size:11px;",
           "color:rgba(244,246,245,0.55);",
           "font-style:italic;"
         ),
-        "Pandemic Preparedness Toolkit \u00b7 Argentina Unit"
+        "Analysis for Action \u00b7 Argentina Unit"
       )
     ),
 
     # --------------------------------------------------------
-    # Main body — centred card layout on PPT tint background
+    # Main body — centred card layout on AfA tint background
     # --------------------------------------------------------
     tags$div(
       style = paste(
@@ -110,7 +110,7 @@ mod_entry_ui <- function(id) {
           tags$div(
             "Dataset source",
             style = paste(
-              "font-size:18px;",
+              "font-size:11px;",
               "font-weight:500;",
               "color:#48553F;",
               "text-transform:uppercase;",
@@ -147,7 +147,7 @@ mod_entry_ui <- function(id) {
         tags$div(
           "View mode",
           style = paste(
-            "font-size:18px;",
+            "font-size:11px;",
             "font-weight:500;",
             "color:#48553F;",
             "text-transform:uppercase;",
@@ -200,13 +200,13 @@ mod_entry_ui <- function(id) {
           )
         ),
         tags$span(
-          "Pandemic Preparedness Toolkit \u00b7 Argentina Unit \u00b7 WP5",
-          style = "font-size:18px; color:#7A8A72;"
+          "Analysis for Action \u00b7 Argentina Unit \u00b7 WP5",
+          style = "font-size:11px; color:#7A8A72;"
         )
       ),
       tags$span(
         "Funded by Wellcome \u00b7 CEMIC",
-        style = "font-size:18px; color:#A8B09F;"
+        style = "font-size:11px; color:#A8B09F;"
       )
     )
   )
@@ -300,7 +300,7 @@ mod_entry_server <- function(id, screen, dataset_selector,
         req(ds)
         dataset_loaded(ds)
 
-        # Success badge — PPT green tint
+        # Success badge — AfA green tint
         output$status_message <- renderUI({
           tags$div(
             id    = ns("alert_box"),
@@ -323,7 +323,7 @@ mod_entry_server <- function(id, screen, dataset_selector,
             ),
             tags$span(
               "Dataset loaded successfully.",
-              style = "font-size:16px; color:#27500A; font-weight:500;"
+              style = "font-size:13px; color:#27500A; font-weight:500;"
             )
           )
         })
@@ -334,7 +334,7 @@ mod_entry_server <- function(id, screen, dataset_selector,
                                      animType = "fade"))
 
       }, error = function(e) {
-        # Error badge — PPT earthy red tint
+        # Error badge — AfA earthy red tint
         output$status_message <- renderUI({
           tags$div(
             id    = ns("alert_box"),
@@ -357,7 +357,7 @@ mod_entry_server <- function(id, screen, dataset_selector,
             ),
             tags$span(
               paste("Error loading dataset:", e$message),
-              style = "font-size:16px; color:#752111;"
+              style = "font-size:13px; color:#752111;"
             )
           )
         })

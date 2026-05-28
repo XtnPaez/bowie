@@ -5,37 +5,32 @@
 #   Renders a decision-maker interface consisting of three
 #   independent KPI cards, each with a geometric alarm
 #   indicator (circle / triangle / square) drawn in SVG using
-#   the PPT brand colour palette.
+#   the Analysis for Action (AfA) brand colour palette.
 #
 #   Layout (top to bottom):
 #     1. Three KPI cards in a responsive row:
-#          Card 1 - Epidemic Trajectory (weekly growth rate of I)
-#          Card 2 - ICU Pressure       (ICU occupancy vs capacity)
-#          Card 3 - Cumulative Impact  (deaths as % of population)
-#     2. Two parameter sliders: R0 and Compliance Level.
+#          Card 1 – Epidemic Trajectory (weekly growth rate of I)
+#          Card 2 – ICU Pressure       (ICU occupancy vs capacity)
+#          Card 3 – Cumulative Impact  (deaths as % of population)
+#     2. Two parameter sliders: R₀ and Compliance Level.
 #        State is fully isolated from the Advanced View and
 #        always initialised from global.R defaults.
 #     3. Collapsible "Settings" panel with six numeric inputs
-#        for overriding the default alarm thresholds, and an
-#        "Apply Thresholds" button that commits the new values.
-#        Thresholds are NOT reactive on keypress -- they update
-#        only when the user explicitly clicks Apply. This avoids
-#        the Shiny limitation where numericInputs inside a
-#        collapsed panel are not reliably registered.
+#        for overriding the default alarm thresholds. Changes
+#        are reactive — they update indicators immediately
+#        without re-running the ODE solver.
 #
 #   Shared helper functions (alarm_shape_svg, state_label_ui,
 #   metric_value_ui) are defined in mod_helpers_simple.R, which
 #   is sourced first by loadSupport() due to alphabetical order.
 #
-# PPT alarm palette:
-#   Controlled  - circle   - #3EA27F (PPT sea green)
-#   Warning     - triangle - #F59342 (PPT orange)
-#   Critical    - square   - #752111 (PPT dark red)
+# AfA alarm palette:
+#   Controlled  – circle   – #3EA27F (AfA sea green)
+#   Warning     – triangle – #F59342 (AfA orange)
+#   Critical    – square   – #752111 (AfA dark red)
 #
 # Author: Cristian Paez
 # Created: 2026-03-19
-# Updated: 2026-03-19 - Apply Thresholds button added to fix
-#   Shiny input registration issue with collapsed panels.
 # ============================================================
 
 
@@ -47,14 +42,14 @@
 #   state label, and metric value are all server-rendered via
 #   uiOutput so they react to slider and threshold changes.
 # Parameters:
-#   card_id  - character; unique HTML id for the card container.
-#   title    - character; card heading.
-#   subtitle - character; brief description of what is measured.
-#   shape_id - character; id of the uiOutput for the alarm SVG.
-#   value_id - character; id of the uiOutput for the metric value.
-#   label_id - character; id of the uiOutput for the state label.
+#   card_id  – character; unique HTML id for the card container.
+#   title    – character; card heading.
+#   subtitle – character; brief description of what is measured.
+#   shape_id – character; id of the uiOutput for the alarm SVG.
+#   value_id – character; id of the uiOutput for the metric value.
+#   label_id – character; id of the uiOutput for the state label.
 # Returns:
-#   A tags$div() styled as a PPT-branded card.
+#   A tags$div() styled as an AfA-branded card.
 # ------------------------------------------------------------
 kpi_card_ui <- function(card_id, title, subtitle, shape_id,
                         value_id, label_id) {
@@ -74,8 +69,8 @@ kpi_card_ui <- function(card_id, title, subtitle, shape_id,
       "text-align:center;"
     ),
 
-    # Alarm indicator -- rendered server-side so it reacts to
-    # Apply Thresholds button and slider changes
+    # Alarm indicator — rendered server-side so it reacts to
+    # threshold and slider changes without page reload
     uiOutput(shape_id),
 
     # State label (e.g. "Controlled", "Warning", "Critical")
@@ -85,18 +80,18 @@ kpi_card_ui <- function(card_id, title, subtitle, shape_id,
     tags$h3(
       title,
       style = paste(
-        "font-size:1.25rem;",
+        "font-size:1rem;",
         "font-weight:600;",
         "color:#1E2A16;",
         "margin:10px 0 4px;"
       )
     ),
 
-    # Card subtitle -- what is being measured
+    # Card subtitle — what is being measured
     tags$p(
       subtitle,
       style = paste(
-        "font-size:0.94rem;",
+        "font-size:0.75rem;",
         "color:#7A8A72;",
         "margin-bottom:14px;",
         "line-height:1.4;"
@@ -106,7 +101,7 @@ kpi_card_ui <- function(card_id, title, subtitle, shape_id,
     # Divider
     tags$hr(style = "width:100%; border-color:#D0D4CE; margin:0 0 14px;"),
 
-    # Metric value -- rendered server-side (reactive)
+    # Metric value — rendered server-side (reactive)
     uiOutput(value_id)
   )
 }
@@ -116,12 +111,11 @@ kpi_card_ui <- function(card_id, title, subtitle, shape_id,
 # Function: mod_ui_simple()
 # Description:
 #   Renders the full Simple View layout. Includes the three KPI
-#   cards, the two parameter sliders (R0 and Compliance Level),
-#   and the collapsible Settings panel with six threshold inputs
-#   and an Apply Thresholds button.
-#   No server logic here -- all reactivity is in mod_server_simple.R.
+#   cards, the two parameter sliders (R₀ and Compliance Level),
+#   and the collapsible Settings panel with six threshold inputs.
+#   No server logic here — all reactivity is in mod_server_simple.R.
 # Parameters:
-#   id - Shiny module identifier.
+#   id – Shiny module identifier.
 # Returns:
 #   A tagList() with the complete Simple View body.
 # ------------------------------------------------------------
@@ -131,11 +125,11 @@ mod_ui_simple <- function(id) {
   tagList(
 
     # --------------------------------------------------------
-    # Main body container -- PPT light tint background
+    # Main body container — AfA light tint background
     # --------------------------------------------------------
     tags$div(
       style = paste(
-        "min-height:calc(100vh - 52px);",
+        "min-height:calc(100vh - 52px);",   # 52 px = navbar height
         "background-color:#F4F6F5;",
         "padding:32px 24px 48px;"
       ),
@@ -146,7 +140,7 @@ mod_ui_simple <- function(id) {
         tags$h2(
           "Epidemic Status \u2014 Simplified View",
           style = paste(
-            "font-size:2rem;",
+            "font-size:1.6rem;",
             "font-weight:600;",
             "color:#1E2A16;",
             "margin-bottom:6px;"
@@ -157,7 +151,7 @@ mod_ui_simple <- function(id) {
             "Key indicators are computed from the current simulation.",
             "Adjust R\u2080 and compliance below to explore scenarios."
           ),
-          style = "font-size:1.09rem; color:#48553F; max-width:520px; margin:0 auto;"
+          style = "font-size:0.875rem; color:#48553F; max-width:520px; margin:0 auto;"
         )
       ),
 
@@ -173,7 +167,7 @@ mod_ui_simple <- function(id) {
           "margin-bottom:32px;"
         ),
 
-        # Card 1 -- Epidemic Trajectory
+        # Card 1 — Epidemic Trajectory
         kpi_card_ui(
           card_id  = "card_trajectory",
           title    = "Epidemic Trajectory",
@@ -183,17 +177,17 @@ mod_ui_simple <- function(id) {
           label_id = ns("label_trajectory")
         ),
 
-        # Card 2 -- ICU Pressure
+        # Card 2 — ICU Pressure
         kpi_card_ui(
           card_id  = "card_icu",
           title    = "ICU Pressure",
-          subtitle = "Peak daily ICU admissions across the simulation as % of total ICU capacity",
+          subtitle = "ICU occupancy on the final simulation day as % of capacity",
           shape_id = ns("shape_icu"),
           value_id = ns("value_icu"),
           label_id = ns("label_icu")
         ),
 
-        # Card 3 -- Cumulative Impact
+        # Card 3 — Cumulative Impact
         kpi_card_ui(
           card_id  = "card_deaths",
           title    = "Cumulative Impact",
@@ -206,7 +200,7 @@ mod_ui_simple <- function(id) {
 
       # ----------------------------------------------------
       # Section 2: Parameter sliders
-      # Fully isolated from the Advanced View -- always
+      # Fully isolated from the Advanced View — always
       # initialised from global.R defaults (INITIAL_R0, 50).
       # ----------------------------------------------------
       tags$div(
@@ -221,7 +215,7 @@ mod_ui_simple <- function(id) {
 
         tags$div(
           style = paste(
-            "font-size:18px;",
+            "font-size:11px;",
             "font-weight:500;",
             "color:#48553F;",
             "text-transform:uppercase;",
@@ -231,7 +225,7 @@ mod_ui_simple <- function(id) {
           "Scenario Parameters"
         ),
 
-        # R0 slider -- range and default from global.R
+        # R₀ slider — range and default from global.R
         sliderInput(
           inputId = ns("simple_r0"),
           label   = HTML("R\u2080 \u2014 Basic Reproduction Number"),
@@ -242,7 +236,7 @@ mod_ui_simple <- function(id) {
           width   = "100%"
         ),
 
-        # Compliance Level slider -- fixed default 50 per roadmap spec
+        # Compliance Level slider — fixed default 50 per roadmap spec
         sliderInput(
           inputId = ns("simple_compliance"),
           label   = "Compliance Level (%)",
@@ -255,154 +249,139 @@ mod_ui_simple <- function(id) {
       ),
 
       # ----------------------------------------------------
-      # Section 3: Settings panel
-      # Collapsible via shinyjs toggle button.
-      # Contains six numeric inputs for alarm threshold
-      # overrides and an Apply Thresholds button.
-      #
-      # Design note: thresholds are committed only on button
-      # click (not on keypress). The server reads input values
-      # inside observeEvent(input$apply_thresholds) and stores
-      # them in a dedicated reactiveValues object. This pattern
-      # is robust regardless of panel visibility state.
+      # Section 3: Collapsible Settings panel
+      # Six numeric inputs for alarm threshold overrides.
+      # Toggle handled via inline JavaScript — no extra
+      # Shiny dependency required.
       # ----------------------------------------------------
       tags$div(
         style = "max-width:600px; margin:0 auto;",
 
-        # Toggle button -- PPT earthy outline style
-        actionButton(
-          inputId = ns("toggle_settings"),
-          label   = "\u25BC  Settings \u2014 Alarm Thresholds",
-          style   = paste(
+        # Toggle button — AfA earthy outline style
+        tags$button(
+          id      = "simple_settings_toggle",
+          onclick = paste0(
+            "var p = document.getElementById('simple_settings_panel');",
+            "p.style.display = (p.style.display === 'none') ? 'block' : 'none';"
+          ),
+          style = paste(
             "width:100%;",
             "background:transparent;",
             "border:0.5px solid #A8B09F;",
             "border-radius:8px;",
             "padding:10px 16px;",
-            "font-size:1.09rem;",
+            "font-size:0.875rem;",
             "color:#48553F;",
+            "cursor:pointer;",
             "text-align:left;",
-            "margin-bottom:8px;",
-            "box-shadow:none;"
-          )
+            "margin-bottom:8px;"
+          ),
+          "\u25BC  Settings \u2014 Alarm Thresholds"
         ),
 
-        # Settings panel -- hidden by shinyjs on load
-        shinyjs::hidden(
+        # Settings panel — hidden by default
+        tags$div(
+          id    = "simple_settings_panel",
+          style = paste(
+            "display:none;",
+            "background:#FFFFFF;",
+            "border:0.5px solid #D0D4CE;",
+            "border-radius:12px;",
+            "padding:22px 28px;"
+          ),
+
           tags$div(
-            id = ns("settings_panel"),
+            style = paste(
+              "font-size:11px;",
+              "font-weight:500;",
+              "color:#48553F;",
+              "text-transform:uppercase;",
+              "letter-spacing:0.05em;",
+              "margin-bottom:18px;"
+            ),
+            "Alarm Threshold Configuration"
+          ),
 
+          # --- ICU thresholds ---
+          tags$p(
+            tags$strong("ICU Pressure",
+                        style = "color:#324027; font-size:0.85rem;"),
+            style = "margin-bottom:4px;"
+          ),
+          tags$div(
+            style = "display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;",
             tags$div(
-              style = paste(
-                "background:#FFFFFF;",
-                "border:0.5px solid #D0D4CE;",
-                "border-radius:12px;",
-                "padding:22px 28px;"
-              ),
+              style = "flex:1; min-width:180px;",
+              numericInput(
+                inputId = ns("thr_icu_warn"),
+                label   = "Warning threshold (% of capacity)",
+                value   = 70, min = 0, max = 200, step = 5,
+                width   = "100%"
+              )
+            ),
+            tags$div(
+              style = "flex:1; min-width:180px;",
+              numericInput(
+                inputId = ns("thr_icu_crit"),
+                label   = "Critical threshold (% of capacity)",
+                value   = 100, min = 0, max = 200, step = 5,
+                width   = "100%"
+              )
+            )
+          ),
 
-              tags$div(
-                style = paste(
-                  "font-size:18px;",
-                  "font-weight:500;",
-                  "color:#48553F;",
-                  "text-transform:uppercase;",
-                  "letter-spacing:0.05em;",
-                  "margin-bottom:18px;"
-                ),
-                "Alarm Threshold Configuration"
-              ),
+          # --- Epidemic Trajectory thresholds ---
+          tags$p(
+            tags$strong("Epidemic Trajectory",
+                        style = "color:#324027; font-size:0.85rem;"),
+            style = "margin-bottom:4px;"
+          ),
+          tags$div(
+            style = "display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;",
+            tags$div(
+              style = "flex:1; min-width:180px;",
+              numericInput(
+                inputId = ns("thr_growth_warn"),
+                label   = "Warning threshold (weekly growth %)",
+                value   = 1, min = 0, max = 100, step = 0.5,
+                width   = "100%"
+              )
+            ),
+            tags$div(
+              style = "flex:1; min-width:180px;",
+              numericInput(
+                inputId = ns("thr_growth_crit"),
+                label   = "Critical threshold (weekly growth %)",
+                value   = 20, min = 0, max = 100, step = 1,
+                width   = "100%"
+              )
+            )
+          ),
 
-              # --- ICU thresholds ---
-              tags$p(
-                tags$strong("ICU Pressure",
-                            style = "color:#324027; font-size:1.06rem;"),
-                style = "margin-bottom:4px;"
-              ),
-              tags$div(
-                style = "display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;",
-                tags$div(
-                  style = "flex:1; min-width:180px;",
-                  numericInput(
-                    inputId = ns("thr_icu_warn"),
-                    label   = "Warning threshold (% of capacity)",
-                    value   = 70, min = 0, max = 200, step = 5,
-                    width   = "100%"
-                  )
-                ),
-                tags$div(
-                  style = "flex:1; min-width:180px;",
-                  numericInput(
-                    inputId = ns("thr_icu_crit"),
-                    label   = "Critical threshold (% of capacity)",
-                    value   = 100, min = 0, max = 200, step = 5,
-                    width   = "100%"
-                  )
-                )
-              ),
-
-              # --- Epidemic Trajectory thresholds ---
-              tags$p(
-                tags$strong("Epidemic Trajectory",
-                            style = "color:#324027; font-size:1.06rem;"),
-                style = "margin-bottom:4px;"
-              ),
-              tags$div(
-                style = "display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px;",
-                tags$div(
-                  style = "flex:1; min-width:180px;",
-                  numericInput(
-                    inputId = ns("thr_growth_warn"),
-                    label   = "Warning threshold (weekly growth %)",
-                    value   = 1, min = 0, max = 100, step = 0.5,
-                    width   = "100%"
-                  )
-                ),
-                tags$div(
-                  style = "flex:1; min-width:180px;",
-                  numericInput(
-                    inputId = ns("thr_growth_crit"),
-                    label   = "Critical threshold (weekly growth %)",
-                    value   = 20, min = 0, max = 100, step = 1,
-                    width   = "100%"
-                  )
-                )
-              ),
-
-              # --- Cumulative Impact thresholds ---
-              tags$p(
-                tags$strong("Cumulative Impact",
-                            style = "color:#324027; font-size:1.06rem;"),
-                style = "margin-bottom:4px;"
-              ),
-              tags$div(
-                style = "display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;",
-                tags$div(
-                  style = "flex:1; min-width:180px;",
-                  numericInput(
-                    inputId = ns("thr_deaths_warn"),
-                    label   = "Warning threshold (% of population)",
-                    value   = 0.05, min = 0, max = 10, step = 0.01,
-                    width   = "100%"
-                  )
-                ),
-                tags$div(
-                  style = "flex:1; min-width:180px;",
-                  numericInput(
-                    inputId = ns("thr_deaths_crit"),
-                    label   = "Critical threshold (% of population)",
-                    value   = 0.20, min = 0, max = 10, step = 0.01,
-                    width   = "100%"
-                  )
-                )
-              ),
-
-              # Apply button -- commits threshold values to reactiveValues
-              # in the server; alarm indicators update immediately after click
-              actionButton(
-                inputId = ns("apply_thresholds"),
-                label   = "Apply thresholds",
-                class   = "btn btn-primary",
-                style   = "width:100%;"
+          # --- Cumulative Impact thresholds ---
+          tags$p(
+            tags$strong("Cumulative Impact",
+                        style = "color:#324027; font-size:0.85rem;"),
+            style = "margin-bottom:4px;"
+          ),
+          tags$div(
+            style = "display:flex; gap:16px; flex-wrap:wrap;",
+            tags$div(
+              style = "flex:1; min-width:180px;",
+              numericInput(
+                inputId = ns("thr_deaths_warn"),
+                label   = "Warning threshold (% of population)",
+                value   = 0.05, min = 0, max = 10, step = 0.01,
+                width   = "100%"
+              )
+            ),
+            tags$div(
+              style = "flex:1; min-width:180px;",
+              numericInput(
+                inputId = ns("thr_deaths_crit"),
+                label   = "Critical threshold (% of population)",
+                value   = 0.20, min = 0, max = 10, step = 0.01,
+                width   = "100%"
               )
             )
           )
@@ -422,12 +401,12 @@ mod_ui_simple <- function(id) {
           "align-items:center;"
         ),
         tags$span(
-          "Pandemic Preparedness Toolkit \u00b7 Argentina Unit \u00b7 WP5",
-          style = "font-size:18px; color:#7A8A72;"
+          "Analysis for Action \u00b7 Argentina Unit \u00b7 WP5",
+          style = "font-size:11px; color:#7A8A72;"
         ),
         tags$span(
           "Funded by Wellcome \u00b7 CEMIC",
-          style = "font-size:18px; color:#A8B09F;"
+          style = "font-size:11px; color:#A8B09F;"
         )
       )
     )

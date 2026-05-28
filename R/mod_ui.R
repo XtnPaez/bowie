@@ -10,8 +10,8 @@
 #     - ui_main()            – full page layout that wires all
 #                              panels and plot outputs together
 #
-#   Layout aligned with PPT brand guidelines: dark green navbar,
-#   earthy tint sidebar, PPT colour palette throughout.
+#   Layout aligned with Analysis for Action brand guidelines: dark green navbar,
+#   earthy tint sidebar, AfA colour palette throughout.
 #
 # Author: Cristian Paez
 # Created: 2025-11-07
@@ -34,7 +34,7 @@ ui_seir_params <- function(ns) {
     tags$div(
       "Epidemiological parameters",
       style = paste(
-        "font-size:16px; font-weight:500;",
+        "font-size:10px; font-weight:500;",
         "color:#48553F;",
         "text-transform:uppercase;",
         "letter-spacing:0.06em;",
@@ -87,7 +87,7 @@ ui_policy_params <- function(ns) {
     tags$div(
       "Public policy",
       style = paste(
-        "font-size:16px; font-weight:500;",
+        "font-size:10px; font-weight:500;",
         "color:#48553F;",
         "text-transform:uppercase;",
         "letter-spacing:0.06em;",
@@ -144,7 +144,7 @@ ui_resource_params <- function(ns) {
     tags$div(
       "Healthcare resources",
       style = paste(
-        "font-size:16px; font-weight:500;",
+        "font-size:10px; font-weight:500;",
         "color:#48553F;",
         "text-transform:uppercase;",
         "letter-spacing:0.06em;",
@@ -189,7 +189,7 @@ ui_resource_params <- function(ns) {
 # Function: ui_main()
 # Description:
 #   Assembles the full Advanced View page layout:
-#     - PPT dark green navbar with dataset indicator and
+#     - AfA dark green navbar with dataset indicator and
 #       navigation buttons (Home, Simple disabled, Advanced)
 #     - Sticky left sidebar (parameter panels) on earthy tint
 #     - Right-hand tabset with three output panels
@@ -269,7 +269,7 @@ ui_main <- function(viz_id) {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          font-size: 14px;
+          font-size: 11px;
         }
       "))
     ),
@@ -389,7 +389,7 @@ ui_main <- function(viz_id) {
             )
           ),
           tags$span(
-            "Pandemic Preparedness Toolkit \u00b7 Argentina Unit \u00b7 WP5",
+            "Analysis for Action \u00b7 Argentina Unit \u00b7 WP5",
             style = "color:#7A8A72;"
           )
         ),
