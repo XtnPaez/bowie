@@ -57,6 +57,12 @@ server <- function(input, output, session) {
   dataset_loaded   <- reactiveVal(NULL)
   trigger_sim      <- reactiveVal(0)
 
+  # Stores calibrated parameters from the loaded dataset.
+  # NULL for mock (no calibrated parameters); named list with
+  # $parametros and $recursos for IECS and user CSV sources.
+  # Passed to both views so both initialise from the same photo.
+  dataset_params   <- reactiveVal(NULL)
+
   # --------------------------------------------------------
   # Dynamic UI routing
   # Menu bar shown on all views except entry.
@@ -81,7 +87,7 @@ server <- function(input, output, session) {
   # Entry and menu servers — always active
   # --------------------------------------------------------
   mod_entry_server("entry", screen, dataset_selector,
-                   dataset_loaded, trigger_sim)
+                   dataset_loaded, trigger_sim, dataset_params)
   mod_menu_server("menu", screen, dataset_selector)
 
   # --------------------------------------------------------
@@ -120,8 +126,9 @@ server <- function(input, output, session) {
   # via renderUI inside the module itself.
   #
   # dataset_selector is passed through for logging only.
-  # All SEIR parameters are driven exclusively by the Simple
-  # View sliders, always initialised from global.R defaults.
+  # dataset_params carries calibrated parameters from the loaded
+  # dataset — both views initialise from the same snapshot, then
+  # evolve independently as the user adjusts their own controls.
   # --------------------------------------------------------
   simple_initialised <- reactiveVal(FALSE)
 
@@ -130,7 +137,9 @@ server <- function(input, output, session) {
     if (simple_initialised()) return()
     simple_initialised(TRUE)
 
-    mod_server_simple("viz_simple", reactive({ dataset_selector() }))
+    mod_server_simple("viz_simple",
+                      reactive({ dataset_selector() }),
+                      dataset_params)
 
     log_message("INFO", "Simple View server initialised", .module = "APP")
   })

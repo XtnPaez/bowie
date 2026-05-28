@@ -7,10 +7,10 @@
 #
 #   Design contract:
 #     - State is FULLY ISOLATED from the Advanced View.
-#       The Simple View maintains its own reactiveValues with
-#       parameters always initialised from global.R defaults.
-#       No shared reactive state with mod_server.R or app.R
-#       Advanced-view observers.
+#       Both views initialise from the same dataset snapshot
+#       (dataset_params), then evolve independently as the
+#       user adjusts their own controls. Changes in one view
+#       never affect the other.
 #     - The ODE solver is re-run when either slider changes
 #       (simple_r0, simple_compliance).
 #     - Alarm thresholds (six numeric inputs) do NOT re-run
@@ -44,14 +44,18 @@
 #   reactively when thresholds change.
 # Parameters:
 #   id               – Shiny module identifier.
-#   dataset_selector – reactiveVal(character); active source key
-#                      passed through for logging only — all
-#                      SEIR parameters are driven by the Simple
-#                      View sliders, not by the dataset selection.
+#   dataset_selector – reactiveVal(character); active source key,
+#                      passed through for logging only.
+#   dataset_params   – reactiveVal(list); calibrated parameters
+#                      from the loaded dataset ($parametros,
+#                      $recursos, $poblacion). NULL for mock.
+#                      Used to initialise simple_params once on
+#                      dataset load; sliders take over after that.
 # Returns:
 #   None (side effects only: renderUI calls for the three cards).
 # ------------------------------------------------------------
-mod_server_simple <- function(id, dataset_selector) {
+mod_server_simple <- function(id, dataset_selector,
+                              dataset_params = NULL) {
   moduleServer(id, function(input, output, session) {
 
     # --------------------------------------------------------
@@ -60,8 +64,48 @@ mod_server_simple <- function(id, dataset_selector) {
     log_message("INFO", "mod_server_simple started", .module = "SIMPLE")
 
     # --------------------------------------------------------
+    # Dataset parameter initialisation
+    # When a calibrated dataset is loaded (IECS or user CSV),
+    # apply its parameters to simple_params so the Simple View
+    # starts from the same snapshot as the Advanced View.
+    # ignoreNULL = TRUE prevents this firing for mock datasets.
+    # --------------------------------------------------------
+    observeEvent(dataset_params(), {
+      dp <- dataset_params()
+      req(!is.null(dp), !is.null(dp$parametros))
+
+      isolate({
+        simple_params$r0_value        <- dp$parametros$R0
+        simple_params$incubation_period <- dp$parametros$incubation_period
+        simple_params$infectious_period <- dp$parametros$infectious_period
+        simple_params$ifr_value       <- dp$parametros$IFR * 100
+
+        simple_params$icu_capacity            <- dp$recursos$INITIAL_ICU_CAPACITY
+        simple_params$ventilator_availability <- dp$recursos$INITIAL_VENTILATOR_AVAILABILITY
+        simple_params$healthcare_staff        <- dp$recursos$INITIAL_HEALTHCARE_STAFF
+        simple_params$icu_admission_rate      <- dp$recursos$INITIAL_ICU_RATE * 100
+        simple_params$ventilator_usage_rate   <- dp$recursos$INITIAL_VENTILATOR_RATE * 100
+
+        if (!is.null(dp$poblacion)) {
+          simple_params$population <- dp$poblacion
+        }
+
+        # Update sliders to reflect new parameter values
+        updateSliderInput(session, "simple_r0",
+                          value = dp$parametros$R0)
+
+        simple_params$trigger_sim <- simple_params$trigger_sim + 1L
+      })
+
+      log_message("INFO",
+                  "Simple View initialised from dataset parameters",
+                  .module = "SIMPLE")
+    }, ignoreNULL = TRUE)
+
+    # --------------------------------------------------------
     # Isolated parameter store
-    # Always initialised from global.R constants.
+    # Initialised from dataset_params when a calibrated dataset
+    # is loaded; falls back to global.R constants for mock.
     # Sliders in the Simple View write ONLY to these values.
     # The Advanced View has no access to this reactiveValues.
     # --------------------------------------------------------
