@@ -46,8 +46,12 @@ INITIAL_VENTILATOR_AVAILABILITY <- 2000
 INITIAL_HEALTHCARE_STAFF <- 10000
 
 # --- Default simulation dates ---
-START_DATE <- as.Date("2020-03-01")
-END_DATE   <- as.Date("2021-03-01")
+# Initialised dynamically at app startup so the default
+# simulation window is always relative to the current date.
+# Users can override these via the dateInput() controls in
+# the Advanced View parameter panel (ui_scope_params()).
+START_DATE <- Sys.Date()
+END_DATE   <- Sys.Date() + 365L
 
 # ============================================================
 # --- Load shared utility functions ---
