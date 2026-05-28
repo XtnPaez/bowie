@@ -171,7 +171,7 @@ mod_ui_simple <- function(id) {
         kpi_card_ui(
           card_id  = "card_trajectory",
           title    = "Epidemic Trajectory",
-          subtitle = "Weekly growth rate of infectious cases (I compartment)",
+          subtitle = "Weekly growth rate of infectious cases (I compartment) \u2014 computed over the most recent 7 simulated days",
           shape_id = ns("shape_trajectory"),
           value_id = ns("value_trajectory"),
           label_id = ns("label_trajectory")
