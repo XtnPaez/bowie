@@ -6,7 +6,7 @@
 # critical resource demand vs. capacity plots.
 #
 # Colour palette: aligned with Analysis for Action (AfA
-# Toolkit) brand guidelines (Wellcome / CEMIC).
+# Toolkit) brand guidelines.
 #   Categorical data visualisation palette (in order):
 #     Near black   #1E2A16  – Susceptible
 #     Burnt orange #D17E38  – Exposed

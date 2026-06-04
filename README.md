@@ -1,7 +1,6 @@
 # SEIR Epidemiological Dashboard
 
-> **Analysis for Action – Argentina Unit · Product 2**  
-> Funded by [Wellcome](https://wellcome.org) · Developed at [CEMIC](https://www.cemic.edu.ar)
+> **Analysis for Action – Argentina Unit · Product 2**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-shinyapps.io-324027?style=flat-square)](https://cpaez.shinyapps.io/bowie-seir/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
@@ -15,8 +14,8 @@ A modular, interactive Shiny dashboard for infectious disease modelling. Impleme
 **SEIR (Susceptible–Exposed–Infectious–Recovered)** compartmental model with real-time parameter
 adjustment, scenario simulation, and healthcare resource pressure analysis.
 
-The platform is developed as **Product 2** of the Analysis for Action (Argentina Unit),
-Work Package 5 (WP5). Its goal is to support evidence-based decision-making in public health by
+The platform is developed as **Product 2** of the Analysis for Action (Argentina Unit).
+Its goal is to support evidence-based decision-making in public health by
 enabling interactive scenario exploration, resource planning, and educational use.
 
 **Live deployment:** https://cpaez.shinyapps.io/bowie-seir/
@@ -35,7 +34,7 @@ enabling interactive scenario exploration, resource planning, and educational us
 - **CSV export** — download full simulation results in European locale format
 - **Dual-view initialisation** — both views initialise from the same loaded dataset, then evolve independently
 - **Modular open-source architecture** — clean separation between data, model, visualisation, UI, and server layers; easily modifiable for SIR, SEIRD, or custom models per ToR specification
-- **AfA-aligned visual design** — UI and chart colours follow the Analysis for Action brand palette (Wellcome / CEMIC)
+- **AfA-aligned visual design** — UI and chart colours follow the Analysis for Action brand palette
 
 ---
 
@@ -177,7 +176,5 @@ https://doi.org/10.1371/journal.pgph.0000186
 ---
 
 **Maintainer:** Cristian Paez  
-**Organisation:** CEMIC  
-**Project:** Analysis for Action (Argentina Unit) · WP5  
-**Funded by:** Wellcome  
+**Project:** Analysis for Action (Argentina Unit)  
 **Date:** May 2026

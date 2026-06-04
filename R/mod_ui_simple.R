@@ -401,12 +401,8 @@ mod_ui_simple <- function(id) {
           "align-items:center;"
         ),
         tags$span(
-          "Analysis for Action \u00b7 Argentina Unit \u00b7 WP5",
+          "Analysis for Action \u00b7 Argentina Unit",
           style = "font-size:11px; color:#7A8A72;"
-        ),
-        tags$span(
-          "Funded by Wellcome \u00b7 CEMIC",
-          style = "font-size:11px; color:#A8B09F;"
         )
       )
     )

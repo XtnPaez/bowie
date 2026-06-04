@@ -1,6 +1,6 @@
 # Contributing Guidelines
 
-Thank you for your interest in contributing to the project — a modular Shiny dashboard for infectious disease modelling, developed as part of the Pandemic Preparedness Toolkit (Argentina Unit), funded by Wellcome.
+Thank you for your interest in contributing to the project — a modular Shiny dashboard for infectious disease modelling, developed as part of the Pandemic Preparedness Toolkit (Argentina Unit).
 
 The platform serves three ToR deliverables: an interactive COVID-19 Argentina case study powered by the IECS/Santoro real dataset (Product 1), the modular Shiny dashboard itself (Product 2), and technical documentation (Product 3).
 
@@ -112,4 +112,3 @@ rsconnect::deployApp(
 **Maintainer:** Cristian Paez
 **Email:** paez.cristian@gmail.com
 **Project:** Bowie / proto\_epi — Pandemic Preparedness Toolkit (Argentina Unit)
-**Funded by:** Wellcome

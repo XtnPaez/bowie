@@ -6,8 +6,7 @@ The SEIR dashboard has evolved from a modular prototype into a **deployed, inter
 epidemiological simulation platform**.  
 This document reflects the current development state as of May 2026 and documents the
 complete delivery history.  
-The project delivers **Product 2** of the Analysis for Action (Argentina Unit), Work
-Package 5, funded by Wellcome.
+The project delivers **Product 2** of the Analysis for Action (Argentina Unit).
 
 **Live deployment:** <https://cpaez.shinyapps.io/bowie-seir/>  
 **Repository:** <https://github.com/XtnPaez/bowie>
@@ -29,7 +28,7 @@ Package 5, funded by Wellcome.
 - CSV export of simulation results with European locale formatting.
 - Public deployment on shinyapps.io.
 - Full repository documentation: `CODESTYLE.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`.
-- UI and chart colours fully aligned with AfA brand guidelines (Wellcome / CEMIC).
+- UI and chart colours fully aligned with AfA brand guidelines.
 - Implementation Guide (`docs/implementation_guide.md`) — complete technical documentation.
 - Reproducible dataset preparation script (`data-raw/prepare_iecs.R`).
 - All five UK three-month review recommendations (Westwood / John, April 2026) implemented.
@@ -72,7 +71,7 @@ The following items are out of scope for the current delivery and documented for
 **Goal:** Production-quality UI ahead of first partial delivery (26 March 2026).  
 **Status:** ✅ Complete.  
 **Completed items:**
-- UI colour system fully migrated to AfA brand palette (Wellcome / CEMIC style template).
+- UI colour system fully migrated to AfA brand palette.
 - Entry screen rebuilt: AfA dark green navbar, card-centred layout, footer attribution.
 - Advanced View rebuilt: earthy tint sidebar, chart cards, AfA-aligned tabs and table headers.
 - All `geom_line(size=)` calls replaced with `linewidth=` (ggplot2 >= 3.4.0 compliance).
@@ -156,5 +155,4 @@ final submission.
 
 **Maintainer:** Cristian Paez  
 **Date:** May 2026  
-**Project:** Analysis for Action (Argentina Unit)  
-**Funded by:** Wellcome
+**Project:** Analysis for Action (Argentina Unit)

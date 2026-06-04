@@ -1,16 +1,13 @@
 # Implementation Guide — SEIR Epidemiological Dashboard
 
-**Analysis for Action · Argentina Unit · Product 3**  
-**Work Package 5 · WP5**
+**Analysis for Action · Argentina Unit · Product 3**
 
 | | |
 |---|---|
 | **Author** | Cristian Paez |
-| **Organisation** | CEMIC |
-| **Funded by** | Wellcome |
 | **Version** | 2.0 |
 | **Date** | May 2026 |
-| **Related documents** | ToR WP5, `README.md`, `roadmap.md`, `proj_evolution.md` |
+| **Related documents** | `README.md`, `roadmap.md`, `proj_evolution.md` |
 
 ---
 
@@ -39,7 +36,7 @@ model for infectious disease scenario simulation, with real-time parameter adjus
 healthcare resource pressure analysis.
 
 The platform is delivered as **Product 2** of the Analysis for Action (AfA) Argentina
-Unit, Work Package 5. This document constitutes part of **Product 3** (Implementation and User
+Unit. This document constitutes part of **Product 3** (Implementation and User
 Guides) and is directed at system administrators, developers, and researchers responsible for
 deploying and maintaining the platform.
 

@@ -1,8 +1,7 @@
 # Project Evolution – Status Report (May 2026)
 
 This document summarises the overall progress of the **SEIR Epidemiological Dashboard** against the
-Terms of Reference (ToR) for **Product 2** of the Analysis for Action (Argentina Unit),
-Work Package 5.
+Terms of Reference (ToR) for **Product 2** of the Analysis for Action (Argentina Unit).
 
 **Live deployment:** <https://cpaez.shinyapps.io/bowie-seir/>  
 **Repository:** <https://github.com/XtnPaez/bowie>
@@ -148,5 +147,4 @@ Ordered by priority:
 
 **Maintainer:** Cristian Paez  
 **Date:** May 2026  
-**Project:** Analysis for Action (Argentina Unit)  
-**Funded by:** Wellcome
+**Project:** Analysis for Action (Argentina Unit)
