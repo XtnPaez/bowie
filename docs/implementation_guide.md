@@ -41,10 +41,10 @@ Guides) and is directed at system administrators, developers, and researchers re
 deploying and maintaining the platform.
 
 The application is deployed as a public web application at:
-<https://cpaez.shinyapps.io/bowie-seir/>
+<https://cpaez.shinyapps.io/afa-dashboard-arg/>
 
 Source code is available at:
-<https://github.com/XtnPaez/bowie>
+<https://github.com/XtnPaez/afa-dashboard-arg>
 
 ---
 
@@ -94,7 +94,7 @@ install.packages(c(
 ## 3. Repository Structure
 
 ```
-bowie/
+afa-dashboard-arg/
 ├── app.R                        # Application entry point
 ├── DESCRIPTION                  # R package metadata and dependencies
 ├── LICENSE                      # MIT licence
@@ -113,6 +113,7 @@ bowie/
 │   ├── mod_ui_simple.R          # Simplified View UI layout and KPI cards
 │   ├── mod_server.R             # Main server: parameter wiring, model orchestration
 │   ├── mod_server_simple.R      # Simplified View server: isolated SEIR + alarm logic
+│   ├── mod_server_reactivity.R  # Cross-module reactivity scaffold (reserved)
 │   ├── mod_helpers_simple.R     # Shared helpers: alarm shapes, state labels, metrics
 │   ├── mod_model.R              # SEIR ODE model logic
 │   ├── mod_viz.R                # Visualisation module (ggplot2)
@@ -145,8 +146,8 @@ bowie/
 ### 4.1 Clone the repository
 
 ```bash
-git clone https://github.com/XtnPaez/bowie.git
-cd bowie
+git clone https://github.com/XtnPaez/afa-dashboard-arg.git
+cd afa-dashboard-arg
 ```
 
 ### 4.2 Install dependencies
@@ -474,7 +475,7 @@ All chart styling is centralised in the `afa_theme()` function inside `mod_viz.R
 library(rsconnect)
 rsconnect::deployApp(
   appDir      = ".",
-  appName     = "bowie-seir",
+  appName     = "afa-dashboard-arg",
   forceUpdate = TRUE
 )
 ```
