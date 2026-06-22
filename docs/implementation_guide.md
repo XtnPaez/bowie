@@ -113,7 +113,6 @@ bowie/
 │   ├── mod_ui_simple.R          # Simplified View UI layout and KPI cards
 │   ├── mod_server.R             # Main server: parameter wiring, model orchestration
 │   ├── mod_server_simple.R      # Simplified View server: isolated SEIR + alarm logic
-│   ├── mod_server_reactivity.R  # Cross-module reactivity scaffold (reserved)
 │   ├── mod_helpers_simple.R     # Shared helpers: alarm shapes, state labels, metrics
 │   ├── mod_model.R              # SEIR ODE model logic
 │   ├── mod_viz.R                # Visualisation module (ggplot2)
