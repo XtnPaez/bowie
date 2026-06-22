@@ -3,8 +3,8 @@
 This document summarises the overall progress of the **SEIR Epidemiological Dashboard** against the
 Terms of Reference (ToR) for **Product 2** of the Analysis for Action (Argentina Unit).
 
-**Live deployment:** <https://cpaez.shinyapps.io/bowie-seir/>  
-**Repository:** <https://github.com/XtnPaez/bowie>
+**Live deployment:** <https://cpaez.shinyapps.io/afa-dashboard-arg/>  
+**Repository:** <https://github.com/XtnPaez/afa-dashboard-arg>
 
 ---
 

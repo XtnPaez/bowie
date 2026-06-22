@@ -2,7 +2,7 @@
 
 > **Analysis for Action – Argentina Unit · Product 2**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-shinyapps.io-324027?style=flat-square)](https://cpaez.shinyapps.io/bowie-seir/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-shinyapps.io-324027?style=flat-square)](https://cpaez.shinyapps.io/afa-dashboard-arg/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 [![R](https://img.shields.io/badge/R-%3E%3D%204.4-276DC3?style=flat-square)](https://www.r-project.org/)
 
@@ -18,7 +18,7 @@ The platform is developed as **Product 2** of the Analysis for Action (Argentina
 Its goal is to support evidence-based decision-making in public health by
 enabling interactive scenario exploration, resource planning, and educational use.
 
-**Live deployment:** https://cpaez.shinyapps.io/bowie-seir/
+**Live deployment:** https://cpaez.shinyapps.io/afa-dashboard-arg/
 
 ---
 
@@ -60,7 +60,7 @@ near black `#1E2A16` → burnt orange `#D17E38` → dark stone `#444443` → sea
 ## Repository Structure
 
 ```
-bowie/
+afa-dashboard-arg/
 ├── app.R                        # Application entry point
 ├── DESCRIPTION                  # R package metadata and dependencies
 ├── LICENSE                      # MIT licence
@@ -109,8 +109,8 @@ bowie/
 ## Installation
 
 ```bash
-git clone https://github.com/XtnPaez/bowie.git
-cd bowie
+git clone https://github.com/XtnPaez/afa-dashboard-arg.git
+cd afa-dashboard-arg
 ```
 
 ```r
@@ -153,7 +153,7 @@ load_iecs_data()
 library(rsconnect)
 rsconnect::deployApp(
   appDir      = ".",
-  appName     = "bowie-seir",
+  appName     = "afa-dashboard-arg",
   forceUpdate = TRUE
 )
 ```

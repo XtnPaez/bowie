@@ -11,7 +11,7 @@ This project follows best practices for reproducible and modular Shiny developme
 ## Project Structure
 
 ```
-bowie/
+afa-dashboard-arg/
 ├── app.R                  # Application entry point
 ├── DESCRIPTION            # R package metadata and dependencies
 ├── R/
@@ -106,13 +106,13 @@ docs(README): update deployment instructions for shinyapps.io
 ## Deployment
 
 The live prototype is available at:
-**<https://cpaez.shinyapps.io/bowie-seir/>**
+**<https://cpaez.shinyapps.io/afa-dashboard-arg/>**
 
 To deploy updates after local testing:
 ```r
 rsconnect::deployApp(
   appDir = ".",
-  appName = "bowie-seir",
+  appName = "afa-dashboard-arg",
   forceUpdate = TRUE
 )
 ```
@@ -123,4 +123,4 @@ rsconnect::deployApp(
 
 **Maintainer:** Cristian Paez
 **Email:** paez.cristian@gmail.com
-**Project:** Bowie / proto\_epi — Analysis for Action (Argentina Unit)
+**Project:** AfA Dashboard (Argentina Unit)

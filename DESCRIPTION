@@ -1,4 +1,4 @@
-Package: proto_epi
+Package: afadashboardarg
 Title: SEIR Epidemiological Modelling Prototype
 Version: 0.1.0
 Authors@R:
@@ -31,5 +31,5 @@ Suggests:
     shinytest2,
     pkgdown,
     lintr
-URL: https://github.com/XtnPaez/bowie, https://cpaez.shinyapps.io/bowie-seir/
-BugReports: https://github.com/XtnPaez/bowie/issues
+URL: https://github.com/XtnPaez/afa-dashboard-arg, https://cpaez.shinyapps.io/afa-dashboard-arg/
+BugReports: https://github.com/XtnPaez/afa-dashboard-arg/issues

@@ -8,8 +8,8 @@ This document reflects the current development state as of May 2026 and document
 complete delivery history.  
 The project delivers **Product 2** of the Analysis for Action (Argentina Unit).
 
-**Live deployment:** <https://cpaez.shinyapps.io/bowie-seir/>  
-**Repository:** <https://github.com/XtnPaez/bowie>
+**Live deployment:** <https://cpaez.shinyapps.io/afa-dashboard-arg/>  
+**Repository:** <https://github.com/XtnPaez/afa-dashboard-arg>
 
 ---
 
