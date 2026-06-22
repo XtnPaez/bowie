@@ -4,10 +4,9 @@ Version: 0.1.0
 Authors@R:
     person("Cristian", "Paez", email = "paez.cristian@gmail.com", role = c("aut", "cre"))
 Description: Modular Shiny prototype for interactive SEIR epidemiological
-    modelling, developed as part of the Pandemic Preparedness Toolkit
-    (Argentina Unit), funded by Wellcome. Supports scenario simulation,
-    parameter adjustment, healthcare resource pressure analysis, and
-    CSV export of results.
+    modelling, developed as part of Analysis for Action (Argentina Unit).
+    Supports scenario simulation, parameter adjustment, healthcare resource
+    pressure analysis, and CSV export of results.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

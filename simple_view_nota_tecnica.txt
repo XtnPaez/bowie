@@ -54,47 +54,38 @@ Umbrales default:
 
 
 CARD 2 — ICU PRESSURE
-"Peak daily ICU admissions as % of capacity"
+"ICU occupancy on the final simulation day as % of capacity"
 --------------------------------------------
-Pregunta: en el peor momento de esta simulación, ¿cuántas camas
-UCI nuevas se necesitan por día comparado con la capacidad?
+Pregunta: al final de esta simulación, ¿cuánta ocupación UCI
+acumulada hay comparado con la capacidad?
 
-Cálculo:
-  ICU_Daily_Demand[t] = I[t] * 0.136
-  resultado = (max(ICU_Daily_Demand) / 6.000) * 100
+Cálculo (implementación actual, mod_server_simple.R):
+  ICU_Daily_Demand[t]   = I[t] * 0.136
+  ICU_Occupancy_Sim[t]  = suma móvil de ICU_Daily_Demand en los
+                          últimos 10 días (hospital_stay_days)
+  resultado = (ICU_Occupancy_Sim[último día] / 6.000) * 100
 
-  Se usa el PICO de ICU_Daily_Demand en toda la simulación,
-  no el valor del último día.
+  Se usa el ÚLTIMO DÍA de ICU_Occupancy_Sim, no el pico.
+  No hay cap — el valor exacto se muestra siempre, aunque
+  supere 100%.
 
-Por qué el pico y no el último día:
-  El último día cae en puntos muy distintos de la curva según
-  los parámetros. Con R₀ = 2.0 la epidemia ya pasó el pico al
-  día 366 → I_last bajo → % bajo. Con R₀ = 1.9 la epidemia
-  aún sube al día 366 → I_last alto → % alto. Eso produce
-  resultados contraintuitivos (menor R₀, mayor %). El pico
-  siempre es el peor momento real de la simulación y es
-  comparable entre escenarios.
-
-El problema del pico con parámetros altos:
-  Con R₀ = 2.5, el pico de I es ~3.4 millones de personas.
-  ICU_Daily_Demand_pico = 3.400.000 * 0.136 = 466.000 camas
-  466.000 / 6.000 * 100 = 7.771%
-  Ese número es matemáticamente correcto pero inútil en una card.
-
-La solución — cap en > 100%:
-  Si el resultado es mayor que 100%, la card muestra "> 100%"
-  con estado Critical. La diferencia entre 500% y 7.000% no
-  cambia ninguna decisión — lo que importa es que el sistema
-  colapsó. El número exacto no aporta información accionable.
+Por qué el último día y no el pico:
+  El pico de ICU_Daily_Demand puede ser órdenes de magnitud
+  mayor que la capacidad bajo escenarios de alta transmisión
+  (ver "intentos descartados" más abajo), produciendo
+  porcentajes poco útiles para una card de decisión. El último
+  día refleja el estado epidemiológico actual de la simulación,
+  que es la señal que esta vista busca comunicar.
 
 Display:
-  resultado ≤ 100%  → muestra el porcentaje exacto (ej: 67.32%)
-  resultado > 100%  → muestra "> 100%"
+  Siempre muestra el porcentaje exacto redondeado a 2 decimales
+  (ej: 67.32%, o 771.40% si la ocupación excede ampliamente la
+  capacidad). No hay formato "> 100%" en la versión actual.
 
 Umbrales default:
   Verde   (Controlled): resultado < 70%
   Naranja (Warning):    entre 70% y 100%
-  Rojo    (Critical):   más de 100% → siempre muestra "> 100%"
+  Rojo    (Critical):   más de 100%
 
 
 CARD 3 — CUMULATIVE IMPACT
@@ -151,8 +142,9 @@ CUÁNDO CAMBIA QUÉ
 HISTORIAL DE DECISIONES DE DISEÑO (Card 2)
 --------------------------------------------
 1. Primer intento — ICU_Occupancy_Sim último día:
-   Dio 55.151% → bug aparente, pero era el rolling sum de 10 días
-   acumulando demanda enorme. Descartado.
+   Dio 55.151% en una prueba temprana → pareció un bug, pero era
+   el rolling sum de 10 días acumulando demanda real. Descartado
+   en ese momento por parecer un valor "imposible".
 
 2. Segundo intento — ICU_Daily_Demand último día:
    Con R₀=2.0 daba 31%, con R₀=1.9 daba 106%. Contraintuitivo
@@ -161,11 +153,20 @@ HISTORIAL DE DECISIONES DE DISEÑO (Card 2)
 3. Tercer intento — pico de ICU_Daily_Demand (sin cap):
    Con R₀=2.5 daba 7.771%. Matemáticamente correcto pero inutilizable.
 
-4. Solución final — pico de ICU_Daily_Demand, cap en > 100%:
-   Valores ≤ 100%: se muestran exactos.
-   Valores > 100%: se muestran como "> 100%" con estado Critical.
-   El sistema colapsó — eso es todo lo que el decisor necesita saber.
+4. Cuarto intento — pico de ICU_Daily_Demand, cap en > 100%:
+   Valores ≤ 100% exactos, valores > 100% mostrados como "> 100%".
+   Funcional, pero perdía granularidad entre escenarios críticos.
+
+5. SOLUCIÓN FINAL ADOPTADA (mod_server_simple.R actual) —
+   se vuelve al intento 1: ICU_Occupancy_Sim del último día,
+   sin cap, mostrando siempre el valor exacto. Lo que en el
+   intento 1 parecía un bug es, en realidad, la señal correcta:
+   refleja la ocupación acumulada real bajo el modelo de rolling
+   sum de estadía hospitalaria (10 días). Se prefirió sobre el
+   pico (intentos 3 y 4) porque el último día es comparable y
+   estable entre escenarios, mientras que el pico varía según en
+   qué punto de la curva cae el día 366 de cada simulación.
 
 
-Cristian Paez — marzo 2026
+Cristian Paez — marzo 2026 (Card 2 sincronizada con el código en junio 2026)
 Uso personal — no subir al repo

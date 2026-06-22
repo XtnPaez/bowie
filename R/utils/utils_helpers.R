@@ -33,18 +33,6 @@ clamp <- function(x, minv, maxv) pmax(minv, pmin(x, maxv))
 percent_to_prop <- function(x_pct) x_pct / 100
 
 # ------------------------------------------------------------
-# Function: coalesce_num()
-# Description:
-#   Replaces NA values in x with default numeric y.
-# Parameters:
-#   x – numeric vector.
-#   y – fallback value.
-# Returns:
-#   Numeric vector with NAs replaced by y.
-# ------------------------------------------------------------
-coalesce_num <- function(x, y) ifelse(is.na(x), y, x)
-
-# ------------------------------------------------------------
 # Function: not_null()
 # Description:
 #   Returns TRUE if object is not NULL.

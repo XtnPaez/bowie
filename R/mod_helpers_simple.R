@@ -19,6 +19,9 @@
 #     metric_value_ui()     – formatted KPI value display
 #     resolve_alarm_state() – classifies a metric into alarm state
 #     coalesce_num()        – NULL/NA-safe numeric fallback
+#                             (sole definition in the project;
+#                             a duplicate in utils_helpers.R was
+#                             removed — it was never called)
 #
 # AfA alarm palette:
 #   Controlled  – circle   – #3EA27F (AfA sea green)

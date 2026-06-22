@@ -55,6 +55,7 @@ server <- function(input, output, session) {
   screen           <- reactiveVal("entry")
   dataset_selector <- reactiveVal(NULL)
   dataset_loaded   <- reactiveVal(NULL)
+  trigger_sim      <- reactiveVal(0)
 
   # Stores calibrated parameters from the loaded dataset.
   # NULL for mock; named list with $parametros, $recursos,
@@ -86,7 +87,7 @@ server <- function(input, output, session) {
   # Entry and menu servers — always active
   # --------------------------------------------------------
   mod_entry_server("entry", screen, dataset_selector,
-                   dataset_loaded, dataset_params)
+                   dataset_loaded, trigger_sim, dataset_params)
   mod_menu_server("menu", screen, dataset_selector)
 
   # --------------------------------------------------------

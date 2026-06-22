@@ -1,6 +1,6 @@
 # Contributing Guidelines
 
-Thank you for your interest in contributing to the project — a modular Shiny dashboard for infectious disease modelling, developed as part of the Pandemic Preparedness Toolkit (Argentina Unit).
+Thank you for your interest in contributing to the project — a modular Shiny dashboard for infectious disease modelling, developed as part of Analysis for Action (Argentina Unit).
 
 The platform serves three ToR deliverables: an interactive COVID-19 Argentina case study powered by the IECS/Santoro real dataset (Product 1), the modular Shiny dashboard itself (Product 2), and technical documentation (Product 3).
 
@@ -13,13 +13,17 @@ This project follows best practices for reproducible and modular Shiny developme
 ```
 bowie/
 ├── app.R                  # Application entry point
+├── DESCRIPTION            # R package metadata and dependencies
 ├── R/
 │   ├── global.R           # Global constants and library loading
 │   ├── data_interface.R   # Data Hub: loading, validation, persistence
 │   ├── mod_entry.R        # Entry screen module
 │   ├── mod_menu.R         # Navigation menu module
-│   ├── mod_ui.R           # Main UI layout and parameter panels
+│   ├── mod_ui.R           # Advanced View UI layout and parameter panels
+│   ├── mod_ui_simple.R    # Simplified View UI layout and KPI cards
 │   ├── mod_server.R       # Main server module (parameters, model wiring)
+│   ├── mod_server_simple.R # Simplified View server: isolated SEIR + alarm logic
+│   ├── mod_helpers_simple.R # Shared helpers for the Simplified View
 │   ├── mod_model.R        # SEIR ODE model logic
 │   ├── mod_viz.R          # Visualisation module (ggplot2 plots)
 │   ├── mod_data.R         # Data simulation module
@@ -30,7 +34,11 @@ bowie/
 │       └── utils_dependencies.R # Automatic dependency detection and installation
 ├── data/
 │   ├── mock_dataset.rds   # Simulated default dataset
-│   └── iecs_data.RData    # IECS (Santoro) dataset
+│   └── iecs_data.rds      # IECS (Santoro) dataset
+├── data-raw/
+│   └── prepare_iecs.R     # Reproducible script to regenerate iecs_data.rds
+├── docs/
+│   └── implementation_guide.md # Full technical documentation
 └── www/
     └── custom.css         # Visual overrides for bslib/Bootstrap 5
 ```
@@ -64,10 +72,10 @@ bowie/
 
 The project is under active development. Key areas open for contribution:
 
-- **Simple View module** (`mod_viz_simple.R`) — a simplified interface for decision-makers with KPIs and core curves only. Currently disabled pending implementation.
 - **Testing layer** — unit tests with `testthat` and UI tests with `shinytest2` are planned but not yet implemented.
 - **Model Hub** — infrastructure to support additional compartmental models beyond SEIR.
-- **External data connectivity** — API integration with WHO, OWID, and national surveillance repositories.
+- **External data connectivity** — API integration with WHO, OWID, and national surveillance repositories. Architecture documented in the Implementation Guide; implementation deferred pending resource availability.
+- **Interactive presentation** — User Guide enrichment with pedagogical exercises (in progress).
 
 ---
 
@@ -111,4 +119,4 @@ rsconnect::deployApp(
 
 **Maintainer:** Cristian Paez
 **Email:** paez.cristian@gmail.com
-**Project:** Bowie / proto\_epi — Pandemic Preparedness Toolkit (Argentina Unit)
+**Project:** Bowie / proto\_epi — Analysis for Action (Argentina Unit)

@@ -222,12 +222,11 @@ mod_entry_ui <- function(id) {
 #   screen           – reactiveVal(character); controls active view.
 #   dataset_selector – reactiveVal(character); active source key.
 #   dataset_loaded   – reactiveVal(data.frame); loaded dataset.
-#   trigger_sim      – reactiveVal(integer); simulation trigger.
 # Returns:
 #   None (side effects only).
 # ------------------------------------------------------------
 mod_entry_server <- function(id, screen, dataset_selector,
-                             dataset_loaded, trigger_sim,
+                             dataset_loaded,
                              dataset_params = NULL) {
   moduleServer(id, function(input, output, session) {
     ns         <- session$ns
