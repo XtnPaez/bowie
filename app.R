@@ -58,7 +58,7 @@ server <- function(input, output, session) {
 
   # Stores calibrated parameters from the loaded dataset.
   # NULL for mock; named list with $parametros, $recursos,
-  # $poblacion for IECS and user CSV sources. Passed to both
+  # $poblacion for user CSV sources. Passed to both
   # views so both initialise from the same dataset snapshot.
   dataset_params   <- reactiveVal(NULL)
 

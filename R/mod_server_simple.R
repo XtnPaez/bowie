@@ -65,7 +65,7 @@ mod_server_simple <- function(id, dataset_selector,
 
     # --------------------------------------------------------
     # Dataset parameter initialisation
-    # When a calibrated dataset is loaded (IECS or user CSV),
+    # When a calibrated dataset is loaded (user CSV),
     # apply its parameters to simple_params so the Simple View
     # starts from the same snapshot as the Advanced View.
     # ignoreNULL = TRUE prevents this firing for mock datasets.
