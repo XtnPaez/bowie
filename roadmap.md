@@ -19,7 +19,7 @@ The project delivers **Product 2** of the Analysis for Action (Argentina Unit).
 - SEIR ODE model running with `deSolve`, validated against known parameters.
 - Open-source codebase — easily modifiable to incorporate SIR, SEIRD, or custom models per ToR specification.
 - Data Hub Interface (`data_interface.R`) — loading, validation, schema checks, caching, and user CSV upload.
-- Entry screen with three dataset sources: mock, IECS / Santoro, and user-uploaded CSV.
+- Entry screen with two dataset sources: mock and user-uploaded CSV (see Block 7 — IECS dataset removed from dashboard, retained as methodological reference).
 - Simplified View — decision-maker interface with three KPI alarm cards and configurable thresholds.
 - Advanced View with sticky parameter panel, real-time curve updates, and resource pressure plots.
 - Simulation scope controls (population, start date, end date) exposed in the Advanced View UI.
@@ -61,7 +61,8 @@ The following items are out of scope for the current delivery and documented for
 ### Block 3 – Data Hub Interface
 **Goal:** Centralised dataset loading, validation, and persistence via `data_interface.R`.  
 **Status:** ✅ Complete. Functions: `get_data()`, `validate_schema()`, `save_dataset()`,
-`list_datasets()`, `load_iecs_data()`, `build_dataset()`, `validate_user_csv()`.
+`list_datasets()`, `build_dataset()`, `validate_user_csv()`. (`load_iecs_data()` retained as a
+console/inspection utility — see Block 7.)
 
 ### Block 4 – User Experience Redesign
 **Goal:** Entry screen, navigation menu, and Advanced View layout.  
@@ -150,6 +151,45 @@ final submission.
   ("Simulated (mock)", "IECS – Santoro", "Custom dataset").
 - Population race condition fixed in `mod_model.R`: validation now uses actual initial state
   sum rather than `params$population` to avoid reactive timing conflicts.
+
+---
+
+### Block 7 – IECS Dataset Removed from Dashboard (June 2026)
+**Goal:** Remove the IECS/Santoro dataset as a selectable, loadable source on the
+dashboard, while retaining it as a documented methodological reference for the
+model's default parameters.  
+**Status:** ✅ Complete.
+
+**Rationale:** the IECS/Santoro dataset (Santoro et al., 2022) informed the design
+and default calibration of this SEIR model from the outset, but offering it as a
+live, loadable dataset on the entry screen blurred the distinction between "a
+worked methodological example" and "a maintained, production-ready data source".
+The dashboard now offers only the mock dataset and user-uploaded CSV; IECS/Santoro
+remains documented as the inspiration behind the model and its reference defaults.
+
+**Completed items:**
+- Entry screen dropdown (`mod_entry.R`): "IECS – Santoro model" option removed.
+  Two sources remain: "Simulated (mock)" and "Upload your own dataset (CSV)".
+- CSV upload modal (`mod_entry.R`): reference text renamed from "Use the IECS /
+  Santoro dataset as a reference template" to "Argentina reference defaults".
+  Example value table in the modal is unchanged.
+- Dataset indicator (`mod_menu.R`): `"iecs" = "IECS – Santoro"` switch entry removed.
+- `mod_server.R`: IECS-loading branch removed from the dataset selection observer.
+  `apply_iecs_to_params()` renamed to `apply_calibrated_params()` and
+  `normalise_ifr_to_pct()` error messages generalised — both functions are shared
+  with the CSV calibration path and were never IECS-exclusive.
+- `data_interface.R`: `"iecs"` branch removed from `get_data()`. `load_iecs_data()`
+  retained and re-documented as a console/inspection utility — not called from any
+  dashboard flow. Comments referring to an "IECS-compatible structure" renamed to
+  "canonical calibrated-dataset structure", reflecting that the `$parametros` /
+  `$recursos` / `$poblacion` contract is shared with the CSV path.
+- `data-raw/prepare_iecs.R` and `data/iecs_data.rds` retained unchanged as
+  institutional memory of the model's methodological grounding.
+- Documentation (`README.md`, `implementation_guide.md`, `CONTRIBUTING.md`) updated
+  to describe two dataset sources; IECS/Santoro re-framed throughout as a
+  methodological reference rather than a dashboard input.
+- `Product 1` case study (separate deliverable, not part of the dashboard) is
+  unaffected by this change.
 
 ---
 

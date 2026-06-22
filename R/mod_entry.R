@@ -123,7 +123,6 @@ mod_entry_ui <- function(id) {
             label    = NULL,
             choices  = c(
               "Simulated (mock)"          = "mock",
-              "IECS \u2013 Santoro model"     = "iecs",
               "Upload your own dataset (CSV)" = "csv"
             ),
             selected = "mock",
@@ -222,11 +221,12 @@ mod_entry_ui <- function(id) {
 #   screen           – reactiveVal(character); controls active view.
 #   dataset_selector – reactiveVal(character); active source key.
 #   dataset_loaded   – reactiveVal(data.frame); loaded dataset.
+#   trigger_sim      – reactiveVal(integer); simulation trigger.
 # Returns:
 #   None (side effects only).
 # ------------------------------------------------------------
 mod_entry_server <- function(id, screen, dataset_selector,
-                             dataset_loaded,
+                             dataset_loaded, trigger_sim,
                              dataset_params = NULL) {
   moduleServer(id, function(input, output, session) {
     ns         <- session$ns
@@ -263,7 +263,7 @@ mod_entry_server <- function(id, screen, dataset_selector,
     # --------------------------------------------------------
     # Load dataset — shows status badge inside the card.
     # For CSV source: opens a modal with upload instructions
-    # and a fileInput. For mock/iecs: loads directly.
+    # and a fileInput. For mock: loads directly.
     # --------------------------------------------------------
     observeEvent(input$load_dataset, {
 
@@ -328,9 +328,8 @@ mod_entry_server <- function(id, screen, dataset_selector,
 
           tags$p(
             style = "font-size:0.85rem; color:#7A8A72; margin-bottom:12px;",
-            "Use the IECS / Santoro dataset as a reference template. ",
-            "Values shown above are the Argentine defaults — replace them ",
-            "with your own regional figures."
+            "Argentina reference defaults are shown below as a guide — ",
+            "replace them with your own regional figures."
           ),
 
           fileInput(
@@ -352,7 +351,7 @@ mod_entry_server <- function(id, screen, dataset_selector,
         return()
       }
 
-      # mock / iecs — load directly
+      # mock — load directly
       shinyjs::disable("load_dataset")
       shinyjs::runjs("document.body.style.opacity = 0.6;")
 

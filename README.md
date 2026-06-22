@@ -29,7 +29,7 @@ enabling interactive scenario exploration, resource planning, and educational us
 - **Healthcare resource pressure analysis** — compare simulated ICU and ventilator demand against configurable capacity thresholds
 - **Simplified View** — decision-maker interface with three KPI alarm cards (Epidemic Trajectory, ICU Pressure, Cumulative Impact) using a geometric colour-coded alarm system
 - **Advanced View** — full parameter control for technical users, including simulation scope (population, start date, end date)
-- **Three dataset sources** — simulated (mock), IECS / Santoro (real Argentine COVID-19 parameters), or user-uploaded CSV
+- **Two dataset sources** — simulated (mock) or user-uploaded CSV
 - **CSV upload** — load your own regional parameter snapshot via a guided modal dialog; the platform uses it as the starting point for simulation
 - **CSV export** — download full simulation results in European locale format
 - **Dual-view initialisation** — both views initialise from the same loaded dataset, then evolve independently
@@ -91,11 +91,11 @@ bowie/
 │
 ├── data/
 │   ├── mock_dataset.rds         # Simulated default dataset
-│   ├── iecs_data.rds            # IECS / Santoro — real COVID-19 Argentina parameters
+│   ├── iecs_data.rds            # Reference dataset (Santoro et al., 2022) — not exposed in the dashboard; console/inspection use only
 │   └── cache/                   # Auto-generated: cached datasets
 │
 ├── data-raw/
-│   └── prepare_iecs.R           # Reproducible script to regenerate iecs_data.rds
+│   └── prepare_iecs.R           # Reproducible script documenting the IECS/Santoro reference parameters and regenerating iecs_data.rds
 │
 ├── docs/
 │   └── implementation_guide.md  # Full technical documentation (Product 3a)
@@ -129,18 +129,20 @@ shiny::runApp()
 
 ## Dataset Sources
 
-The platform supports three dataset sources, selectable from the entry screen:
+The platform supports two dataset sources, selectable from the entry screen:
 
 | Source | Description |
 |--------|-------------|
 | Simulated (mock) | Synthetic dataset generated from default epidemiological parameters. Use for free exploration. |
-| IECS / Santoro | Real COVID-19 parameters for Argentina, derived from Santoro et al. (2022). Use for empirically grounded simulation. |
-| Upload your own (CSV) | Upload a two-column CSV (`parameter`, `value`) with your regional epidemiological and resource parameters. See the modal dialog for the full field specification. |
+| Upload your own (CSV) | Upload a two-column CSV (`parameter`, `value`) with your regional epidemiological and resource parameters. Argentina reference defaults are shown in the modal as a guide. See the modal dialog for the full field specification. |
 
-To regenerate the IECS dataset from source parameters:
+### Methodological reference (not a dashboard input)
+
+The default parameter values shown as a guide in the CSV upload modal, and several of the constants in `global.R` (e.g. `INITIAL_R0`, `INITIAL_IFR`), are informed by the IECS/Santoro dynamic transmission model for Argentina (Santoro et al., 2022 — see References). This dataset is **not** offered as a loadable source on the dashboard; it served as methodological inspiration during development. `data-raw/prepare_iecs.R` documents the full derivation and is kept in the repository for traceability. Developers who want to inspect the reference values directly can do so from the R console:
 
 ```r
-source("data-raw/prepare_iecs.R")
+source("R/data_interface.R")
+load_iecs_data()
 ```
 
 ---

@@ -112,7 +112,6 @@ mod_menu_server <- function(id, screen, dataset_selector) {
       # a decision-maker; the full label is more informative.
       label <- switch(ds,
         "mock" = "Simulated (mock)",
-        "iecs" = "IECS – Santoro",
         "csv"  = "Custom dataset",
         toupper(ds)   # fallback for any future source keys
       )

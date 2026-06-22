@@ -38,7 +38,7 @@ Terms of Reference (ToR) for **Product 2** of the Analysis for Action (Argentina
 | Data Hub Interface (`data_interface.R`) | ✅ Complete with CSV support | **100%** |
 | Advanced visualisation module (`mod_viz`) | ✅ All plots rendering | **100%** |
 | CSV export of simulation results | ✅ Implemented | **100%** |
-| IECS / Santoro dataset integration | ✅ Migrated to .rds | **100%** |
+| IECS / Santoro reference dataset | ✅ Retained as methodological reference (.rds); removed as dashboard source | **100%** |
 | Reproducible dataset preparation (`data-raw/`) | ✅ Implemented | **100%** |
 | Simplified View module (`mod_*_simple`) | ✅ Complete and deployed | **100%** |
 | User CSV upload with validation | ✅ Implemented | **100%** |
@@ -128,6 +128,17 @@ same loaded dataset snapshot. Views remain fully independent after initialisatio
 
 **Dynamic simulation dates:** Default simulation window now relative to the current date
 (`Sys.Date()` to `Sys.Date() + 365`).
+
+---
+
+## 📈 June 2026 Sprint Summary
+
+**IECS dataset removed from dashboard:** the IECS/Santoro dataset is no longer offered as a
+selectable, loadable source on the entry screen. The dashboard now exposes two sources —
+simulated (mock) and user-uploaded CSV. IECS/Santoro (Santoro et al., 2022) remains documented
+as the methodological reference behind the model's default parameters; `data-raw/prepare_iecs.R`
+and `data/iecs_data.rds` are retained unchanged for traceability and console-based inspection.
+See `roadmap.md`, Block 7, for the full list of affected files and rationale.
 
 **Codebase cleanup:** All stale internal references removed — no PPT, Block 4b/5 notes,
 hardcoded 2020 dates, or `.RData` references remain in the codebase.

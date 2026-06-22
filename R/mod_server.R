@@ -3,7 +3,7 @@
 # ------------------------------------------------------------
 # Description:
 #   Main server module for the Shiny application. Integrates:
-#     - Dataset selection (mock / IECS)
+#     - Dataset selection (mock / user-uploaded CSV)
 #     - Parameter management and validation
 #     - SEIR model execution
 #     - Visualisation module wiring (viz_plot_server)
@@ -18,7 +18,9 @@
 #   - Resource parameters (ICU capacity, ventilators) affect the
 #     Resource Pressure plot directly via reactive values passed
 #     to viz_plot_server. They do not re-run the ODE solver.
-#   - IECS loading must be performed via load_iecs_data() (data_interface.R).
+#   - Calibrated parameter sets (currently: user CSV) are applied
+#     via apply_calibrated_params(), shared with the dataset_params
+#     observer below.
 #
 # Author: Cristian Paez
 # Created: 2025-11-07
@@ -36,34 +38,39 @@ mod_server <- function(id, dataset_selector,
     # - If IFR <= 1  : treat as proportion and convert to percent.
     # - If IFR <= 100: treat as percent already.
     # - Otherwise    : fail explicitly (wrong scale).
+    # Used by apply_calibrated_params() for any calibrated dataset
+    # source (currently: user-uploaded CSV).
     normalise_ifr_to_pct <- function(ifr_raw) {
       if (!is.numeric(ifr_raw) || length(ifr_raw) != 1 || is.na(ifr_raw)) {
-        stop("IECS invalid: IFR must be a non-NA scalar numeric value.")
+        stop("Calibrated dataset invalid: IFR must be a non-NA scalar numeric value.")
       }
       if (ifr_raw <= 1)   return(ifr_raw * 100)
       if (ifr_raw <= 100) return(ifr_raw)
       stop(sprintf(
-        "IECS invalid: IFR out of scale (value=%s). Expected proportion (<=1) or percent (<=100).",
+        "Calibrated dataset invalid: IFR out of scale (value=%s). Expected proportion (<=1) or percent (<=100).",
         as.character(ifr_raw)
       ))
     }
 
-    # Apply a full parameter refresh from IECS data into app_params.
+    # Apply a full parameter refresh from a calibrated dataset
+    # (currently: user-uploaded CSV) into app_params. The input
+    # follows the canonical $parametros / $recursos / $poblacion
+    # structure produced by validate_user_csv() in data_interface.R.
     # isolate() is used to avoid intermediate reactive states.
-    apply_iecs_to_params <- function(iecs_data, app_params) {
-      ifr_pct <- normalise_ifr_to_pct(iecs_data$parametros$IFR)
+    apply_calibrated_params <- function(calibrated_data, app_params) {
+      ifr_pct <- normalise_ifr_to_pct(calibrated_data$parametros$IFR)
       isolate({
-        app_params$r0_value           <- iecs_data$parametros$R0
-        app_params$incubation_period  <- iecs_data$parametros$incubation_period
-        app_params$infectious_period  <- iecs_data$parametros$infectious_period
+        app_params$r0_value           <- calibrated_data$parametros$R0
+        app_params$incubation_period  <- calibrated_data$parametros$incubation_period
+        app_params$infectious_period  <- calibrated_data$parametros$infectious_period
         app_params$ifr_value          <- ifr_pct
-        app_params$icu_capacity       <- iecs_data$recursos$INITIAL_ICU_CAPACITY
-        app_params$ventilator_availability <- iecs_data$recursos$INITIAL_VENTILATOR_AVAILABILITY
-        app_params$healthcare_staff   <- iecs_data$recursos$INITIAL_HEALTHCARE_STAFF
+        app_params$icu_capacity       <- calibrated_data$recursos$INITIAL_ICU_CAPACITY
+        app_params$ventilator_availability <- calibrated_data$recursos$INITIAL_VENTILATOR_AVAILABILITY
+        app_params$healthcare_staff   <- calibrated_data$recursos$INITIAL_HEALTHCARE_STAFF
         # Rates stored as percentages for UI + validation consistency
-        app_params$icu_admission_rate    <- iecs_data$recursos$INITIAL_ICU_RATE * 100
-        app_params$ventilator_usage_rate <- iecs_data$recursos$INITIAL_VENTILATOR_RATE * 100
-        app_params$population            <- iecs_data$poblacion
+        app_params$icu_admission_rate    <- calibrated_data$recursos$INITIAL_ICU_RATE * 100
+        app_params$ventilator_usage_rate <- calibrated_data$recursos$INITIAL_VENTILATOR_RATE * 100
+        app_params$population            <- calibrated_data$poblacion
       })
     }
 
@@ -107,13 +114,7 @@ mod_server <- function(id, dataset_selector,
     observeEvent(dataset_selector(), {
       req(dataset_selector())
 
-      if (dataset_selector() == "iecs") {
-        log_message("INFO", "Loading IECS dataset...", .module = "SERVER")
-        iecs_data <- load_iecs_data()
-        apply_iecs_to_params(iecs_data, app_params)
-        log_message("INFO", "IECS data loaded successfully", .module = "SERVER")
-
-      } else if (dataset_selector() == "csv") {
+      if (dataset_selector() == "csv") {
         # CSV: parameters already applied to app_params via
         # dataset_params reactive in app.R. Advanced View sliders
         # are updated here from the same parameter set.
@@ -129,16 +130,17 @@ mod_server <- function(id, dataset_selector,
 
     # --------------------------------------------------------
     # Dataset params observer — applies calibrated parameters
-    # from any source (IECS, CSV) to app_params and updates
-    # all Advanced View sliders via updateSliderInput().
-    # Fires when dataset_params changes — i.e. when a
-    # calibrated dataset is loaded. Ignored for mock (NULL).
+    # from a calibrated dataset source (currently: user-uploaded
+    # CSV) to app_params and updates all Advanced View sliders
+    # via updateSliderInput(). Fires when dataset_params changes
+    # — i.e. when a calibrated dataset is loaded. Ignored for
+    # mock (NULL).
     # --------------------------------------------------------
     observeEvent(dataset_params(), {
       dp <- dataset_params()
       req(!is.null(dp), !is.null(dp$parametros))
 
-      apply_iecs_to_params(dp, app_params)
+      apply_calibrated_params(dp, app_params)
 
       # Update UI sliders to reflect loaded parameters
       updateSliderInput(session, "r0_value",
